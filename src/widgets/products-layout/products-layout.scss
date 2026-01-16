@@ -157,10 +157,18 @@
 		padding: auto;
 
 		img {
+			position: relative;
+			z-index: 1;
 			height: 100%;
 			width: 100%;
 			object-fit: cover;
 			object-position: 50% 50%;
+		}
+		.product-badge {
+			position: absolute;
+			top: 10px;
+			left: 10px;
+			z-index: 5;
 		}
 	}
 

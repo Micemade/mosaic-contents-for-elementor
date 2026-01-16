@@ -41,7 +41,7 @@ window.ProductsLayoutReact = {
 				});
 			};
 			
-			return <ProductsLayoutWidget widgetData={settings} />;
+			return <ProductsLayoutWidget widgetData={settings} widgetId={widgetId} />;
 		};
 		
 		root.render(<App />);
@@ -141,6 +141,7 @@ if (typeof jQuery !== 'undefined') {
 						columns: settings.get('columns'),
 						gap: settings.get('gap'),
 						layout: settings.get('layout'),
+						custom_layout: settings.get('custom_layout'),
 						items_margin: settings.get('items_margin'),
 						row_height: settings.get('row_height'),
 						allow_overlap: settings.get('allow_overlap') === 'yes',
@@ -151,9 +152,20 @@ if (typeof jQuery !== 'undefined') {
 				// Store globally for remounts
 				window.ProductsLayoutReact.modelGetters[widgetId] = getSettingsFromModel;
 				
+				// Store model reference for updating settings from React
+				window.ProductsLayoutReact.models = window.ProductsLayoutReact.models || {};
+				window.ProductsLayoutReact.models[widgetId] = model;
+
 				// Listen to settings changes
 				model.get('settings').on('change', () => {
 					window.ProductsLayoutReact.updateInstance(widgetId, getSettingsFromModel());
+				});
+
+				// Listen for reset layout button click
+				elementor.channels.editor.on('mosaic:resetLayout', () => {
+					if (elementor.getPanelView().getCurrentPageView().model.id === widgetId) {
+						model.setSetting('custom_layout', '');
+					}
 				});
 			});
 		}

@@ -86,16 +86,6 @@ class ProductsLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'widget_title',
-			array(
-				'label'       => esc_html__( 'Title', 'mosaic-product-layouts-for-elementor' ),
-				'type'        => Controls_Manager::TEXT,
-				'default'     => esc_html__( 'Products', 'mosaic-product-layouts-for-elementor' ),
-				'placeholder' => esc_html__( 'Type your title here', 'mosaic-product-layouts-for-elementor' ),
-			)
-		);
-
-		$this->add_control(
 			'per_page',
 			array(
 				'label'   => __( 'Products Per Page', 'mosaic-product-layouts-for-elementor' ),
@@ -183,7 +173,7 @@ class ProductsLayout extends Widget_Base {
 		$this->add_control(
 			'layout',
 			array(
-				'label'       => __( 'Select Layout', 'mosaic-product-layouts-for-elementor' ),
+				'label'       => __( 'Predefined Layouts', 'mosaic-product-layouts-for-elementor' ),
 				'type'        => Controls_Manager::SELECT,
 				'default'     => 'layout-1',
 				'options'     => array(
@@ -203,6 +193,27 @@ class ProductsLayout extends Widget_Base {
 					'layout-14' => __( 'Layout 14 (4 items - Sidebar)', 'mosaic-product-layouts-for-elementor' ),
 				),
 				'description' => __( 'Choose a predefined layout for the product grid. Layouts 1-9 display 3 items, Layouts 10-14 display 4 items.', 'mosaic-product-layouts-for-elementor' ),
+			)
+		);
+
+		$this->add_control(
+			'custom_layout',
+			array(
+				'label'       => __( 'Custom Layout', 'mosaic-product-layouts-for-elementor' ),
+				'type'        => Controls_Manager::HIDDEN,
+				'default'     => '',
+				'description' => __( 'Stores custom layout data when you drag/resize items in the editor.', 'mosaic-product-layouts-for-elementor' ),
+			)
+		);
+
+		$this->add_control(
+			'reset_layout',
+			array(
+				'label'        => __( 'Reset to Predefined Layout', 'mosaic-product-layouts-for-elementor' ),
+				'type'         => Controls_Manager::BUTTON,
+				'text'         => __( 'Reset Layout', 'mosaic-product-layouts-for-elementor' ),
+				'description'  => __( 'Clear layout modifications and restore the selected predefined layout.', 'mosaic-product-layouts-for-elementor' ),
+				'event'        => 'mosaic:resetLayout',
 			)
 		);
 
@@ -236,7 +247,7 @@ class ProductsLayout extends Widget_Base {
 					),
 				),
 				'default' => array(
-					'size' => 10,
+					'size' => 5,
 					'unit' => 'px',
 				),
 			)
@@ -284,55 +295,7 @@ class ProductsLayout extends Widget_Base {
 			)
 		);
 
-		$this->add_control(
-			'bg_color',
-			array(
-				'label'     => __( 'Background Color', 'mosaic-product-layouts-for-elementor' ),
-				'type'      => Controls_Manager::COLOR,
-				'selectors' => array(
-					'{{WRAPPER}} .products-layout' => 'background-color: {{VALUE}}',
-				),
-			)
-		);
 
-		$this->add_control(
-			'columns',
-			array(
-				'label'   => __( 'Columns', 'mosaic-product-layouts-for-elementor' ),
-				'type'    => Controls_Manager::SELECT,
-				'default' => '3',
-				'options' => array(
-					'1' => '1',
-					'2' => '2',
-					'3' => '3',
-					'4' => '4',
-					'5' => '5',
-					'6' => '6',
-				),
-			)
-		);
-
-		$this->add_control(
-			'gap',
-			array(
-				'label'      => __( 'Gap', 'mosaic-product-layouts-for-elementor' ),
-				'type'       => Controls_Manager::SLIDER,
-				'size_units' => array( 'px', 'em', 'rem' ),
-				'range'      => array(
-					'px' => array(
-						'min' => 0,
-						'max' => 100,
-					),
-				),
-				'default'    => array(
-					'unit' => 'px',
-					'size' => 20,
-				),
-				'selectors'  => array(
-					'{{WRAPPER}} .products-layout-grid' => 'gap: {{SIZE}}{{UNIT}};',
-				),
-			)
-		);
 
 		$this->end_controls_section();
 	}
@@ -352,15 +315,14 @@ class ProductsLayout extends Widget_Base {
 	protected function render() {
 
 		$query_settings = array(
-			'title'           => $this->sanitize_setting( 'widget_title', '' ),
 			'per_page'        => $this->sanitize_setting( 'per_page', 10 ),
 			'orderby'         => $this->sanitize_setting( 'orderby', 'date' ),
 			'order'           => $this->sanitize_setting( 'order', 'desc' ),
 			'category'        => $this->sanitize_setting( 'category', '' ),
 			'on_sale'         => 'yes' === $this->sanitize_setting( 'on_sale', 'no' ),
 			'featured'        => 'yes' === $this->sanitize_setting( 'featured', 'no' ),
-			'columns'         => $this->sanitize_setting( 'columns', '3' ),
 			'layout'          => $this->sanitize_setting( 'layout', 'grid' ),
+			'custom_layout'   => $this->sanitize_setting( 'custom_layout', '' ),
 			'items_margin'    => $this->sanitize_setting( 'items_margin', 0 ),
 			'row_height'      => $this->sanitize_setting( 'row_height', 200 ),
 			'allow_overlap'   => 'yes' === $this->sanitize_setting( 'allow_overlap', 'no' ),

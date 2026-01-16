@@ -32,12 +32,13 @@ function GridLayout(props) {
 		layouts,
 		columns = { desktop: 12, tablet: 8, mobile: 4 },
 		itemsMargin = 15,
-		rowHeight = 10,
+		rowHeight = 5,
 		allowOverlap = false,
 		compactionType = 'vertical',
 		context = 'frontend', // 'frontend' or 'edit' (for future editor support)
 		isDraggable = true,
 		isResizable = true,
+		onLayoutChange, // Callback when layout changes
 		size,
 		children,
 	} = props;
@@ -119,6 +120,28 @@ function GridLayout(props) {
 		e.stopPropagation();
 	};
 
+	const onDragStop = (layout, oldItem, newItem) => {
+		if (onLayoutChange) {
+			// Convert layout to breakpoint format
+			const newLayouts = {
+				...layoutsState,
+				[currentBreakpoint]: layout
+			};
+			onLayoutChange(newLayouts);
+		}
+	};
+
+	const onResizeStop = (layout, oldItem, newItem) => {
+		if (onLayoutChange) {
+			// Convert layout to breakpoint format
+			const newLayouts = {
+				...layoutsState,
+				[currentBreakpoint]: layout
+			};
+			onLayoutChange(newLayouts);
+		}
+	};
+
 	const currentBreakpoint = getBreakpointFromWidth();
 
 	return (
@@ -130,7 +153,9 @@ function GridLayout(props) {
 			width={widthTemp || width}
 			onBreakpointChange={onBreakpointChange}
 			onDragStart={onDragStart}
+			onDragStop={onDragStop}
 			onResizeStart={onResizeStart}
+			onResizeStop={onResizeStop}
 			breakpoint={currentBreakpoint}
 			compactType={compactionType}
 			allowOverlap={allowOverlap}

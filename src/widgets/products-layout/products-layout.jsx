@@ -172,8 +172,9 @@ function prepareProductsData(products, layoutItems) {
  *
  * @param {Object} props
  * @param {Object} props.widgetData - Settings from Elementor controls.
+ * @param {string} props.widgetId - Unique widget instance ID.
  */
-const ProductsLayoutWidget = ({ widgetData = {} }) => {
+const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 
 	const [products, setProducts] = useState([]);
 	const [isLoading, setIsLoading] = useState(true);
@@ -181,8 +182,8 @@ const ProductsLayoutWidget = ({ widgetData = {} }) => {
 	const [error, setError] = useState(null);
 
 	// Extract settings with defaults
-	const title = widgetData?.title || '';
 	const layoutId = widgetData?.layout || 'layout-1';
+	const customLayoutData = widgetData?.custom_layout || '';
 
 	const productLayout = widgetData?.product_layout || 'default';
 
@@ -221,9 +222,19 @@ const ProductsLayoutWidget = ({ widgetData = {} }) => {
 	);
 
 	// Get layout from predefined layouts (layout is source of truth for grid structure)
+	// If custom_layout exists, parse and use it; otherwise use predefined layout
 	const layoutData = useMemo(() => {
+		if (customLayoutData) {
+			try {
+				const parsed = JSON.parse(customLayoutData);
+				return parsed;
+			} catch (error) {
+				console.error('Failed to parse custom layout:', error);
+				return getLayout(layoutId, querySettings.per_page);
+			}
+		}
 		return getLayout(layoutId, querySettings.per_page);
-	}, [layoutId, querySettings.per_page]);
+	}, [layoutId, customLayoutData, querySettings.per_page]);
 
 	// Prepare products data with layout item assignments
 	// Maps products to layout items: { ...product, i: 'item-0' }
@@ -281,10 +292,46 @@ const ProductsLayoutWidget = ({ widgetData = {} }) => {
 		loadProducts();
 	}, [querySettings]);
 
+	// Handle layout changes in editor (drag/resize)
+	const handleLayoutChange = (newLayouts) => {
+		// Only update in Elementor editor mode
+		if (typeof elementor === 'undefined' || !widgetId) return;
+
+		// Get the model from global registry
+		const model = window.ProductsLayoutReact?.models?.[widgetId];
+		if (!model) return;
+
+		// Parse existing custom layout to preserve unchanged breakpoints
+		let existingCustomLayout = {};
+		const currentCustomLayout = model.get('settings').get('custom_layout');
+		if (currentCustomLayout) {
+			try {
+				existingCustomLayout = JSON.parse(currentCustomLayout);
+			} catch (error) {
+				console.error('Failed to parse existing custom layout:', error);
+			}
+		}
+
+		// Merge new layouts with existing, preserving zindex
+		const customLayout = {
+			desktop: newLayouts.desktop || existingCustomLayout.desktop || layoutData.desktop,
+			tablet: newLayouts.tablet || existingCustomLayout.tablet || layoutData.tablet,
+			mobile: newLayouts.mobile || existingCustomLayout.mobile || layoutData.mobile,
+			zindex: existingCustomLayout.zindex || layoutData.zindex || {}
+		};
+
+		// Update Elementor setting
+		model.setSetting('custom_layout', JSON.stringify(customLayout));
+
+		// Mark document as changed to enable Update/Publish button
+		if (elementor.saver) {
+			elementor.saver.setFlagEditorChange(true);
+		}
+	};
+
 	if (isLoading) {
 		return (
 			<div className="products-layout">
-				{title && <h2>{title}</h2>}
 				<p className="products-layout-loading">Loading products...</p>
 			</div>
 		);
@@ -293,7 +340,6 @@ const ProductsLayoutWidget = ({ widgetData = {} }) => {
 	if (error) {
 		return (
 			<div className="products-layout">
-				{title && <h2>{title}</h2>}
 				<p className="products-layout-error">{error}</p>
 			</div>
 		);
@@ -302,7 +348,6 @@ const ProductsLayoutWidget = ({ widgetData = {} }) => {
 	if (products.length === 0) {
 		return (
 			<div className="products-layout">
-				{title && <h2>{title}</h2>}
 				<p className="products-layout-empty">No products found.</p>
 			</div>
 		);
@@ -310,7 +355,6 @@ const ProductsLayoutWidget = ({ widgetData = {} }) => {
 
 	return (
 		<div className="products-layout">
-			{title && <h2>{title}</h2>}
 			{isFetching && (
 				<p className="products-layout-loading">Loading products...</p>
 			)}
@@ -322,11 +366,15 @@ const ProductsLayoutWidget = ({ widgetData = {} }) => {
 				allowOverlap={widgetData?.allow_overlap || false}
 				compactionType={widgetData?.compaction_type || 'vertical'}
 				context="frontend"
+				onLayoutChange={handleLayoutChange}
 			>
 				{/* Map over layout items (Mobile is source of truth), find matching product */}
 				{layoutData.mobile.map((layoutItem) => {
 					const matchedProduct = productsData.find((p) => p.i === layoutItem.i);
 					const zIndex = layoutData.zindex?.[layoutItem.i] || 0;
+
+					console.log(matchedProduct);
+
 
 					// Skip empty items (no product assigned)
 					if (!matchedProduct || matchedProduct.empty) {
