@@ -373,9 +373,6 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 					const matchedProduct = productsData.find((p) => p.i === layoutItem.i);
 					const zIndex = layoutData.zindex?.[layoutItem.i] || 0;
 
-					console.log(matchedProduct);
-
-
 					// Skip empty items (no product assigned)
 					if (!matchedProduct || matchedProduct.empty) {
 						return (

@@ -4,6 +4,7 @@ namespace Micemade\MosaicProductLayoutsElementor\Widgets;
 
 use Elementor\Widget_Base;
 use Elementor\Controls_Manager;
+use Elementor\Group_Control_Typography;
 
 /**
  * Products Layout Widget for Elementor.
@@ -220,7 +221,7 @@ class ProductsLayout extends Widget_Base {
 		$this->add_control(
 			'items_margin',
 			array(
-				'label'   => __( 'Items Margin', 'mosaic-product-layouts-for-elementor' ),
+				'label'   => __( 'Grid Gap', 'mosaic-product-layouts-for-elementor' ),
 				'type'    => Controls_Manager::SLIDER,
 				'range'   => array(
 					'px' => array(
@@ -238,7 +239,7 @@ class ProductsLayout extends Widget_Base {
 		$this->add_control(
 			'row_height',
 			array(
-				'label'   => __( 'Row Height', 'mosaic-product-layouts-for-elementor' ),
+				'label'   => __( 'Grid Row Height', 'mosaic-product-layouts-for-elementor' ),
 				'type'    => Controls_Manager::SLIDER,
 				'range'   => array(
 					'px' => array(
@@ -290,12 +291,77 @@ class ProductsLayout extends Widget_Base {
 		$this->start_controls_section(
 			'style_section',
 			array(
-				'label' => __( 'Style', 'mosaic-product-layouts-for-elementor' ),
+				'label' => __( 'Product settings', 'mosaic-product-layouts-for-elementor' ),
 				'tab'   => Controls_Manager::TAB_STYLE,
 			)
 		);
 
+		$this->add_control(
+			'product_layout',
+			array(
+				'label'       => __( 'Product layout', 'mosaic-product-layouts-for-elementor' ),
+				'type'        => Controls_Manager::SELECT,
+				'default'     => 'vertical',
+				'options'     => array(
+					'image-background' => __( 'Image background', 'mosaic-product-layouts-for-elementor' ),
+					'horizontal'       => __( 'Image left', 'mosaic-product-layouts-for-elementor' ),
+					'horizontal-alt'   => __( 'Image right', 'mosaic-product-layouts-for-elementor' ),
+					'vertical'         => __( 'Image top', 'mosaic-product-layouts-for-elementor' ),
+					'vertical-alt'     => __( 'Image bottom', 'mosaic-product-layouts-for-elementor' ),
+				),
+				'description' => __( 'Select predefined layout for product display.', 'mosaic-product-layouts-for-elementor' ),
+			)
+		);
 
+		$this->end_controls_section();
+
+		$this->start_controls_section(
+			'popover_style_section',
+			[
+				'label' => esc_html__( 'Style Section', 'mosaic-product-layouts-for-elementor' ),
+				'tab' => \Elementor\Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->add_control(
+			'popover-toggle-typography',
+			[
+				'label' => esc_html__( 'Product typography', 'mosaic-product-layouts-for-elementor' ),
+				'type' => \Elementor\Controls_Manager::POPOVER_TOGGLE,
+				'label_off' => esc_html__( 'Default', 'mosaic-product-layouts-for-elementor' ),
+				'label_on' => esc_html__( 'Custom', 'mosaic-product-layouts-for-elementor' ),
+				'return_value' => 'yes',
+			]
+		);
+
+		$this->start_popover();
+
+		// Title typohraphy.
+		$this->add_group_control(
+			Group_Control_Typography::get_type(),
+			array(
+				'name'     => 'title_typography',
+				'label'    => __( 'Typography', 'micemade-elements' ),
+				'selector' => '{{WRAPPER}} .product-elements .name',
+			)
+		);
+
+		$this->end_popover();
+
+		// ACTIVE, HOVER, INACTIVE.
+		$this->start_controls_tabs( 'tabstyles' );
+
+		// Styles for active tab.
+		$this->start_controls_tab(
+			'style_active',
+			array(
+				'label' => esc_html__( 'Active', 'micemade-elements' ),
+			)
+		);
+
+		$this->end_controls_tab();
+
+		$this->end_controls_tabs();
 
 		$this->end_controls_section();
 	}
@@ -327,6 +393,7 @@ class ProductsLayout extends Widget_Base {
 			'row_height'      => $this->sanitize_setting( 'row_height', 200 ),
 			'allow_overlap'   => 'yes' === $this->sanitize_setting( 'allow_overlap', 'no' ),
 			'compaction_type' => $this->sanitize_setting( 'compaction_type', 'vertical' ),
+			'product_layout'  => $this->sanitize_setting( 'product_layout', 'vertical' ),
 		);
 
 		$json_data = wp_json_encode( $query_settings );

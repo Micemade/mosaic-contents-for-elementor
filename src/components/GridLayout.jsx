@@ -27,6 +27,10 @@ const ELEMENTOR_BREAKPOINTS = {
 	mobile: 0,
 };
 
+const isEditorMode = () => {
+	return typeof elementorFrontend !== 'undefined' && elementorFrontend.isEditMode();
+};
+
 function GridLayout(props) {
 	const {
 		layouts,
@@ -35,9 +39,9 @@ function GridLayout(props) {
 		rowHeight = 5,
 		allowOverlap = false,
 		compactionType = 'vertical',
-		context = 'frontend', // 'frontend' or 'edit' (for future editor support)
-		isDraggable = true,
-		isResizable = true,
+		context = isEditorMode() ? 'edit' : 'frontend',
+		isDraggable = isEditorMode(),
+		isResizable = isEditorMode(),
 		onLayoutChange, // Callback when layout changes
 		size,
 		children,
@@ -113,11 +117,21 @@ function GridLayout(props) {
 	 * Stops event propagation so parent drag handlers don't interfere.
 	 */
 	const onDragStart = (layout, oldItem, newItem, placeholder, e) => {
+		if (e && e.nativeEvent) {
+			e.nativeEvent.stopImmediatePropagation();
+			e.nativeEvent.preventDefault();
+		}
 		e.stopPropagation();
+		e.preventDefault();
 	};
 
 	const onResizeStart = (layout, oldItem, newItem, placeholder, e) => {
+		if (e && e.nativeEvent) {
+			e.nativeEvent.stopImmediatePropagation();
+			e.nativeEvent.preventDefault();
+		}
 		e.stopPropagation();
+		e.preventDefault();
 	};
 
 	const onDragStop = (layout, oldItem, newItem) => {

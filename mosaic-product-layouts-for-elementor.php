@@ -13,7 +13,6 @@
 namespace Micemade\MosaicProductLayoutsElementor;
 
 use Micemade\MosaicProductLayoutsElementor\Widgets\ProductsLayout;
-use Micemade\MosaicProductLayoutsElementor\Widgets\Widget_2;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
