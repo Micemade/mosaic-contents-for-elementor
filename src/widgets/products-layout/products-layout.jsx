@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import GridLayout from '../../components/GridLayout.jsx';
 import ProductImage from '../../shared/components/ProductImage.jsx';
 import Layouts from '../../shared/layouts.json';
+import { updateElementorSetting, isElementorEditor } from '../../core/elementor-utils';
 import './products-layout.scss';
 
 // LRU Cache class for Elementor editor (limits memory usage)
@@ -43,10 +44,7 @@ class LRUCache {
 }
 
 // Detect if we're in Elementor editor mode
-const isEditorMode = () => {
-	return typeof elementor !== 'undefined' || 
-	       (typeof window.elementorFrontend !== 'undefined' && window.elementorFrontend.isEditMode());
-};
+const isEditorMode = isElementorEditor;
 
 // Use LRU cache in editor (prevents memory issues during long editing sessions)
 // Use simple object in frontend (no remounts, less memory pressure)
@@ -297,16 +295,11 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 		// Only update in Elementor editor mode
 		if (typeof elementor === 'undefined' || !widgetId) return;
 
-		// Get the model from global registry
-		const model = window.ProductsLayoutReact?.models?.[widgetId];
-		if (!model) return;
-
-		// Parse existing custom layout to preserve unchanged breakpoints
+		// Get custom layout data to preserve unchanged breakpoints
 		let existingCustomLayout = {};
-		const currentCustomLayout = model.get('settings').get('custom_layout');
-		if (currentCustomLayout) {
+		if (customLayoutData) {
 			try {
-				existingCustomLayout = JSON.parse(currentCustomLayout);
+				existingCustomLayout = JSON.parse(customLayoutData);
 			} catch (error) {
 				console.error('Failed to parse existing custom layout:', error);
 			}
@@ -320,13 +313,9 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 			zindex: existingCustomLayout.zindex || layoutData.zindex || {}
 		};
 
-		// Update Elementor setting
-		model.setSetting('custom_layout', JSON.stringify(customLayout));
-
-		// Mark document as changed to enable Update/Publish button
-		if (elementor.saver) {
-			elementor.saver.setFlagEditorChange(true);
-		}
+		// Update Elementor setting using utility function
+		// Widget type is 'products-layout' for this component
+		updateElementorSetting('products-layout', widgetId, 'custom_layout', JSON.stringify(customLayout));
 	};
 
 	if (isLoading) {

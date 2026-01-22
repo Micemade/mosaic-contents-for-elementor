@@ -1,0 +1,174 @@
+/**
+ * Elementor Hooks Registration
+ * 
+ * Registers all Elementor frontend and editor hooks for widgets.
+ * Handles widget initialization, settings synchronization, and editor interactions.
+ */
+
+import { getRegisteredWidgets, getWidgetConfig } from './widget-registry';
+import { createWidgetInitializer } from './widget-initializer';
+import widgetManager from './widget-manager';
+
+/**
+ * Register frontend hooks for all widgets
+ * Initializes widgets when they're rendered on the frontend
+ */
+export const registerFrontendHooks = () => {
+	if (typeof elementorFrontend === 'undefined') return;
+
+	// Register initialization hook for each widget type
+	getRegisteredWidgets().forEach(widgetType => {
+		const initWidget = createWidgetInitializer(widgetType);
+		
+		// Hook pattern: frontend/element_ready/{widget-name}.default
+		// Matches widget's get_name() in PHP
+		elementorFrontend.hooks.addAction(
+			`frontend/element_ready/${widgetType}.default`,
+			initWidget
+		);
+	});
+};
+
+/**
+ * Register editor hooks for all widgets
+ * Prevents DOM re-renders and sets up live settings synchronization
+ */
+export const registerEditorHooks = () => {
+	if (typeof elementor === 'undefined') return;
+
+	// Prevent Elementor from re-rendering widget DOM on every settings change
+	// React will handle updates internally without DOM replacement
+	elementor.hooks.addFilter('editor/widget/renderOnChange', function(renderOnChange, widgetType) {
+		if (getRegisteredWidgets().includes(widgetType)) {
+			return false; // Disable automatic DOM re-renders for our widgets
+		}
+		return renderOnChange;
+	});
+	
+	// Register panel open hooks for each widget type
+	getRegisteredWidgets().forEach(widgetType => {
+		elementor.hooks.addAction(`panel/open_editor/widget/${widgetType}`, (panel, model, view) => {
+			const widgetId = model.id;
+			const modelKey = `${widgetType}_${widgetId}`;
+			
+			// Override renderOnChange method to prevent DOM re-renders (redundant with filter above)
+			view.renderOnChange = () => false;
+
+			// Get widget-specific settings mapper from registry
+			const widgetConfig = getWidgetConfig(widgetType);
+			const getSettingsFromModel = () => widgetConfig.settingsMapper(model);
+			
+			// Store getter globally so it's available during widget remounts
+			widgetManager.modelGetters[modelKey] = getSettingsFromModel;
+			
+			// Store model reference for two-way updates (React → Elementor)
+			// Critical for saving custom layouts after drag/resize
+			widgetManager.models[modelKey] = model;
+
+			// Listen to Elementor settings changes and update React component
+			// (Elementor → React)
+			model.get('settings').on('change', () => {
+				widgetManager.updateInstance(widgetType, widgetId, getSettingsFromModel());
+			});
+
+			// Listen for custom 'reset layout' event from React component
+			// (React → Elementor)
+			elementor.channels.editor.on('mosaic:resetLayout', () => {
+				// Only reset if this widget is currently open in the panel
+				if (elementor.getPanelView().getCurrentPageView().model.id === widgetId) {
+					model.setSetting('custom_layout', ''); // Clear custom layout setting
+				}
+			});
+		});
+	});
+};
+
+/**
+ * Setup MutationObserver to detect dynamically added widgets in editor
+ * Handles widgets added via drag & drop in Elementor editor
+ */
+export const setupEditorObserver = () => {
+	if (typeof elementor === 'undefined') return;
+
+	const previewFrame = document.querySelector('#elementor-preview-iframe');
+	if (!previewFrame) return;
+
+	const initPreview = () => {
+		// Access iframe document
+		const previewDoc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+		if (!previewDoc?.body) {
+			// Retry if iframe body not ready yet
+			setTimeout(initPreview, 100);
+			return;
+		}
+		
+		// Watch for new widgets added to DOM (e.g., drag & drop in editor)
+		const observer = new MutationObserver((mutations) => {
+			mutations.forEach((mutation) => {
+				mutation.addedNodes.forEach((node) => {
+					if (node.nodeType === 1) { // Element node
+						// Check for all registered widget types
+						getRegisteredWidgets().forEach(widgetType => {
+							const wrapperClass = `${widgetType}-wrapper`;
+							const elementorClass = `elementor-widget-${widgetType}`;
+							
+							// Find widget wrappers in added nodes
+							const widgets = node.classList?.contains(wrapperClass)
+								? [node]
+								: (node.querySelectorAll ? node.querySelectorAll(`.${wrapperClass}`) : []);
+							
+							// Initialize each widget wrapper found
+							widgets.forEach((wrapper) => {
+								const $wrapper = jQuery(wrapper).closest(`.${elementorClass}`);
+								if ($wrapper.length) {
+									const widgetId = $wrapper.data('id') || $wrapper.data('widget-id');
+									const instanceKey = `${widgetType}_${widgetId}`;
+									// Only initialize if not already initialized
+									if (!widgetManager.instances[instanceKey]) {
+										createWidgetInitializer(widgetType)($wrapper);
+									}
+								}
+							});
+						});
+					}
+				});
+			});
+		});
+		
+		// Observe entire preview document for changes
+		observer.observe(previewDoc.body, { childList: true, subtree: true });
+
+		// Initialize any existing widgets already in the DOM
+		getRegisteredWidgets().forEach(widgetType => {
+			const wrapperClass = `${widgetType}-wrapper`;
+			const elementorClass = `elementor-widget-${widgetType}`;
+			
+			previewDoc.querySelectorAll(`.${wrapperClass}`).forEach((wrapper) => {
+				const $wrapper = jQuery(wrapper).closest(`.${elementorClass}`);
+				if ($wrapper.length) {
+					const instanceKey = `${widgetType}_${$wrapper.data('id')}`;
+					if (!widgetManager.instances[instanceKey]) {
+						createWidgetInitializer(widgetType)($wrapper);
+					}
+				}
+			});
+		});
+	};
+	
+	// Start initialization based on iframe load state
+	if (previewFrame.contentDocument?.readyState === 'complete') {
+		initPreview(); // Already loaded
+	} else {
+		previewFrame.addEventListener('load', initPreview); // Wait for load
+	}
+};
+
+/**
+ * Initialize all Elementor hooks
+ * Call this when Elementor frontend is ready
+ */
+export const initializeElementorHooks = () => {
+	registerFrontendHooks();
+	registerEditorHooks();
+	setupEditorObserver();
+};
