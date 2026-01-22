@@ -15,9 +15,6 @@ import widgetManager from './widget-manager';
  */
 export const createWidgetInitializer = (widgetType) => {
 	return ($scope) => {
-		// Extract widget ID from jQuery element
-		const widgetId = $scope.data('id') || $scope.data('widget-id');
-		
 		// Widget-specific class names (e.g., .products-layout-wrapper)
 		const wrapperClass = `.${widgetType}-wrapper`;
 		const rootClass = `.${widgetType}-react-root`;
@@ -28,7 +25,16 @@ export const createWidgetInitializer = (widgetType) => {
 		const rootElement = wrapper?.querySelector(rootClass);
 		
 		if (!rootElement) {
-			console.warn(`React root not found for ${widgetType} widget ${widgetId}`);
+			console.warn(`React root not found for ${widgetType} widget`);
+			return;
+		}
+
+		// Extract widget ID - prioritize data-widget-id from wrapper (set in content_template)
+		// Fallback to $scope data attributes for backwards compatibility
+		let widgetId = wrapper?.dataset?.widgetId || $scope.data('id') || $scope.data('widget-id');
+
+		if (!widgetId) {
+			console.error(`Widget ID not found for ${widgetType} widget. Check content_template() includes data-widget-id="{{ view.model.id }}"`);
 			return;
 		}
 

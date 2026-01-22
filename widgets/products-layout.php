@@ -407,14 +407,21 @@ class ProductsLayout extends Widget_Base {
 	}
 
 	/**
-	 * Editor template - static wrapper for React (no Underscore.js variables).
-	 * Settings are passed via Elementor model change listener in JS.
+	 * Editor template - Dynamic wrapper for React with widget ID and settings.
+	 * Ensures proper widget isolation when duplicating sections or widgets.
 	 */
 	protected function content_template() {
 		?>
-<div class="products-layout-wrapper">
-	<div class="products-layout-react-root"></div>
-</div>
-<?php
+<# const widgetId=view.model.id; const data={ per_page: settings.per_page || 10, orderby: settings.orderby || 'date' ,
+	order: settings.order || 'desc' , category: settings.category || '' , on_sale: settings.on_sale==='yes' , featured:
+	settings.featured==='yes' , layout: settings.layout || 'grid' , custom_layout: settings.custom_layout || '' ,
+	items_margin: settings.items_margin || 0, row_height: settings.row_height || 200, allow_overlap:
+	settings.allow_overlap==='yes' , compaction_type: settings.compaction_type || 'vertical' , product_layout:
+	settings.product_layout || 'vertical' , }; const jsonData=JSON.stringify(data); #>
+	<div class="products-layout-wrapper" data-widget-id="{{ widgetId }}">
+		<input type="hidden" class="elementor-settings-data" value="{{ jsonData }}" />
+		<div class="products-layout-react-root"></div>
+	</div>
+	<?php
 	}
 }
