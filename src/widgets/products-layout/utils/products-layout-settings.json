@@ -50,5 +50,13 @@
 	"product_layout": {
 		"default": "vertical",
 		"type": "string"
+	},
+	"title_size": {
+		"default": {
+			"size": 16,
+			"unit": "px"
+		},
+		"type": "responsive",
+		"breakpoints": ["desktop", "tablet", "mobile"]
 	}
 }

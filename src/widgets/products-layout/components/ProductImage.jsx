@@ -4,13 +4,13 @@
 import { __ } from '@wordpress/i18n';
 import { memo } from '@wordpress/element';
 import PropTypes from 'prop-types';
-import placeholderImg from '../../shared/woocommerce-placeholder-300x300.png';
+import placeholderImg from '../../../shared/woocommerce-placeholder-300x300.png';
 
 /**
  * Internal dependencies.
  */
-import getProduct from '../utils/getProduct';
-import getFeaturedImage from '../utils/getFeaturedImage';
+import getProduct from '../../../shared/utils/getProduct';
+import getFeaturedImage from '../../../shared/utils/getFeaturedImage';
 
 const getImageProperties = (images) => {
 

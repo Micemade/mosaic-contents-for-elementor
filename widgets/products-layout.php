@@ -344,13 +344,73 @@ class ProductsLayout extends Widget_Base {
 
 		// Style Section.
 		$this->start_controls_section(
-			'style_section',
+			'product_style_settings_section',
+			[
+				'label' => esc_html__( 'Product Style Settings', 'mosaic-product-layouts-for-elementor' ),
+				'tab' => \Elementor\Controls_Manager::TAB_STYLE,
+			]
+		);
+/* 
+		$this->add_control(
+			'popover-toggle-test',
+			[
+				'label' => esc_html__( 'Popover test', 'mosaic-product-layouts-for-elementor' ),
+				'type' => \Elementor\Controls_Manager::POPOVER_TOGGLE,
+				'label_off' => esc_html__( 'Default', 'mosaic-product-layouts-for-elementor' ),
+				'label_on' => esc_html__( 'Custom', 'mosaic-product-layouts-for-elementor' ),
+				'return_value' => 'yes',
+			]
+		);
+		$this->start_popover();
+		$this->add_control(
+				'popover_content',
+				array(
+					'type'            => Controls_Manager::RAW_HTML,
+					'raw'             =>  __( '<strong>JUST AN EMPTY POPOVER', 'mosaic-product-layouts-for-elementor' ) ,
+					'separator'       => 'after',
+					'content_classes' => 'elementor-panel-alert elementor-panel-alert-info',
+				)
+			);
+		$this->end_popover();
+		 */
+
+		// ACTIVE, HOVER, INACTIVE.
+		$this->start_controls_tabs( 'product_styles' );
+
+		// Product text controls tab.
+		$this->start_controls_tab(
+			'product_text_sizes_tab',
 			array(
-				'label' => __( 'Product settings', 'mosaic-product-layouts-for-elementor' ),
-				'tab'   => Controls_Manager::TAB_STYLE,
+				'label' => esc_html__( 'Text', 'mosaic-product-layouts-for-elementor' ),
 			)
 		);
-
+		$this->add_responsive_control(
+			'title_size',
+			array(
+				'label'     => esc_html__( 'Title size', 'mosaic-product-layouts-for-elementor' ),
+				'type'      => Controls_Manager::SLIDER,
+				'default'   => array(
+					'unit' => 'px',
+				),
+				'range'     => array(
+					'px' => array(
+						'min'  => 0,
+						'max'  => 100,
+						'step' => 1,
+					),
+				),
+			)
+		);
+		$this->end_controls_tab();
+		
+		
+		// Product layout tab.
+		$this->start_controls_tab(
+			'product_layout_tab',
+			array(
+				'label' => esc_html__( 'Layout', 'mosaic-product-layouts-for-elementor' ),
+			)
+		);
 		$this->add_control(
 			'product_layout',
 			array(
@@ -368,49 +428,13 @@ class ProductsLayout extends Widget_Base {
 			)
 		);
 
-		$this->end_controls_section();
-
-		$this->start_controls_section(
-			'popover_style_section',
-			[
-				'label' => esc_html__( 'Style Section', 'mosaic-product-layouts-for-elementor' ),
-				'tab' => \Elementor\Controls_Manager::TAB_STYLE,
-			]
-		);
-
-		$this->add_control(
-			'popover-toggle-typography',
-			[
-				'label' => esc_html__( 'Product typography', 'mosaic-product-layouts-for-elementor' ),
-				'type' => \Elementor\Controls_Manager::POPOVER_TOGGLE,
-				'label_off' => esc_html__( 'Default', 'mosaic-product-layouts-for-elementor' ),
-				'label_on' => esc_html__( 'Custom', 'mosaic-product-layouts-for-elementor' ),
-				'return_value' => 'yes',
-			]
-		);
-
-		$this->start_popover();
-
-		// Title typohraphy.
-		$this->add_group_control(
-			Group_Control_Typography::get_type(),
-			array(
-				'name'     => 'title_typography',
-				'label'    => __( 'Typography', 'micemade-elements' ),
-				'selector' => '{{WRAPPER}} .product-elements .name',
-			)
-		);
-
-		$this->end_popover();
-
-		// ACTIVE, HOVER, INACTIVE.
-		$this->start_controls_tabs( 'tabstyles' );
-
-		// Styles for active tab.
+		$this->end_controls_tab();
+		
+		// Product colors tab.
 		$this->start_controls_tab(
-			'style_active',
+			'product_colors_tab',
 			array(
-				'label' => esc_html__( 'Active', 'micemade-elements' ),
+				'label' => esc_html__( 'Colors', 'mosaic-product-layouts-for-elementor' ),
 			)
 		);
 

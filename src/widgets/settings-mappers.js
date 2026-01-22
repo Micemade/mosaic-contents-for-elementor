@@ -5,7 +5,7 @@
  * Each widget type has its own mapper function.
  */
 
-import productsLayoutSettingsDefinition from '../shared/products-layout-settings.json';
+import productsLayoutSettingsDefinition from './products-layout/utils/products-layout-settings.json';
 
 /**
  * Extract settings for Products Layout widget

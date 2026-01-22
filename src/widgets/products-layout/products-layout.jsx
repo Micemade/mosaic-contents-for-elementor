@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import GridLayout from '../../components/GridLayout.jsx';
-import ProductImage from '../../shared/components/ProductImage.jsx';
+import GridLayout from '../../shared/components/GridLayout.jsx';
+import ProductImage from './components/ProductImage.jsx';
 import Layouts from '../../shared/layouts.json';
 import { updateElementorSetting, isElementorEditor } from '../../core/elementor-utils';
 import './products-layout.scss';
