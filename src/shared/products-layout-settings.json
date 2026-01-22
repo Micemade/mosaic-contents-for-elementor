@@ -1,0 +1,54 @@
+{
+	"per_page": {
+		"default": 10,
+		"type": "number"
+	},
+	"orderby": {
+		"default": "date",
+		"type": "string"
+	},
+	"order": {
+		"default": "desc",
+		"type": "string"
+	},
+	"category": {
+		"default": "",
+		"type": "string"
+	},
+	"on_sale": {
+		"default": false,
+		"type": "boolean"
+	},
+	"featured": {
+		"default": false,
+		"type": "boolean"
+	},
+	"layout": {
+		"default": "grid",
+		"type": "string"
+	},
+	"custom_layout": {
+		"default": "",
+		"type": "string"
+	},
+	"items_margin": {
+		"default": 0,
+		"type": "number"
+	},
+	"row_height": {
+		"default": 200,
+		"type": "number"
+	},
+	"allow_overlap": {
+		"default": false,
+		"type": "boolean"
+	},
+	"compaction_type": {
+		"default": "vertical",
+		"type": "string"
+	},
+	"product_layout": {
+		"default": "vertical",
+		"type": "string"
+	}
+}

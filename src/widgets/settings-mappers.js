@@ -5,6 +5,8 @@
  * Each widget type has its own mapper function.
  */
 
+import productsLayoutSettingsDefinition from '../shared/products-layout-settings.json';
+
 /**
  * Extract settings for Products Layout widget
  * 
@@ -13,26 +15,27 @@
  */
 export const mapProductsLayoutSettings = (model) => {
 	const settings = model.get('settings');
-	return {
-		// WooCommerce query settings
-		per_page: settings.get('per_page'),
-		orderby: settings.get('orderby'),
-		order: settings.get('order'),
-		category: settings.get('category'),
-		on_sale: settings.get('on_sale') === 'yes',
-		featured: settings.get('featured') === 'yes',
-		
-		// Grid layout settings
-		layout: settings.get('layout'),
-		custom_layout: settings.get('custom_layout'),
-		items_margin: settings.get('items_margin'),
-		row_height: settings.get('row_height'),
-		allow_overlap: settings.get('allow_overlap') === 'yes',
-		compaction_type: settings.get('compaction_type'),
-		
-		// Product card styling settings
-		product_layout: settings.get('product_layout'),
-	};
+	const result = {};
+
+	// Iterate through all settings defined in JSON
+	Object.keys(productsLayoutSettingsDefinition).forEach(key => {
+		const definition = productsLayoutSettingsDefinition[key];
+		const value = settings.get(key);
+
+		// Apply type-specific conversion
+		if (definition.type === 'boolean') {
+			// Convert 'yes'/'no' string to boolean
+			result[key] = value === 'yes';
+		} else if (definition.type === 'number') {
+			// Ensure numeric values
+			result[key] = value !== undefined ? value : definition.default;
+		} else {
+			// String values
+			result[key] = value !== undefined ? value : definition.default;
+		}
+	});
+
+	return result;
 };
 
 /**

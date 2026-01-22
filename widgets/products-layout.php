@@ -14,6 +14,12 @@ use Elementor\Group_Control_Typography;
  */
 class ProductsLayout extends Widget_Base {
 
+	/**
+	 * Cached settings definitions from JSON
+	 * @var array|null
+	 */
+	private static $settings_definitions = null;
+
 	public function __construct( $data = array(), $args = null ) {
 		parent::__construct( $data, $args );
 	}
@@ -40,6 +46,55 @@ class ProductsLayout extends Widget_Base {
 
 	public function get_categories() {
 		return array( 'micemade-widgets' );
+	}
+
+	/**
+	 * Get settings definitions from JSON file.
+	 *
+	 * @return array Settings definitions with defaults and types.
+	 */
+	private static function get_settings_definitions() {
+		if ( self::$settings_definitions === null ) {
+			$json_file = plugin_dir_path( __DIR__ ) . 'src/shared/products-layout-settings.json';
+			if ( file_exists( $json_file ) ) {
+				$json_content = file_get_contents( $json_file );
+				self::$settings_definitions = json_decode( $json_content, true );
+			} else {
+				self::$settings_definitions = array();
+			}
+		}
+		return self::$settings_definitions;
+	}
+
+	/**
+	 * Get all settings with defaults applied.
+	 *
+	 * @return array Settings array ready for JSON encoding.
+	 */
+	private function get_widget_settings() {
+		$definitions = self::get_settings_definitions();
+		$result = array();
+		
+		foreach ( $definitions as $key => $definition ) {
+			$default = $definition['default'];
+			$type = $definition['type'];
+			
+			// Get value from Elementor settings with default fallback
+			$raw_value = $this->sanitize_setting( $key, $default );
+			
+			// Convert based on type
+			if ( $type === 'boolean' ) {
+				// Convert 'yes'/'no' to boolean
+				$result[ $key ] = 'yes' === $raw_value;
+			} elseif ( $type === 'number' ) {
+				$result[ $key ] = $raw_value;
+			} else {
+				// string type
+				$result[ $key ] = $raw_value;
+			}
+		}
+		
+		return $result;
 	}
 
 	/**
@@ -379,23 +434,7 @@ class ProductsLayout extends Widget_Base {
 	 * Outputs wrapper with settings JSON for React to hydrate.
 	 */
 	protected function render() {
-
-		$query_settings = array(
-			'per_page'        => $this->sanitize_setting( 'per_page', 10 ),
-			'orderby'         => $this->sanitize_setting( 'orderby', 'date' ),
-			'order'           => $this->sanitize_setting( 'order', 'desc' ),
-			'category'        => $this->sanitize_setting( 'category', '' ),
-			'on_sale'         => 'yes' === $this->sanitize_setting( 'on_sale', 'no' ),
-			'featured'        => 'yes' === $this->sanitize_setting( 'featured', 'no' ),
-			'layout'          => $this->sanitize_setting( 'layout', 'grid' ),
-			'custom_layout'   => $this->sanitize_setting( 'custom_layout', '' ),
-			'items_margin'    => $this->sanitize_setting( 'items_margin', 0 ),
-			'row_height'      => $this->sanitize_setting( 'row_height', 200 ),
-			'allow_overlap'   => 'yes' === $this->sanitize_setting( 'allow_overlap', 'no' ),
-			'compaction_type' => $this->sanitize_setting( 'compaction_type', 'vertical' ),
-			'product_layout'  => $this->sanitize_setting( 'product_layout', 'vertical' ),
-		);
-
+		$query_settings = $this->get_widget_settings();
 		$json_data = wp_json_encode( $query_settings );
 		$widget_id = $this->get_id();
 		?>
@@ -411,13 +450,32 @@ class ProductsLayout extends Widget_Base {
 	 * Ensures proper widget isolation when duplicating sections or widgets.
 	 */
 	protected function content_template() {
+		// Generate JavaScript object initialization from settings definitions
+		$definitions = self::get_settings_definitions();
+		$js_settings = array();
+		
+		foreach ( $definitions as $key => $definition ) {
+			$default = $definition['default'];
+			$type = $definition['type'];
+			
+			if ( $type === 'boolean' ) {
+				// Boolean: settings.key === 'yes'
+				$js_settings[] = "\t{$key}: settings.{$key} === 'yes'";
+			} elseif ( $type === 'number' ) {
+				// Number: settings.key || default
+				$js_settings[] = "\t{$key}: settings.{$key} || {$default}";
+			} else {
+				// String: settings.key || 'default'
+				$default_escaped = addslashes( $definition['default'] );
+				$js_settings[] = "\t{$key}: settings.{$key} || '{$default_escaped}'";
+			}
+		}
+		
+		$js_settings_code = implode( ",\n", $js_settings );
 		?>
-<# const widgetId=view.model.id; const data={ per_page: settings.per_page || 10, orderby: settings.orderby || 'date' ,
-	order: settings.order || 'desc' , category: settings.category || '' , on_sale: settings.on_sale==='yes' , featured:
-	settings.featured==='yes' , layout: settings.layout || 'grid' , custom_layout: settings.custom_layout || '' ,
-	items_margin: settings.items_margin || 0, row_height: settings.row_height || 200, allow_overlap:
-	settings.allow_overlap==='yes' , compaction_type: settings.compaction_type || 'vertical' , product_layout:
-	settings.product_layout || 'vertical' , }; const jsonData=JSON.stringify(data); #>
+<# const widgetId=view.model.id; const data={
+	<?php echo $js_settings_code; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> }; const
+	jsonData=JSON.stringify(data); #>
 	<div class="products-layout-wrapper" data-widget-id="{{ widgetId }}">
 		<input type="hidden" class="elementor-settings-data" value="{{ jsonData }}" />
 		<div class="products-layout-react-root"></div>
