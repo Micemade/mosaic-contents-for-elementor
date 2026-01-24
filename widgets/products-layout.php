@@ -5,6 +5,7 @@ namespace Micemade\MosaicProductLayoutsElementor\Widgets;
 use Elementor\Widget_Base;
 use Elementor\Controls_Manager;
 use Elementor\Group_Control_Typography;
+use Elementor\Group_Control_Border;
 
 /**
  * Products Layout Widget for Elementor.
@@ -48,6 +49,48 @@ class ProductsLayout extends Widget_Base {
 		return array( 'micemade-widgets' );
 	}
 
+	private static function get_range() {
+		return array(
+			'px' => array(
+				'min'  => 0,
+				'max'  => 100,
+				'step' => 1,
+			),
+			'em' => array(
+				'min'  => 0,
+				'max'  => 10,
+				'step' => 0.1,
+			),
+			'rem' => array(
+				'min'  => 0,
+				'max'  => 10,
+				'step' => 0.1,
+			),
+		);
+	}
+
+	/**
+	 * Get active Elementor breakpoints.
+	 *
+	 * @return array Array of breakpoint names (e.g., ['desktop', 'tablet', 'mobile']).
+	 */
+	private static function get_active_breakpoints() {
+		if ( class_exists( '\Elementor\Plugin' ) ) {
+			$breakpoints_manager = \Elementor\Plugin::$instance->breakpoints;
+			if ( $breakpoints_manager ) {
+				$active_breakpoints = $breakpoints_manager->get_active_breakpoints();
+				$breakpoint_keys = array_keys( $active_breakpoints );
+				// Elementor breakpoints are in reverse order (mobile first), we need desktop first
+				$breakpoint_keys = array_reverse( $breakpoint_keys );
+				// Always include 'desktop' as the base (not in active_breakpoints array)
+				array_unshift( $breakpoint_keys, 'desktop' );
+				return $breakpoint_keys;
+			}
+		}
+		// Fallback to default breakpoints if Elementor is not available
+		return array( 'desktop', 'tablet', 'mobile' );
+	}
+
 	/**
 	 * Get settings definitions from JSON file.
 	 *
@@ -55,7 +98,7 @@ class ProductsLayout extends Widget_Base {
 	 */
 	private static function get_settings_definitions() {
 		if ( self::$settings_definitions === null ) {
-			$json_file = plugin_dir_path( __DIR__ ) . 'src/shared/products-layout-settings.json';
+			$json_file = plugin_dir_path( __DIR__ ) . 'src/widgets/products-layout/utils/products-layout-settings.json';
 			if ( file_exists( $json_file ) ) {
 				$json_content = file_get_contents( $json_file );
 				self::$settings_definitions = json_decode( $json_content, true );
@@ -88,9 +131,70 @@ class ProductsLayout extends Widget_Base {
 				$result[ $key ] = 'yes' === $raw_value;
 			} elseif ( $type === 'number' ) {
 				$result[ $key ] = $raw_value;
+			} elseif ( $type === 'responsive' ) {
+				// Responsive settings: build object with breakpoint keys
+				$breakpoints = self::get_active_breakpoints();
+				$responsive_value = array();
+				
+				foreach ( $breakpoints as $index => $breakpoint ) {
+					// Get breakpoint-specific default
+					$breakpoint_default_key = $breakpoint . '_default';
+					$breakpoint_default = isset( $definition[ $breakpoint_default_key ] ) 
+						? $definition[ $breakpoint_default_key ] 
+						: $definition['default'];
+					
+					if ( $index === 0 ) {
+						// Desktop (base value, no suffix)
+						$value = $this->sanitize_setting( $key, $breakpoint_default );
+						$responsive_value[ $breakpoint ] = $value;
+					} else {
+						// Tablet/Mobile (with suffix)
+						$value = $this->sanitize_setting( $key . '_' . $breakpoint, $breakpoint_default );
+						$responsive_value[ $breakpoint ] = $value;
+					}
+				}
+				
+				$result[ $key ] = $responsive_value;
 			} else {
 				// string type
 				$result[ $key ] = $raw_value;
+			}
+		}
+		
+		// Handle Elementor Group Controls (not in JSON definitions)
+		// Border control generates: {name}_border, {name}_width, {name}_color
+		// Scan all settings to detect border controls dynamically
+		$all_settings = $this->get_settings_for_display();
+		$processed_borders = array();
+		
+		foreach ( $all_settings as $key => $value ) {
+			// Match pattern: {name}_border (e.g., product_border, item_border)
+			if ( preg_match( '/^(.+)_border$/', $key, $matches ) && ! empty( $value ) ) {
+				$base_name = $matches[1];
+				
+				// Skip if already processed or if in JSON definitions
+				if ( isset( $processed_borders[ $base_name ] ) || isset( $definitions[ $key ] ) ) {
+					continue;
+				}
+				
+				$processed_borders[ $base_name ] = true;
+				
+				// Get border style (the _border key)
+				$border_style = $this->sanitize_setting( $key, '' );
+				// Get border width (the _width key)
+				$border_width = $this->sanitize_setting( $base_name . '_width', array() );
+				// Get border color (the _color key)
+				$border_color = $this->sanitize_setting( $base_name . '_color', '' );
+				
+				if ( ! empty( $border_style ) ) {
+					$result[ $base_name . '_border_style' ] = $border_style;
+				}
+				if ( ! empty( $border_width ) ) {
+					$result[ $base_name . '_border_width' ] = $border_width;
+				}
+				if ( ! empty( $border_color ) ) {
+					$result[ $base_name . '_border_color' ] = $border_color;
+				}
 			}
 		}
 		
@@ -390,15 +494,38 @@ class ProductsLayout extends Widget_Base {
 				'label'     => esc_html__( 'Title size', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::SLIDER,
 				'default'   => array(
+					'size' => 26,
 					'unit' => 'px',
 				),
-				'range'     => array(
-					'px' => array(
-						'min'  => 0,
-						'max'  => 100,
-						'step' => 1,
-					),
+				'tablet_default' => [
+					'size' => 24,
+					'unit' => 'px',
+				],
+				'mobile_default' => [
+					'size' => 20,
+					'unit' => 'px',
+				],
+				'range'     => self::get_range(),
+			)
+		);
+		$this->add_responsive_control(
+			'price_size',
+			array(
+				'label'     => esc_html__( 'Price size', 'mosaic-product-layouts-for-elementor' ),
+				'type'      => Controls_Manager::SLIDER,
+				'default'   => array(
+					'size' => 22,
+					'unit' => 'px',
 				),
+				'tablet_default' => [
+					'size' => 20,
+					'unit' => 'px',
+				],
+				'mobile_default' => [
+					'size' => 18,
+					'unit' => 'px',
+				],
+				'range'     => self::get_range(),
 			)
 		);
 		$this->end_controls_tab();
@@ -427,6 +554,52 @@ class ProductsLayout extends Widget_Base {
 				'description' => __( 'Select predefined layout for product display.', 'mosaic-product-layouts-for-elementor' ),
 			)
 		);
+		$this->add_responsive_control(
+			'product_align',
+			array(
+				'label'        => esc_html__( 'Align', 'mosaic-product-layouts-for-elementor' ),
+				'type'         => Controls_Manager::CHOOSE,
+				'options'      => array(
+					'left'   => array(
+						'title' => __( 'Left', 'mosaic-product-layouts-for-elementor' ),
+						'icon'  => 'eicon-h-align-left',
+					),
+					'center' => array(
+						'title' => __( 'Center', 'mosaic-product-layouts-for-elementor' ),
+						'icon'  => 'eicon-h-align-center',
+					),
+					'right'  => array(
+						'title' => __( 'Right', 'mosaic-product-layouts-for-elementor' ),
+						'icon'  => 'eicon-h-align-right',
+					),
+
+				),
+				'default'      => '',
+			)
+		);
+		$this->add_responsive_control(
+			'product_vertical_align',
+			array(
+				'label'     => esc_html__( 'Vertical align', 'mosaic-product-layouts-for-elementor' ),
+				'type'      => Controls_Manager::CHOOSE,
+				'options'   => array(
+					'flex-start' => array(
+						'title' => __( 'Top', 'mosaic-product-layouts-for-elementor' ),
+						'icon'  => 'eicon-v-align-top',
+					),
+					'center'     => array(
+						'title' => __( 'Center', 'mosaic-product-layouts-for-elementor' ),
+						'icon'  => 'eicon-v-align-middle',
+					),
+					'flex-end'   => array(
+						'title' => __( 'Bottom', 'mosaic-product-layouts-for-elementor' ),
+						'icon'  => 'eicon-v-align-bottom',
+					),
+
+				),
+				'default'   => '',
+			)
+		);
 
 		$this->end_controls_tab();
 		
@@ -437,7 +610,49 @@ class ProductsLayout extends Widget_Base {
 				'label' => esc_html__( 'Colors', 'mosaic-product-layouts-for-elementor' ),
 			)
 		);
+		$this->add_control(
+			'background_color',
+			array(
+				'label'     => esc_html__( 'Background', 'mosaic-product-layouts-for-elementor' ),
+				'type'      => Controls_Manager::COLOR,
+				'default'   => '#e5e5e5',
+			)
+		);
+		$this->add_control(
+			'text_color',
+			array(
+				'label'     => esc_html__( 'Text color', 'mosaic-product-layouts-for-elementor' ),
+				'type'      => Controls_Manager::COLOR,
+				'default'   => '#333333',
+			)
+		);
+		$this->add_control(
+			'links_color',
+			array(
+				'label'     => esc_html__( 'Links color', 'mosaic-product-layouts-for-elementor' ),
+				'type'      => Controls_Manager::COLOR,
+				'default'   => '#333333',
+			)
+		);
 
+		$this->end_controls_tab();
+
+		// Product colors tab.
+		$this->start_controls_tab(
+			'product_border_tab',
+			array(
+				'label' => esc_html__( 'Border', 'mosaic-product-layouts-for-elementor' ),
+			)
+		);
+		$this->add_group_control(
+			Group_Control_Border::get_type(),
+			array(
+				'label'     => __( 'Slider items border' ),
+				'name'      => 'product_border',
+				'selector'  => '{{WRAPPER}} .inner-wrap',
+			)
+		);
+		
 		$this->end_controls_tab();
 
 		$this->end_controls_tabs();
@@ -488,6 +703,29 @@ class ProductsLayout extends Widget_Base {
 			} elseif ( $type === 'number' ) {
 				// Number: settings.key || default
 				$js_settings[] = "\t{$key}: settings.{$key} || {$default}";
+			} elseif ( $type === 'responsive' ) {
+				// Responsive: { desktop: ..., tablet: ..., mobile: ... }
+				// Get active breakpoints from Elementor
+				$breakpoints = self::get_active_breakpoints();
+				$responsive_values = array();
+				foreach ( $breakpoints as $index => $breakpoint ) {
+					// Get breakpoint-specific default (e.g., tablet_default) or fallback to main default
+					$breakpoint_default_key = $breakpoint . '_default';
+					$breakpoint_default = isset( $definition[ $breakpoint_default_key ] ) 
+						? $definition[ $breakpoint_default_key ] 
+						: $definition['default'];
+					$default_json = is_array( $breakpoint_default ) ? wp_json_encode( $breakpoint_default ) : "'{$breakpoint_default}'";
+					
+					if ( $index === 0 ) {
+						// Desktop (base value, no suffix)
+						$responsive_values[] = "{$breakpoint}: settings.{$key} || {$default_json}";
+					} else {
+						// Tablet/Mobile (with suffix, inherit from previous if not set)
+						$prev_breakpoint = $breakpoints[$index - 1];
+						$responsive_values[] = "{$breakpoint}: settings.{$key}_{$breakpoint} || {$default_json}";
+					}
+				}
+				$js_settings[] = "\t{$key}: { " . implode( ', ', $responsive_values ) . ' }';
 			} else {
 				// String: settings.key || 'default'
 				$default_escaped = addslashes( $definition['default'] );

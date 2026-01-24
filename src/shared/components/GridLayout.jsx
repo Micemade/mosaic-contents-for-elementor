@@ -18,14 +18,37 @@ import { withSize } from 'react-sizeme';
 import 'react-grid-layout/css/styles.css';
 
 /**
- * Elementor default breakpoints (can be customized in Elementor settings).
- * These align with common Elementor responsive values.
+ * Get Elementor breakpoint values dynamically
+ * Falls back to defaults if Elementor config is not available
  */
-const ELEMENTOR_BREAKPOINTS = {
-	desktop: 1025,
-	tablet: 768,
-	mobile: 0,
+const getElementorBreakpoints = () => {
+	if (typeof elementorFrontend !== 'undefined' && elementorFrontend.config?.responsive?.activeBreakpoints) {
+		const activeBreakpoints = elementorFrontend.config.responsive.activeBreakpoints;
+		const result = { mobile: 0 };
+
+		// Extract breakpoint values from Elementor config
+		Object.keys(activeBreakpoints).forEach(key => {
+			if (activeBreakpoints[key].value) {
+				result[key] = activeBreakpoints[key].value + 1; // Elementor uses max-width, we need min-width
+			}
+		});
+
+		// Desktop is always the highest breakpoint + 1
+		const tabletValue = result.tablet || 767;
+		result.desktop = tabletValue + 1;
+
+		return result;
+	}
+
+	// Fallback to default breakpoints
+	return {
+		desktop: 1025,
+		tablet: 767,
+		mobile: 0,
+	};
 };
+
+const ELEMENTOR_BREAKPOINTS = getElementorBreakpoints();
 
 const isEditorMode = () => {
 	return typeof elementorFrontend !== 'undefined' && elementorFrontend.isEditMode();
@@ -74,7 +97,7 @@ function GridLayout(props) {
 	// Detect current breakpoint based on window width
 	const getBreakpointFromWidth = () => {
 		const windowWidth = window.innerWidth;
-		if (windowWidth < ELEMENTOR_BREAKPOINTS.tablet) {
+		if (windowWidth < ELEMENTOR_BREAKPOINTS.mobile) {
 			return 'mobile';
 		} else if (windowWidth < ELEMENTOR_BREAKPOINTS.desktop) {
 			return 'tablet';

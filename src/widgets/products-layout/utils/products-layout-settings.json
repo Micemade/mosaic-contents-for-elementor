@@ -32,11 +32,11 @@
 		"type": "string"
 	},
 	"items_margin": {
-		"default": 0,
+		"default": 15,
 		"type": "number"
 	},
 	"row_height": {
-		"default": 200,
+		"default": 5,
 		"type": "number"
 	},
 	"allow_overlap": {
@@ -53,10 +53,60 @@
 	},
 	"title_size": {
 		"default": {
-			"size": 16,
+			"size": 26,
+			"unit": "px"
+		},
+		"tablet_default": {
+			"size": 24,
+			"unit": "px"
+		},
+		"mobile_default": {
+			"size": 20,
 			"unit": "px"
 		},
 		"type": "responsive",
 		"breakpoints": ["desktop", "tablet", "mobile"]
+	},
+	"price_size": {
+		"default": {
+			"size": 22,
+			"unit": "px"
+		},
+		"tablet_default": {
+			"size": 20,
+			"unit": "px"
+		},
+		"mobile_default": {
+			"size": 18,
+			"unit": "px"
+		},
+		"type": "responsive",
+		"breakpoints": ["desktop", "tablet", "mobile"]
+	},
+	"product_align":{
+		"default": "center",
+		"type": "responsive",
+		"breakpoints": ["desktop", "tablet", "mobile"]
+	},
+	"product_vertical_align":{
+		"default": "center",
+		"type": "responsive",
+		"breakpoints": ["desktop", "tablet", "mobile"]
+	},
+	"background_color": {
+		"default": "#e5e5e5",
+		"type": "string"
+	},
+	"text_color": {
+		"default": "#333333",
+		"type": "string"
+	},
+	"links_color": {
+		"default": "#333333",
+		"type": "string"
+	},
+	"product_border": {
+		"default": "",
+		"type": "string"
 	}
 }

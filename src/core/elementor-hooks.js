@@ -65,6 +65,10 @@ export const registerEditorHooks = () => {
 			// Critical for saving custom layouts after drag/resize
 			widgetManager.models[modelKey] = model;
 
+			// Push initial settings to React component immediately
+			// This ensures settings are applied on first widget load
+			widgetManager.updateInstance(widgetType, widgetId, getSettingsFromModel());
+
 			// Listen to Elementor settings changes and update React component
 			// (Elementor → React)
 			model.get('settings').on('change', () => {

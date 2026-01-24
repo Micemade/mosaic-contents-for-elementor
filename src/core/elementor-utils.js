@@ -42,6 +42,27 @@ export const triggerLayoutReset = () => {
 };
 
 /**
+ * Get active Elementor breakpoints
+ * 
+ * @returns {Array} Array of breakpoint names (e.g., ['desktop', 'tablet', 'mobile'])
+ */
+export const getActiveBreakpoints = () => {
+
+	if (typeof elementorFrontend !== 'undefined' && elementorFrontend.config?.responsive?.activeBreakpoints) {
+		const activeBreakpoints = elementorFrontend.config.responsive.activeBreakpoints;
+		// Get breakpoint keys and reverse (Elementor is mobile-first, we need desktop-first)
+		const breakpointKeys = Object.keys(activeBreakpoints).reverse();
+		// Always include 'desktop' as base
+		if (!breakpointKeys.includes('desktop')) {
+			breakpointKeys.unshift('desktop');
+		}
+		return breakpointKeys;
+	}
+	// Fallback to default breakpoints
+	return ['desktop', 'tablet', 'mobile'];
+};
+
+/**
  * Check if currently in Elementor editor mode
  * 
  * @returns {boolean} True if in editor mode

@@ -13,6 +13,67 @@
 	@include gridLayout;
 }
 
+/**
+ * CSS Custom Properties (scoped per widget instance)
+ * These are set via inline styles on .products-layout wrapper
+ * and provide responsive styling support for multiple widget instances
+ */
+.products-layout {
+	
+	// Title size - responsive across breakpoints
+	.flex-wrapper {
+		align-items: var(--product-vertical-align-desktop, center);
+		
+		.product-elements {
+			justify-content: var(--product-align-desktop, center);
+			.name {
+				font-size: var(--title-size-desktop, 26px);
+				justify-content: var(--product-align-desktop, center);
+			}
+			.price {
+				font-size: var(--price-size-desktop, 16px);
+				justify-content: var(--product-align-desktop, center);
+			}
+		}
+	}
+	
+	@media (max-width: 1024px) {
+		.flex-wrapper {
+			align-items: var(--product-vertical-align-tablet, center);
+			
+			.product-elements {
+				justify-content: var(--product-align-tablet, center);
+				.name {
+					font-size: var(--title-size-tablet, 20px);
+					justify-content: var(--product-align-tablet, center);
+				}
+				.price {
+					font-size: var(--price-size-tablet, 16px);
+					justify-content: var(--product-align-tablet, center);
+				}
+			}
+		}
+	}
+	
+	@media (max-width: 767px) {
+		
+		.flex-wrapper {
+			align-items: var(--product-vertical-align-mobile, center);
+			
+			.product-elements {
+				justify-content: var(--product-align-mobile, center);
+				.name {
+					font-size: var(--title-size-mobile, 18px);
+					justify-content: var(--product-align-mobile, center);
+				}
+				.price {
+					font-size: var(--price-size-mobile, 16px);
+					justify-content: var(--product-align-mobile, center);
+				}
+			}
+		}
+	}
+}
 
 /**
  * The following styles get applied both on the front
@@ -174,13 +235,14 @@
 
 	.product-elements {
 		display: flex;
-		flex-direction: row;
+		flex-direction: column;
+		flex: 1 1 auto;
 		flex-wrap: wrap;
-		align-items: flex-start;
-		justify-content: flex-end;
 		box-sizing: border-box;
 		z-index: 8;
 		overflow: hidden;
+
+		color: var(--text-color, #333333);
 
 		> :first-child {
 			margin-top: 0 !important;
@@ -191,10 +253,12 @@
 
 		* { line-height: inherit;}
 
-		.name { font-size: 1.4em; width: 100%; margin: 0; word-break: break-word; }
+		.name { display: flex; width: 100%; margin: 0; word-break: break-word; }
+		.name a { color: var(--links-color, #000000) }
+		
 		.price {
-			font-size: 1.2em;
-			align-self: center;
+			display: flex;
+			align-items: center;
 			box-sizing: content-box;
 		}
 
@@ -236,7 +300,6 @@
 			flex-wrap: wrap;
 
 			.category {
-				font-size: 0.85rem;
 				background: #e5e5e5;
 				color: inherit;
 				padding: 0px 5px;
@@ -256,7 +319,6 @@
 		}
 
 		.excerpt {
-			font-size: 0.95em;
 			display: flex;
 			flex-direction: column;
 			width: 100%;
@@ -287,6 +349,11 @@
 // @include shared.style;
 
 .products-layout {
+	
+	&:where([style*="border-width"]) {
+		border-style: none !important;
+	}
+	
 	position: relative;
 	.products-layout-loading {
 		position: absolute;
@@ -330,13 +397,16 @@
 			left: 0;
 			right: 0;
 			bottom: 0;
+			border-style: var(--product-border-border-style, none);
+			border-color: var(--product-border-border-color, transparent);
+			border-width: var(--product-border-border-width, 0px);
 
 			.flex-wrapper {
 				display: flex;
-				flex-direction: column;
+				flex-direction: row;
 				height: 100%;
 				z-index: 2;
-				background: rgba(102, 51, 153, 0.4);
+				background-color: var(--background-color, "#e5e5e5");
 			}
 
 			@extend %productLayout;
@@ -412,4 +482,3 @@
 		display: none!important;
 	}
 }
-
