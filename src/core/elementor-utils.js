@@ -22,12 +22,7 @@ export const updateElementorSetting = (widgetType, widgetId, settingName, value)
 	}
 
 	window.MosaicLayoutsReact.updateModelSetting(widgetType, widgetId, settingName, value);
-	
-	// Mark document as changed to enable Update/Publish button
-	if (typeof elementor !== 'undefined' && elementor.saver) {
-		elementor.saver.setFlagEditorChange(true);
-	}
-	
+
 	return true;
 };
 
@@ -69,7 +64,7 @@ export const getActiveBreakpoints = () => {
  */
 export const isElementorEditor = () => {
 	return typeof elementor !== 'undefined' || 
-	       (typeof window.elementorFrontend !== 'undefined' && window.elementorFrontend.isEditMode());
+		(typeof window.elementorFrontend !== 'undefined' && window.elementorFrontend.isEditMode());
 };
 
 /**

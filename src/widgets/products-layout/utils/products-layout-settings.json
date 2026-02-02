@@ -93,18 +93,7 @@
 		"type": "responsive",
 		"breakpoints": ["desktop", "tablet", "mobile"]
 	},
-	"background_color": {
-		"default": "#e5e5e5",
-		"type": "string"
-	},
-	"text_color": {
-		"default": "#333333",
-		"type": "string"
-	},
-	"links_color": {
-		"default": "#333333",
-		"type": "string"
-	},
+
 	"product_border": {
 		"default": "",
 		"type": "string"

@@ -5,7 +5,7 @@
  * Author: Micemade
  * Author URI: https://github.com/Micemade/mosaic-product-layouts-for-elementor
  * Description: A set of Elementor widgets to supercharge your WooCommerce online store with ReactJs.
- * Version: 1.0.0
+ * Version: 0.1.0
  * License: 1.0.0
  * License URL: http://www.gnu.org/licenses/gpl-2.0.txt
  * text-domain: mosaic-product-layouts-for-elementor

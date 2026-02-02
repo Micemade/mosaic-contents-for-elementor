@@ -1,8 +1,10 @@
 /**
  * Elementor Hooks Registration
- * 
- * Registers all Elementor frontend and editor hooks for widgets.
- * Handles widget initialization, settings synchronization, and editor interactions.
+ *
+ * Registers frontend and editor hooks for registered widgets. This module
+ * wires the Elementor hooks to the widget initializer and ensures that the
+ * React instances receive live settings updates without triggering DOM
+ * re-renders from Elementor.
  */
 
 import { getRegisteredWidgets, getWidgetConfig } from './widget-registry';
@@ -10,31 +12,41 @@ import { createWidgetInitializer } from './widget-initializer';
 import widgetManager from './widget-manager';
 
 /**
- * Register frontend hooks for all widgets
- * Initializes widgets when they're rendered on the frontend
+ * Register frontend hooks for all widgets.
+ *
+ * Initializes widgets when they are rendered on the frontend.
+ *
+ * @return void
  */
 export const registerFrontendHooks = () => {
-	if (typeof elementorFrontend === 'undefined') return;
+	if (typeof elementorFrontend === 'undefined') {
+		return;
+	}
 
 	// Register initialization hook for each widget type
 	getRegisteredWidgets().forEach(widgetType => {
-		const initWidget = createWidgetInitializer(widgetType);
-		
 		// Hook pattern: frontend/element_ready/{widget-name}.default
 		// Matches widget's get_name() in PHP
 		elementorFrontend.hooks.addAction(
 			`frontend/element_ready/${widgetType}.default`,
-			initWidget
+			createWidgetInitializer(widgetType)
 		);
 	});
 };
 
 /**
- * Register editor hooks for all widgets
- * Prevents DOM re-renders and sets up live settings synchronization
+ * Register editor hooks to prevent DOM re-renders and provide live updates.
+ *
+ * Ensures Elementor does not replace the widget DOM on each settings change
+ * and wires the panel open event to provide a model getter for the widget
+ * manager.
+ *
+ * @return void
  */
 export const registerEditorHooks = () => {
-	if (typeof elementor === 'undefined') return;
+	if (typeof elementor === 'undefined') {
+		return;
+	}
 
 	// Prevent Elementor from re-rendering widget DOM on every settings change
 	// React will handle updates internally without DOM replacement
@@ -50,29 +62,62 @@ export const registerEditorHooks = () => {
 		elementor.hooks.addAction(`panel/open_editor/widget/${widgetType}`, (panel, model, view) => {
 			const widgetId = model.id;
 			const modelKey = `${widgetType}_${widgetId}`;
-			
-			// Override renderOnChange method to prevent DOM re-renders (redundant with filter above)
-			view.renderOnChange = () => false;
-
-			// Get widget-specific settings mapper from registry
 			const widgetConfig = getWidgetConfig(widgetType);
 			const getSettingsFromModel = () => widgetConfig.settingsMapper(model);
-			
+
+			console.log(getSettingsFromModel());
+
+
+			// Register the editor view with the widget manager so the
+			// manager can consult it when deciding whether to remount
+			// (for example: core/advanced settings should allow remount).
+			if (view) {
+				try {
+					// Derive widget-owned setting keys from the mapper result
+					const mapped = getSettingsFromModel() || {};
+					const widgetKeys = Object.keys(mapped);
+
+					// Override view.renderOnChange to be conditional:
+					// - For widget-owned changes, false (React handles it)
+					// - For core/advanced changes, call the original renderOnChange
+					const originalRenderOnChange = view.renderOnChange.bind(view);
+					view.renderOnChange = (settings) => {
+						const changed = settings.changedAttributes();
+						const hasNonWidgetChange = Object.keys(changed).some(k => !widgetKeys.includes(k));
+						if (hasNonWidgetChange) {
+							// Call original to handle core/advanced changes
+							originalRenderOnChange(settings);
+						}
+						// For widget-owned changes, do nothing (React updates in-place)
+					};
+
+					widgetManager.registerView(widgetType, widgetId, view);
+				} catch (e) {
+					// ignore registration errors
+				}
+			}
+
 			// Store getter globally so it's available during widget remounts
 			widgetManager.modelGetters[modelKey] = getSettingsFromModel;
-			
+
 			// Store model reference for two-way updates (React → Elementor)
-			// Critical for saving custom layouts after drag/resize
 			widgetManager.models[modelKey] = model;
 
-			// Push initial settings to React component immediately
-			// This ensures settings are applied on first widget load
-			widgetManager.updateInstance(widgetType, widgetId, getSettingsFromModel());
+			// Push initial settings immediately so React mounts with correct data.
+			// This ensures settings are applied on first widget load.
+			widgetManager.updateInstance(
+				widgetType,
+				widgetId,
+				getSettingsFromModel()
+			);
 
-			// Listen to Elementor settings changes and update React component
-			// (Elementor → React)
-			model.get('settings').on('change', () => {
-				widgetManager.updateInstance(widgetType, widgetId, getSettingsFromModel());
+			// Update React component whenever Elementor model settings change (Elementor → React).
+			model.get('settings').on('change', (settingsModel) => {
+				widgetManager.updateInstance(
+					widgetType,
+					widgetId,
+					getSettingsFromModel()
+				);
 			});
 
 			// Listen for custom 'reset layout' event from React component
@@ -88,8 +133,12 @@ export const registerEditorHooks = () => {
 };
 
 /**
- * Setup MutationObserver to detect dynamically added widgets in editor
- * Handles widgets added via drag & drop in Elementor editor
+ * Setup a MutationObserver inside the Elementor preview iframe.
+ *
+ * This observes dynamically added widgets (for example when dragging a
+ * new widget into the canvas) and initializes React instances for them.
+ *
+ * @return void
  */
 export const setupEditorObserver = () => {
 	if (typeof elementor === 'undefined') return;
@@ -168,8 +217,9 @@ export const setupEditorObserver = () => {
 };
 
 /**
- * Initialize all Elementor hooks
- * Call this when Elementor frontend is ready
+ * Initialize all Elementor hooks used by the plugin.
+ *
+ * @return void
  */
 export const initializeElementorHooks = () => {
 	registerFrontendHooks();

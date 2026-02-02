@@ -4,8 +4,10 @@ namespace Micemade\MosaicProductLayoutsElementor\Widgets;
 
 use Elementor\Widget_Base;
 use Elementor\Controls_Manager;
+use Elementor\Group_Control_Background;
 use Elementor\Group_Control_Typography;
 use Elementor\Group_Control_Border;
+use Elementor\Group_Control_Box_Shadow;
 
 /**
  * Products Layout Widget for Elementor.
@@ -610,30 +612,41 @@ class ProductsLayout extends Widget_Base {
 				'label' => esc_html__( 'Colors', 'mosaic-product-layouts-for-elementor' ),
 			)
 		);
-		$this->add_control(
-			'background_color',
-			array(
-				'label'     => esc_html__( 'Background', 'mosaic-product-layouts-for-elementor' ),
-				'type'      => Controls_Manager::COLOR,
-				'default'   => '#e5e5e5',
-			)
-		);
+		
 		$this->add_control(
 			'text_color',
 			array(
 				'label'     => esc_html__( 'Text color', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::COLOR,
 				'default'   => '#333333',
+				'selectors' => array(
+					'{{WRAPPER}} .product-elements .price, {{WRAPPER}} .product-elements .excerpt' => 'color: {{VALUE}};',
+				),
 			)
 		);
+
 		$this->add_control(
 			'links_color',
 			array(
 				'label'     => esc_html__( 'Links color', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::COLOR,
 				'default'   => '#333333',
+				'selectors' => array(
+					'{{WRAPPER}} .product-elements .name a' => 'color: {{VALUE}};',
+				),
 			)
 		);
+		$this->add_group_control(
+			\Elementor\Group_Control_Background::get_type(),
+			array(
+				'name'      => 'background_color',
+				'label'     => esc_html__( 'Background', 'mosaic-product-layouts-for-elementor' ),
+				'types'     => array( 'classic', 'gradient' ),
+				'selector' => '{{WRAPPER}} .product-wrapper .flex-wrapper',
+			)
+		);
+
+
 
 		$this->end_controls_tab();
 
@@ -647,9 +660,26 @@ class ProductsLayout extends Widget_Base {
 		$this->add_group_control(
 			Group_Control_Border::get_type(),
 			array(
-				'label'     => __( 'Slider items border' ),
+				'label'     => __( 'Products border', 'mosaic-product-layouts-for-elementor' ),
 				'name'      => 'product_border',
 				'selector'  => '{{WRAPPER}} .inner-wrap',
+			)
+		);
+
+		$this->add_control(
+			'border_radius',
+			array(
+				'label'      => __( 'Border Radius', 'mosaic-product-layouts-for-elementor' ),
+				'type'       => Controls_Manager::DIMENSIONS,
+				'size_units' => array( 'px', '%' ),
+			)
+		);
+
+		$this->add_group_control(
+			Group_Control_Box_Shadow::get_type(),
+			array(
+				'name'      => 'box_shadow',
+				'selector'  => '{{WRAPPER}} .product-wrapper',
 			)
 		);
 		

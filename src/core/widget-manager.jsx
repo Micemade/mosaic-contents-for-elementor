@@ -22,24 +22,28 @@ class WidgetManager {
 	}
 
 	/**
-	 * Initialize or update a widget instance
-	 * 
-	 * @param {string} widgetType - Widget type from registry (e.g., 'products-layout')
-	 * @param {string} widgetId - Unique widget ID from Elementor
-	 * @param {HTMLElement} rootElement - DOM element to mount React component
-	 * @param {Object} initialSettings - Initial widget settings
+	 * Initialize or update a widget instance.
+	 *
+	 * If the widget DOM was replaced (Elementor re-render), the old React root
+	 * is unmounted and a new root is created. If the DOM is still connected,
+	 * the existing instance is updated via its exposed setter.
+	 *
+	 * @param {string} widgetType
+	 * @param {string} widgetId
+	 * @param {HTMLElement} rootElement
+	 * @param {Object} initialSettings
+	 * @return void
 	 */
 	init(widgetType, widgetId, rootElement, initialSettings) {
 		const widgetConfig = getWidgetConfig(widgetType);
 		if (!widgetConfig) {
-			console.error(`Widget type "${widgetType}" not found in registry`);
 			return;
 		}
 
 		const instanceKey = `${widgetType}_${widgetId}`;
 		const existingInstance = this.instances[instanceKey];
 		
-		// If DOM was replaced (Elementor re-render), unmount old root and create new one
+		// If DOM was replaced (Elementor re-render), unmount safely
 		if (existingInstance && !existingInstance.rootElement.isConnected) {
 			try {
 				existingInstance.root.unmount();
@@ -86,7 +90,7 @@ class WidgetManager {
 			rootElement: rootElement, // DOM element to check connection
 			widgetType: widgetType, // Widget type for reference
 			currentSettings: currentSettingsRef, // Current settings reference
-			// Function to update settings without remounting
+			// Update settings without remounting
 			updateSettings: (newSettings) => {
 				currentSettingsRef = { ...currentSettingsRef, ...newSettings };
 				if (setSettings) {
@@ -105,9 +109,20 @@ class WidgetManager {
 	 */
 	updateInstance(widgetType, widgetId, newSettings) {
 		const instanceKey = `${widgetType}_${widgetId}`;
-		if (this.instances[instanceKey]) {
-			this.instances[instanceKey].updateSettings(newSettings);
+		const instance = this.instances[instanceKey];
+
+		// Update the React instance in-place if present and connected.
+		if (
+			instance &&
+			instance.rootElement &&
+			instance.rootElement.isConnected
+		) {
+			instance.updateSettings(newSettings);
+			return;
 		}
+
+		// Otherwise leave initialization to the widget initializer.
+		return;
 	}
 
 	/**
@@ -118,21 +133,28 @@ class WidgetManager {
 	 * @param {string} widgetId - Widget ID
 	 * @param {string} settingName - Setting key to update
 	 * @param {*} value - New value
+	 * 
+	 * @return void
 	 */
 	updateModelSetting(widgetType, widgetId, settingName, value) {
 		const modelKey = `${widgetType}_${widgetId}`;
 		const model = this.models[modelKey];
 		
-		if (model) {
-			// Update Elementor model (triggers auto-save)
+		if (model && model.setSetting) {
+		// Update Elementor model (triggers auto-save).
 			model.setSetting(settingName, value);
+
+			// Mark document as changed to enable Update/Publish button
+			if (typeof elementor !== 'undefined' && elementor.saver) {
+				elementor.saver.setFlagEditorChange(true);
+			}
 		} else {
 			console.warn(`Model not found for ${widgetType} widget ${widgetId}`);
 		}
 	}
 
 	/**
-	 * Get current model for a widget (if in editor mode)
+	 * Get current Elementor model for a widget (editor only).
 	 * 
 	 * @param {string} widgetType - Widget type
 	 * @param {string} widgetId - Widget ID

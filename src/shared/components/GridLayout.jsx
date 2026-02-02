@@ -68,6 +68,7 @@ function GridLayout(props) {
 		onLayoutChange, // Callback when layout changes
 		size,
 		children,
+		selectWidget,
 	} = props;
 
 	// Grid columns per breakpoint
@@ -146,6 +147,7 @@ function GridLayout(props) {
 		}
 		e.stopPropagation();
 		e.preventDefault();
+		selectWidget();
 	};
 
 	const onResizeStart = (layout, oldItem, newItem, placeholder, e) => {
@@ -155,6 +157,7 @@ function GridLayout(props) {
 		}
 		e.stopPropagation();
 		e.preventDefault();
+		selectWidget();
 	};
 
 	const onDragStop = (layout, oldItem, newItem) => {

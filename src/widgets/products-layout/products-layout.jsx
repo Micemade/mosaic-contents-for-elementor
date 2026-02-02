@@ -178,7 +178,6 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 	const [isLoading, setIsLoading] = useState(true);
 	const [isFetching, setIsFetching] = useState(false);
 	const [error, setError] = useState(null);
-	console.log(widgetData);
 
 	/**
 	 * Generate CSS custom properties from responsive settings
@@ -393,6 +392,25 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 		// Update Elementor setting using utility function
 		// Widget type is 'products-layout' for this component
 		updateElementorSetting('products-layout', widgetId, 'custom_layout', JSON.stringify(customLayout));
+
+	};
+
+	const selectWidget = () => {
+		if (!isElementorEditor() || !widgetId) return;
+
+		try {
+			// Find the editor view at selection time
+			const $widgetEl = jQuery(
+				`.products-layout[data-widget-id="${widgetId}"]`
+			).closest('[data-id]');
+
+			// Trigger a click on the editor widget element to cause selection
+			if ($widgetEl && $widgetEl.length) {
+				$widgetEl.trigger('click');
+			}
+		} catch (err) {
+			console.error('Error selecting widget:', err);
+		}
 	};
 
 	if (isLoading) {
@@ -437,6 +455,7 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 				compactionType={widgetData?.compaction_type || 'vertical'}
 				context="frontend"
 				onLayoutChange={handleLayoutChange}
+				selectWidget={selectWidget}
 			>
 				{/* Map over layout items (Mobile is source of truth), find matching product */}
 				{layoutData.mobile.map((layoutItem) => {
