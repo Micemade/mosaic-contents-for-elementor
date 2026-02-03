@@ -12,10 +12,14 @@ import './globalStyles.scss';
 import { getRegisteredWidgets } from './core/widget-registry';
 import { initializeElementorHooks } from './core/elementor-hooks';
 import { createWidgetInitializer } from './core/widget-initializer';
+import { injectBreakpointStylesheet } from './core/elementor-utils';
 
 // Elementor frontend initialization (runs when Elementor loads)
 if (typeof jQuery !== 'undefined') {
 	jQuery(window).on('elementor/frontend/init', function () {
+		// Inject dynamic breakpoint stylesheet based on Elementor config
+		injectBreakpointStylesheet();
+
 		// Initialize all Elementor hooks (frontend, editor, observer)
 		initializeElementorHooks();
 	});

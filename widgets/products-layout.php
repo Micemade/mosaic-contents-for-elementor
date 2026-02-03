@@ -519,6 +519,33 @@ class ProductsLayout extends Widget_Base {
 				'description' => __( 'Select predefined layout for product display.', 'mosaic-product-layouts-for-elementor' ),
 			)
 		);
+
+		$this->add_responsive_control(
+			'image_size',
+			array(
+				'label'     => esc_html__( 'Image size', 'mosaic-product-layouts-for-elementor' ),
+				'type'      => Controls_Manager::SLIDER,
+				'default'   => array(
+					'size' => 50,
+					'unit' => '',
+				),
+				'range'       => array(
+					'em' => array(
+						'min'  => 1,
+						'max'  => 100,
+						'step' => 1,
+					),
+				),
+				'selectors' => array(
+					'{{WRAPPER}} .product-wrapper .product-image' => 'flex-basis: {{size}}%;',
+					'{{WRAPPER}} .product-wrapper .flex-wrapper' => 'flex-basis: calc(100% - {{size}}%);',
+				),
+				'condition'   => array(
+					'product_layout!' => 'image-background',
+				)
+			)
+		);
+
 		$this->add_responsive_control(
 			'product_align',
 			array(
@@ -578,6 +605,10 @@ class ProductsLayout extends Widget_Base {
 		);
 
 		$this->add_control(
+			'hr', [ 'type' => Controls_Manager::DIVIDER, ]
+		);
+
+		$this->add_control(
 			'rating_size',
 			array(
 				'label'     => esc_html__( 'Rating stars size', 'mosaic-product-layouts-for-elementor' ),
@@ -594,7 +625,7 @@ class ProductsLayout extends Widget_Base {
 					),
 				),
 				'selectors' => array(
-					'{{WRAPPER}} .product-elements .rating-wrapper' => 'transform: scale(calc({{size}} / 100));',
+					'{{WRAPPER}} .product-elements .rating-stars' => 'transform: scale(calc({{size}} / 100));',
 				),
 			)
 		);
