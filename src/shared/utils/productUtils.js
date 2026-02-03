@@ -5,8 +5,7 @@
 import { useState, useEffect } from 'react';
 import apiFetch from '@wordpress/api-fetch';
 
-const getFeaturedImage = (productId, featuredImageSize) => {
-
+export const getFeaturedImage = (productId, featuredImageSize) => {
 
 	const [loadingImg, setLoadingImg] = useState(true);
 	const [featuredImage, setFeaturedImage] = useState(null);
@@ -43,4 +42,27 @@ const getFeaturedImage = (productId, featuredImageSize) => {
 	return { loadingImg, featuredImage };
 };
 
-export default getFeaturedImage;
+export const getProduct = (productId) => {
+	const [product, setProduct] = useState(null);
+	const [loading, setLoading] = useState(true);
+
+	useEffect(() => {
+
+		if (!productId || typeof productId === "undefined") return;
+		async function fetchProduct() {
+			try {
+				const product = await apiFetch({
+					path: `/wc/store/v1/products/${productId}?_fields=id,name,short_description,price_html,images,permalink,add_to_cart,type`,
+				});
+				setProduct(product);
+				setLoading(false);
+			} catch (error) {
+				console.error("getProduct - WC Store API error:", error);
+			}
+		}
+		fetchProduct();
+
+	}, [productId]);
+
+	return { product, loading };
+};

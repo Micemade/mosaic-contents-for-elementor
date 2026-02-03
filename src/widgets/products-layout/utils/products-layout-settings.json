@@ -92,10 +92,5 @@
 		"default": "center",
 		"type": "responsive",
 		"breakpoints": ["desktop", "tablet", "mobile"]
-	},
-
-	"product_border": {
-		"default": "",
-		"type": "string"
 	}
 }

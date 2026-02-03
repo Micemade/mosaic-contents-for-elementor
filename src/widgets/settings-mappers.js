@@ -3,6 +3,7 @@
  * 
  * Extract and format widget settings from Elementor models.
  * Each widget type has its own mapper function.
+ * Not all settings are mapped; only those needed for React components.
  */
 
 import productsLayoutSettingsDefinition from './products-layout/utils/products-layout-settings.json';
@@ -80,45 +81,6 @@ export const mapProductsLayoutSettings = (model) => {
 		} else {
 			// String values
 			result[key] = value !== undefined ? value : definition.default;
-		}
-	});
-
-	// Handle Elementor Group Controls (not in JSON definitions)
-	// Border control generates: {name}_border, {name}_width, {name}_color
-	// Scan all settings to detect border controls dynamically
-	const allSettings = settings.attributes;
-	const processedBorders = new Set();
-
-	Object.keys(allSettings).forEach(key => {
-		// Match pattern: {name}_border (e.g., product_border, item_border)
-		const borderMatch = key.match(/^(.+)_border$/);
-
-		if (borderMatch && allSettings[key]) {
-			const baseName = borderMatch[1];
-
-			// Skip if already processed or if in JSON definitions
-			if (processedBorders.has(baseName) || productsLayoutSettingsDefinition[key]) {
-				return;
-			}
-
-			processedBorders.add(baseName);
-
-			// Get border style (the _border key)
-			const borderStyle = settings.get(key);
-			// Get border width (the _width key)
-			const borderWidth = settings.get(`${baseName}_width`);
-			// Get border color (the _color key)
-			const borderColor = settings.get(`${baseName}_color`);
-
-			if (borderStyle) {
-				result[`${baseName}_border_style`] = borderStyle;
-			}
-			if (borderWidth) {
-				result[`${baseName}_border_width`] = borderWidth;
-			}
-			if (borderColor) {
-				result[`${baseName}_border_color`] = borderColor;
-			}
 		}
 	});
 

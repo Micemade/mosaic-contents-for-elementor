@@ -6,7 +6,8 @@
  */
 
 // Import shared grid layout mixin
-@use '../../shared/gridLayout' as *;
+@use '../../shared/assets/gridLayout' as *;
+@use '../../shared/assets/productElements' as *;
 
 // Apply grid layout styles
 .mosaic-grid-layout {
@@ -29,9 +30,14 @@
 			.name {
 				font-size: var(--title-size-desktop, 26px);
 				justify-content: var(--product-align-desktop, center);
+				text-align: var(--product-align-desktop, center);
 			}
 			.price {
 				font-size: var(--price-size-desktop, 16px);
+				justify-content: var(--product-align-desktop, center);
+				text-align: var(--product-align-desktop, center);
+			}
+			.rating-wrapper {
 				justify-content: var(--product-align-desktop, center);
 			}
 		}
@@ -46,9 +52,14 @@
 				.name {
 					font-size: var(--title-size-tablet, 20px);
 					justify-content: var(--product-align-tablet, center);
+					text-align: var(--product-align-tablet, center);
 				}
 				.price {
 					font-size: var(--price-size-tablet, 16px);
+					justify-content: var(--product-align-tablet, center);
+					text-align: var(--product-align-tablet, center);
+				}
+				.rating-wrapper {
 					justify-content: var(--product-align-tablet, center);
 				}
 			}
@@ -65,9 +76,14 @@
 				.name {
 					font-size: var(--title-size-mobile, 18px);
 					justify-content: var(--product-align-mobile, center);
+					text-align: var(--product-align-mobile, center);
 				}
 				.price {
 					font-size: var(--price-size-mobile, 16px);
+					justify-content: var(--product-align-mobile, center);
+					text-align: var(--product-align-mobile, center);
+				}
+				.rating-wrapper {
 					justify-content: var(--product-align-mobile, center);
 				}
 			}
@@ -75,76 +91,7 @@
 	}
 }
 
-/**
- * The following styles get applied both on the front
- * and in the editor.
- */
-
-
 // @use '../shared/index' as shared;
-
-%alignments {
-	&.align-start {
-		.product-excerpt > *,
-		.view-cart {
-			text-align: left;
-		}
-		.rating-wrapper {
-			align-items: flex-start;
-			transform-origin: left center;
-		}
-		.product-elements {
-			justify-content: flex-start;
-			align-items: center;
-		}
-	}
-	&.align-center {
-		.product-excerpt > *,
-		.view-cart {
-			text-align: center;
-		}
-		.rating-wrapper {
-			align-items: center;
-			transform-origin: center;
-		}
-		.product-elements  {
-			justify-content: center;
-		}
-
-	}
-	&.align-end {
-		.product-excerpt > *,
-		.view-cart{
-			text-align: right;
-		}
-		.rating-wrapper {
-			align-items: flex-end;
-			transform-origin: right center;
-		}
-		.product-elements {
-			justify-content: flex-end;
-		}
-
-	}
-
-	// Vertical alignments.
-	&.vertical-align-top {
-		.flex-wrapper {
-			justify-content: flex-start;
-		}
-	}
-	&.vertical-align-center {
-		.flex-wrapper {
-			justify-content: center;
-		}
-	}
-	&.vertical-align-bottom {
-		.flex-wrapper {
-			justify-content: flex-end;
-		}
-	}
-
-} //end %alignments
 
 %productLayout {
 
@@ -336,7 +283,13 @@
 			}
 		}
 
-		.rating-wrapper {width: 100%;}
+		.rating-wrapper {
+			width: 100%;
+			display: flex;
+			gap: 0;
+		}
+
+		@include rating-stars;
 
 		// @include shared.sale-badge
 
@@ -397,21 +350,17 @@
 			left: 0;
 			right: 0;
 			bottom: 0;
-			border-style: var(--product-border-border-style, none);
-			border-color: var(--product-border-border-color, transparent);
-			border-width: var(--product-border-border-width, 0px);
 
 			.flex-wrapper {
 				display: flex;
 				flex-direction: row;
 				height: 100%;
 				z-index: 2;
-				background-color: var(--background-color, "#e5e5e5");
+				padding: 10px;
+				box-sizing:border-box
 			}
 
 			@extend %productLayout;
-
-			@extend %alignments;
 		}
 
 	}

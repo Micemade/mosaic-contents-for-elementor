@@ -163,43 +163,6 @@ class ProductsLayout extends Widget_Base {
 			}
 		}
 		
-		// Handle Elementor Group Controls (not in JSON definitions)
-		// Border control generates: {name}_border, {name}_width, {name}_color
-		// Scan all settings to detect border controls dynamically
-		$all_settings = $this->get_settings_for_display();
-		$processed_borders = array();
-		
-		foreach ( $all_settings as $key => $value ) {
-			// Match pattern: {name}_border (e.g., product_border, item_border)
-			if ( preg_match( '/^(.+)_border$/', $key, $matches ) && ! empty( $value ) ) {
-				$base_name = $matches[1];
-				
-				// Skip if already processed or if in JSON definitions
-				if ( isset( $processed_borders[ $base_name ] ) || isset( $definitions[ $key ] ) ) {
-					continue;
-				}
-				
-				$processed_borders[ $base_name ] = true;
-				
-				// Get border style (the _border key)
-				$border_style = $this->sanitize_setting( $key, '' );
-				// Get border width (the _width key)
-				$border_width = $this->sanitize_setting( $base_name . '_width', array() );
-				// Get border color (the _color key)
-				$border_color = $this->sanitize_setting( $base_name . '_color', '' );
-				
-				if ( ! empty( $border_style ) ) {
-					$result[ $base_name . '_border_style' ] = $border_style;
-				}
-				if ( ! empty( $border_width ) ) {
-					$result[ $base_name . '_border_width' ] = $border_width;
-				}
-				if ( ! empty( $border_color ) ) {
-					$result[ $base_name . '_border_color' ] = $border_color;
-				}
-			}
-		}
-		
 		return $result;
 	}
 
@@ -597,9 +560,42 @@ class ProductsLayout extends Widget_Base {
 						'title' => __( 'Bottom', 'mosaic-product-layouts-for-elementor' ),
 						'icon'  => 'eicon-v-align-bottom',
 					),
-
 				),
 				'default'   => '',
+			)
+		);
+
+		$this->add_responsive_control(
+			'padding',
+			array(
+				'label'      => __( 'Padding', 'mosaic-product-layouts-for-elementor' ),
+				'type'       => Controls_Manager::DIMENSIONS,
+				'size_units' => array( 'px', '%' ),
+				'selectors' => array(
+					'{{WRAPPER}} .product-wrapper .flex-wrapper' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+				),
+			)
+		);
+
+		$this->add_control(
+			'rating_size',
+			array(
+				'label'     => esc_html__( 'Rating stars size', 'mosaic-product-layouts-for-elementor' ),
+				'type'      => Controls_Manager::SLIDER,
+				'default'   => array(
+					'size' => 100,
+					'unit' => '',
+				),
+				'range'       => array(
+					'em' => array(
+						'min'  => 1,
+						'max'  => 100,
+						'step' => 1,
+					),
+				),
+				'selectors' => array(
+					'{{WRAPPER}} .product-elements .rating-wrapper' => 'transform: scale(calc({{size}} / 100));',
+				),
 			)
 		);
 
@@ -643,6 +639,7 @@ class ProductsLayout extends Widget_Base {
 				'label'     => esc_html__( 'Background', 'mosaic-product-layouts-for-elementor' ),
 				'types'     => array( 'classic', 'gradient' ),
 				'selector' => '{{WRAPPER}} .product-wrapper .flex-wrapper',
+				'default'   => '#ffffff',
 			)
 		);
 
@@ -660,9 +657,9 @@ class ProductsLayout extends Widget_Base {
 		$this->add_group_control(
 			Group_Control_Border::get_type(),
 			array(
-				'label'     => __( 'Products border', 'mosaic-product-layouts-for-elementor' ),
 				'name'      => 'product_border',
-				'selector'  => '{{WRAPPER}} .inner-wrap',
+				'label'     => __( 'Products border', 'mosaic-product-layouts-for-elementor' ),
+				'selector'  => '{{WRAPPER}} .product-wrapper',
 			)
 		);
 
@@ -672,6 +669,9 @@ class ProductsLayout extends Widget_Base {
 				'label'      => __( 'Border Radius', 'mosaic-product-layouts-for-elementor' ),
 				'type'       => Controls_Manager::DIMENSIONS,
 				'size_units' => array( 'px', '%' ),
+				'selectors' => array(
+					'{{WRAPPER}} .product-wrapper' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+				),
 			)
 		);
 

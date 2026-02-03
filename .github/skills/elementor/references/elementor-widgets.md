@@ -6,6 +6,10 @@
 - **Controls Reference**: https://developers.elementor.com/docs/controls/
 - **Hooks Reference**: https://developers.elementor.com/docs/hooks/
 
+## Elementor GitHub Repository
+
+- https://github.com/elementor/elementor
+
 ## Widget Class Structure
 
 ```php

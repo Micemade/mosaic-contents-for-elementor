@@ -1,8 +1,31 @@
+/**
+ * Products Layout Widget Component.
+ *
+ * Renders WooCommerce products in a responsive grid using react-grid-layout.
+ * Layout items are the primary structure, products are assigned to them.
+ * Pattern follows mosaic-product-layouts: map over layout items, find matching product.
+ *
+ * @module ProductsLayoutWidget
+ */
+
+/*
+ * External dependencies.
+ */
 import React, { useState, useEffect, useMemo } from 'react';
+
+/*
+ * Internal dependencies.
+ */
+// Components.
 import GridLayout from '../../shared/components/GridLayout.jsx';
 import ProductImage from './components/ProductImage.jsx';
+import RatingStars from './components/RatingStars.jsx';
+
+// Utilities and data.
 import Layouts from '../../shared/layouts.json';
+import { decode } from '../../shared/utils/generalUtils.js';
 import { updateElementorSetting, isElementorEditor, getActiveBreakpoints } from '../../core/elementor-utils';
+
 import './products-layout.scss';
 
 // LRU Cache class for Elementor editor (limits memory usage)
@@ -227,31 +250,6 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 			}
 		});
 
-		// Handle border width objects (from Elementor Group Control Border)
-		// Dynamically process any setting ending in _border_width
-		// Format: { unit: 'px', top: 2, right: 2, bottom: 2, left: 2, isLinked: 1 }
-		Object.keys(widgetData).forEach(key => {
-			if (key.endsWith('_border_width') && widgetData[key] && typeof widgetData[key] === 'object') {
-				const bw = widgetData[key];
-				const unit = bw.unit || 'px';
-				// Extract base name (e.g., 'product' from 'product_border_width')
-				const baseName = key.replace(/_border_width$/, '');
-				const cssPrefix = baseName.replace(/_/g, '-');
-
-				if (bw.top !== undefined) vars[`--${cssPrefix}-border-width-top`] = `${bw.top}${unit}`;
-				if (bw.right !== undefined) vars[`--${cssPrefix}-border-width-right`] = `${bw.right}${unit}`;
-				if (bw.bottom !== undefined) vars[`--${cssPrefix}-border-width-bottom`] = `${bw.bottom}${unit}`;
-				if (bw.left !== undefined) vars[`--${cssPrefix}-border-width-left`] = `${bw.left}${unit}`;
-
-				// Also create shorthand if all sides are equal
-				if (bw.isLinked && bw.top !== undefined) {
-					vars[`--${cssPrefix}-border-width`] = `${bw.top}${unit}`;
-				} else if (bw.top !== undefined && bw.right !== undefined && bw.bottom !== undefined && bw.left !== undefined) {
-					vars[`--${cssPrefix}-border-width`] = `${bw.top}${unit} ${bw.right}${unit} ${bw.bottom}${unit} ${bw.left}${unit}`;
-				}
-			}
-		});
-
 		return vars;
 	}, [widgetData]);
 
@@ -259,6 +257,7 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 	const layoutId = widgetData?.layout || 'layout-1';
 	const customLayoutData = widgetData?.custom_layout || '';
 	const productLayout = widgetData?.product_layout || 'vertical';
+	const ratingSize = widgetData?.rating_size || 1;
 
 
 	// Grid settings from Elementor controls
@@ -498,7 +497,7 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 								<div className='flex-wrapper'>
 									<div className="product-info product-elements">
 										<h3 className="name">
-											<a href={matchedProduct.permalink}>{matchedProduct.name}</a>
+											<a href={matchedProduct.permalink}>{decode(matchedProduct.name)}</a>
 										</h3>
 										{matchedProduct.priceHtml && (
 											<div
@@ -506,11 +505,18 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 												dangerouslySetInnerHTML={{ __html: matchedProduct.priceHtml }}
 											/>
 										)}
-										{matchedProduct.averageRating && matchedProduct.averageRating !== '0' && (
-											<div className="product-rating">
+										{/* <div className="product-rating">
 												{'★'.repeat(Math.round(parseFloat(matchedProduct.averageRating)))}
 												<span className="review-count">({matchedProduct.reviewCount})</span>
+											</div> */}
+										{matchedProduct.averageRating && matchedProduct.averageRating !== '0' && (
+
+											<div className={`rating-wrapper`}
+											// style={{ transform: `scale(${ratingSize})` }}
+											>
+												<RatingStars rating={Number(matchedProduct.averageRating)} reviewCount={matchedProduct.reviewCount} />
 											</div>
+
 										)}
 									</div>
 								</div>

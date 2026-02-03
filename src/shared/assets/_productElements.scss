@@ -1,0 +1,71 @@
+@mixin rating-stars {
+	
+	.rating-wrapper {
+
+		.rating-stars {
+			display: flex;
+			position: relative;
+			width: 100px;
+			height: 20px;
+			overflow: hidden;
+
+			.rated-perc {
+				position: absolute;
+				display: flex;
+				z-index: 1;
+				top: 0;
+				left: 0;
+				width: 100%;
+				overflow: hidden;
+				align-items: flex-start;
+				justify-content: flex-start;
+
+				.stars {
+					display: flex;
+					align-items: flex-start;
+					justify-content: flex-start;
+					flex-direction: row;
+					.star {
+						background: #F8CA00;
+					}
+				}
+			}
+			.stars {
+
+				&.placeholder {
+					position: absolute;
+					display: flex;
+					flex-direction: row;
+					flex-wrap: wrap;
+					top: 0;
+					left: 0;
+					z-index: 0;
+					width: 100%;
+					.star {
+						background: #a0a0a0;
+					}
+				}
+			}
+			.star {
+				width:20px;
+				aspect-ratio: 1;
+
+				clip-path: polygon(50% 0,
+					calc(50%*(1 + sin(.4turn))) calc(50%*(1 - cos(.4turn))),
+					calc(50%*(1 - sin(.2turn))) calc(50%*(1 - cos(.2turn))),
+					calc(50%*(1 + sin(.2turn))) calc(50%*(1 - cos(.2turn))),
+					calc(50%*(1 - sin(.4turn))) calc(50%*(1 - cos(.4turn)))
+				);
+				/* or more simple
+				clip-path: polygon(50% 0,79% 90%,2% 35%,98% 35%,21% 90%);
+				*/
+			}
+			.review-count {
+				color: inherit;
+			}
+
+		} //end .rating-stars
+	}
+	//end .rating-wrapper
+
+}

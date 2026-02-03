@@ -9,8 +9,7 @@ import placeholderImg from '../../../shared/woocommerce-placeholder-300x300.png'
 /**
  * Internal dependencies.
  */
-import getProduct from '../../../shared/utils/getProduct';
-import getFeaturedImage from '../../../shared/utils/getFeaturedImage';
+import { getProduct, getFeaturedImage } from '../../../shared/utils/productUtils';
 
 const getImageProperties = (images) => {
 

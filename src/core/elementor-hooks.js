@@ -10,6 +10,7 @@
 import { getRegisteredWidgets, getWidgetConfig } from './widget-registry';
 import { createWidgetInitializer } from './widget-initializer';
 import widgetManager from './widget-manager';
+import { getActiveBreakpoints } from './elementor-utils';
 
 /**
  * Register frontend hooks for all widgets.
@@ -65,9 +66,6 @@ export const registerEditorHooks = () => {
 			const widgetConfig = getWidgetConfig(widgetType);
 			const getSettingsFromModel = () => widgetConfig.settingsMapper(model);
 
-			console.log(getSettingsFromModel());
-
-
 			// Register the editor view with the widget manager so the
 			// manager can consult it when deciding whether to remount
 			// (for example: core/advanced settings should allow remount).
@@ -77,13 +75,38 @@ export const registerEditorHooks = () => {
 					const mapped = getSettingsFromModel() || {};
 					const widgetKeys = Object.keys(mapped);
 
+					// Expand widgetKeys to include responsive control variants
+					// Responsive settings in Elementor are stored as:
+					// - base_key (desktop), base_key_tablet, base_key_mobile
+					// But in mapped settings they appear as single key with breakpoints object
+					const expandedWidgetKeys = new Set(widgetKeys);
+
+					widgetKeys.forEach(key => {
+						const value = mapped[key];
+						// Check if this is a responsive setting (object with breakpoint keys)
+						if (value && typeof value === 'object' && !Array.isArray(value)) {
+							const activeBreakpoints = getActiveBreakpoints();
+							const hasBreakpoints = activeBreakpoints.some(bp => value.hasOwnProperty(bp));
+
+							if (hasBreakpoints) {
+								// Add breakpoint variants: key_tablet, key_mobile, etc.
+								// Exclude 'desktop' as it's the base key
+								activeBreakpoints.filter(bp => bp !== 'desktop').forEach(bp => {
+									expandedWidgetKeys.add(`${key}_${bp}`);
+								});
+							}
+						}
+					});
+
+					const widgetKeysArray = Array.from(expandedWidgetKeys);
+
 					// Override view.renderOnChange to be conditional:
 					// - For widget-owned changes, false (React handles it)
 					// - For core/advanced changes, call the original renderOnChange
 					const originalRenderOnChange = view.renderOnChange.bind(view);
 					view.renderOnChange = (settings) => {
 						const changed = settings.changedAttributes();
-						const hasNonWidgetChange = Object.keys(changed).some(k => !widgetKeys.includes(k));
+						const hasNonWidgetChange = Object.keys(changed).some(k => !widgetKeysArray.includes(k));
 						if (hasNonWidgetChange) {
 							// Call original to handle core/advanced changes
 							originalRenderOnChange(settings);
@@ -91,7 +114,6 @@ export const registerEditorHooks = () => {
 						// For widget-owned changes, do nothing (React updates in-place)
 					};
 
-					widgetManager.registerView(widgetType, widgetId, view);
 				} catch (e) {
 					// ignore registration errors
 				}
