@@ -31,6 +31,7 @@ export default defineConfig(
 					},
 				},
 			},
+			sourcemap: true,
 			outDir: 'assets',
 			cssCodeSplit: false,
 		},
