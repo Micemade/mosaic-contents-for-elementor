@@ -9,6 +9,8 @@
  * License: 1.0.0
  * License URL: http://www.gnu.org/licenses/gpl-2.0.txt
  * text-domain: mosaic-product-layouts-for-elementor
+ * Elementor tested up to: 3.43.1
+ * Elementor Pro tested up to: 3.1.0
  */
 namespace Micemade\MosaicProductLayoutsElementor;
 
