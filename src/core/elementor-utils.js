@@ -139,28 +139,28 @@ export const injectBreakpointStylesheet = () => {
 	// Add desktop styles (no media query needed, it's the default)
 	css += `
 .products-layout .flex-wrapper {
-	align-items: var(--product-vertical-align-desktop, center);
+	align-items: var(--mpl4e-product-vertical-align-desktop, center);
 }
 .products-layout .flex-wrapper .product-elements {
-	justify-content: var(--product-align-desktop, center);
+	justify-content: var(--mpl4e-product-align-desktop, center);
 }
 .products-layout .flex-wrapper .product-elements .name {
-	font-size: var(--title-size-desktop, 26px);
-	justify-content: var(--product-align-desktop, center);
-	text-align: var(--product-align-desktop, center);
+	font-size: var(--mpl4e-title-size-desktop, 26px);
+	justify-content: var(--mpl4e-product-align-desktop, center);
+	text-align: var(--mpl4e-product-align-desktop, center);
 }
 .products-layout .flex-wrapper .product-elements .price {
-	font-size: var(--price-size-desktop, 16px);
-	justify-content: var(--product-align-desktop, center);
-	text-align: var(--product-align-desktop, center);
+	font-size: var(--mpl4e-price-size-desktop, 16px);
+	justify-content: var(--mpl4e-product-align-desktop, center);
+	text-align: var(--mpl4e-product-align-desktop, center);
 }
 .products-layout .flex-wrapper .product-elements .add-to-cart-wrapper {
-	font-size: var(--button-size-desktop, 16px);
-	justify-content: var(--product-align-desktop, center);
-	text-align: var(--product-align-desktop, center);
+	font-size: var(--mpl4e-button-size-desktop, 16px);
+	justify-content: var(--mpl4e-product-align-desktop, center);
+	text-align: var(--mpl4e-product-align-desktop, center);
 }
 .products-layout .flex-wrapper .product-elements .rating-wrapper {
-	justify-content: var(--product-align-desktop, center);
+	justify-content: var(--mpl4e-product-align-desktop, center);
 }
 .mosaic-hide-desktop {
 	display: none !important;
@@ -175,28 +175,28 @@ export const injectBreakpointStylesheet = () => {
 		css += `
 @media (max-width: ${value}px) {
 	.products-layout .flex-wrapper {
-		align-items: var(--product-vertical-align-${name}, center);
+		align-items: var(--mpl4e-product-vertical-align-${name}, center);
 	}
 	.products-layout .flex-wrapper .product-elements {
-		justify-content: var(--product-align-${name}, center);
+		justify-content: var(--mpl4e-product-align-${name}, center);
 	}
 	.products-layout .flex-wrapper .product-elements .name {
-		font-size: var(--title-size-${name}, 20px);
-		justify-content: var(--product-align-${name}, center);
-		text-align: var(--product-align-${name}, center);
+		font-size: var(--mpl4e-title-size-${name}, 20px);
+		justify-content: var(--mpl4e-product-align-${name}, center);
+		text-align: var(--mpl4e-product-align-${name}, center);
 	}
 	.products-layout .flex-wrapper .product-elements .price {
-		font-size: var(--price-size-${name}, 16px);
-		justify-content: var(--product-align-${name}, center);
-		text-align: var(--product-align-${name}, center);
+		font-size: var(--mpl4e-price-size-${name}, 16px);
+		justify-content: var(--mpl4e-product-align-${name}, center);
+		text-align: var(--mpl4e-product-align-${name}, center);
 	}
 	.products-layout .flex-wrapper .product-elements .add-to-cart-wrapper {
-		font-size: var(--button-size-${name}, 16px);
-		justify-content: var(--product-align-${name}, center);
-		text-align: var(--product-align-${name}, center);
+		font-size: var(--mpl4e-button-size-${name}, 16px);
+		justify-content: var(--mpl4e-product-align-${name}, center);
+		text-align: var(--mpl4e-product-align-${name}, center);
 	}
 	.products-layout .flex-wrapper .product-elements .rating-wrapper {
-		justify-content: var(--product-align-${name}, center);
+		justify-content: var(--mpl4e-product-align-${name}, center);
 	}
 	.mosaic-hide-${name} {
 		display: none !important;

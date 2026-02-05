@@ -23,22 +23,10 @@
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		gap: 0.5em;
 		cursor: pointer;
 		text-decoration: none;
-		border: none;
-		border-radius: 4px;
-		padding: 0.6em 1em;
-		font-size: inherit;
-		font-weight: 500;
-		line-height: 1.4;
 		text-align: center;
 		transition: all 0.2s ease;
-		min-width: 120px;
-		
-		// Default colors (can be overridden by theme)
-		background-color: var(--wp--preset--color--primary, #333);
-		color: var(--wp--preset--color--background, #fff);
 		
 		&:hover:not(:disabled) {
 			filter: brightness(1.1);

@@ -88,17 +88,17 @@ const productsCache = isEditorMode() ? new LRUCache(20) : {};
  * @returns {Promise<Array>} Array of product objects with camelCase keys.
  */
 async function fetchProducts(querySettings) {
-	const { per_page, orderby, order, category, on_sale, featured } = querySettings;
+	const { mpl4e_per_page, mpl4e_orderby, mpl4e_order, mpl4e_category, mpl4e_on_sale, mpl4e_featured } = querySettings;
 
 	// Build query parameters
 	const params = new URLSearchParams();
 
-	if (per_page) params.append('per_page', per_page);
-	if (orderby) params.append('orderby', orderby);
-	if (order) params.append('order', order);
-	if (category) params.append('category', category);
-	if (on_sale) params.append('on_sale', 'true');
-	if (featured) params.append('featured', 'true');
+	if (mpl4e_per_page) params.append('per_page', mpl4e_per_page);
+	if (mpl4e_orderby) params.append('orderby', mpl4e_orderby);
+	if (mpl4e_order) params.append('order', mpl4e_order);
+	if (mpl4e_category) params.append('category', mpl4e_category);
+	if (mpl4e_on_sale) params.append('on_sale', 'true');
+	if (mpl4e_featured) params.append('featured', 'true');
 
 	// Specify fields to return (optimizes response size)
 	params.append(
@@ -259,10 +259,10 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 	}, [widgetData]);
 
 	// Extract settings with defaults
-	const layoutId = widgetData?.layout || 'layout-1';
-	const customLayoutData = widgetData?.custom_layout || '';
-	const productLayout = widgetData?.product_layout || 'vertical';
-	const ratingSize = widgetData?.rating_size || 1;
+	const layoutId = widgetData?.mpl4e_layout || 'layout-1';
+	const customLayoutData = widgetData?.mpl4e_custom_layout || '';
+	const productLayout = widgetData?.mpl4e_product_layout || 'vertical';
+	const ratingSize = widgetData?.mpl4e_rating_size || 1;
 
 
 	// Grid settings from Elementor controls
@@ -273,29 +273,29 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 				tablet: 24,
 				mobile: 12,
 			},
-			itemsMargin: widgetData?.items_margin?.size || 15,
-			rowHeight: widgetData?.row_height?.size || 10,
+			itemsMargin: widgetData?.mpl4e_items_margin?.size || 15,
+			rowHeight: widgetData?.mpl4e_row_height?.size || 10,
 		}),
-		[widgetData?.items_margin, widgetData?.row_height]
+		[widgetData?.mpl4e_items_margin, widgetData?.mpl4e_row_height]
 	);
 
 	// Memoize query settings to prevent unnecessary re-fetches
 	const querySettings = useMemo(
 		() => ({
-			per_page: widgetData?.per_page || 10,
-			orderby: widgetData?.orderby || 'date',
-			order: widgetData?.order || 'desc',
-			category: widgetData?.category || '',
-			on_sale: widgetData?.on_sale || false,
-			featured: widgetData?.featured || false,
+			mpl4e_per_page: widgetData?.mpl4e_per_page || 10,
+			mpl4e_orderby: widgetData?.mpl4e_orderby || 'date',
+			mpl4e_order: widgetData?.mpl4e_order || 'desc',
+			mpl4e_category: widgetData?.mpl4e_category || '',
+			mpl4e_on_sale: widgetData?.mpl4e_on_sale || false,
+			mpl4e_featured: widgetData?.mpl4e_featured || false,
 		}),
 		[
-			widgetData?.per_page,
-			widgetData?.orderby,
-			widgetData?.order,
-			widgetData?.category,
-			widgetData?.on_sale,
-			widgetData?.featured,
+			widgetData?.mpl4e_per_page,
+			widgetData?.mpl4e_orderby,
+			widgetData?.mpl4e_order,
+			widgetData?.mpl4e_category,
+			widgetData?.mpl4e_on_sale,
+			widgetData?.mpl4e_featured,
 		]
 	);
 
@@ -308,11 +308,11 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 				return parsed;
 			} catch (error) {
 				console.error('Failed to parse custom layout:', error);
-				return getLayout(layoutId, querySettings.per_page);
+				return getLayout(layoutId, querySettings.mpl4e_per_page);
 			}
 		}
-		return getLayout(layoutId, querySettings.per_page);
-	}, [layoutId, customLayoutData, querySettings.per_page]);
+		return getLayout(layoutId, querySettings.mpl4e_per_page);
+	}, [layoutId, customLayoutData, querySettings.mpl4e_per_page]);
 
 	// Prepare products data with layout item assignments
 	// Maps products to layout items: { ...product, i: 'item-0' }
@@ -395,7 +395,7 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 
 		// Update Elementor setting using utility function
 		// Widget type is 'products-layout' for this component
-		updateElementorSetting('products-layout', widgetId, 'custom_layout', JSON.stringify(customLayout));
+		updateElementorSetting('products-layout', widgetId, 'mpl4e_custom_layout', JSON.stringify(customLayout));
 
 	};
 
@@ -455,8 +455,8 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 				columns={gridSettings.columns}
 				itemsMargin={gridSettings.itemsMargin}
 				rowHeight={gridSettings.rowHeight}
-				allowOverlap={widgetData?.allow_overlap || false}
-				compactionType={widgetData?.compaction_type || 'vertical'}
+				allowOverlap={widgetData?.mpl4e_allow_overlap || false}
+				compactionType={widgetData?.mpl4e_compaction_type || 'vertical'}
 				context="frontend"
 				onLayoutChange={handleLayoutChange}
 				selectWidget={selectWidget}
@@ -483,6 +483,12 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 							className="product-item"
 							style={{ zIndex }}
 						>
+							{matchedProduct.onSale && (
+								<div className='sale-badge-wrapper'>
+									<span className="product-badge sale-badge rounded">Sale</span>
+								</div>
+							)}
+
 							<div className={`product-wrapper ${productLayout}`}>
 
 								<figure className="product-image product-featured-image">
@@ -532,11 +538,6 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 											/>
 										</div>
 
-										{matchedProduct.onSale && (
-											<div className='sale-badge-wrapper'>
-												<span className="product-badge sale-badge rounded">Sale</span>
-											</div>
-										)}
 									</div>
 								</div>
 

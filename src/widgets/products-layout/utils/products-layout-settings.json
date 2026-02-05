@@ -1,99 +1,102 @@
 {
-	"per_page": {
-		"default": 10,
-		"type": "number"
+	"mpl4e_per_page": {
+		"type": "number",
+		"default": 10
 	},
-	"orderby": {
-		"default": "date",
-		"type": "string"
+	"mpl4e_orderby": {
+		"type": "string",
+		"default": "date"
 	},
-	"order": {
-		"default": "desc",
-		"type": "string"
+	"mpl4e_order": {
+		"type": "string",
+		"default": "desc"
 	},
-	"category": {
-		"default": "",
-		"type": "string"
+	"mpl4e_category": {
+		"type": "string",
+		"default": ""
 	},
-	"on_sale": {
-		"default": false,
-		"type": "boolean"
+	"mpl4e_on_sale": {
+		"type": "boolean",
+		"default": false
 	},
-	"featured": {
-		"default": false,
-		"type": "boolean"
+	"mpl4e_featured": {
+		"type": "boolean",
+		"default": false
 	},
-	"layout": {
-		"default": "grid",
-		"type": "string"
+	"mpl4e_layout": {
+		"type": "string",
+		"default": "grid"
 	},
-	"custom_layout": {
-		"default": "",
-		"type": "string"
+	"mpl4e_custom_layout": {
+		"type": "string",
+		"default": ""
 	},
-	"items_margin": {
-		"default": 15,
-		"type": "number"
+	"mpl4e_items_margin": {
+		"type": "number",
+		"default": 15
 	},
-	"row_height": {
-		"default": 5,
-		"type": "number"
+	"mpl4e_row_height": {
+		"type": "number",
+		"default": 5
 	},
-	"allow_overlap": {
-		"default": false,
-		"type": "boolean"
+	"mpl4e_allow_overlap": {
+		"type": "boolean",
+		"default": false
 	},
-	"compaction_type": {
-		"default": "vertical",
-		"type": "string"
+	"mpl4e_compaction_type": {
+		"type": "string",
+		"default": "vertical"
 	},
-	"product_layout": {
-		"default": "vertical",
-		"type": "string"
+	"mpl4e_product_layout": {
+		"type": "string",
+		"default": "vertical"
 	},
-	"title_size": {
+	"mpl4e_title_size": {
+		"type": "responsive",
 		"default": {
-			"size": 26,
+			"size": 24,
 			"unit": "px"
 		},
 		"tablet_default": {
-			"size": 24,
+			"size": 22,
 			"unit": "px"
 		},
 		"mobile_default": {
 			"size": 20,
 			"unit": "px"
 		},
-		"type": "responsive",
 		"breakpoints": ["desktop", "tablet", "mobile"]
 	},
-	"price_size": {
+	"mpl4e_price_size": {
+		"type": "responsive",
 		"default": {
-			"size": 22,
+			"size": 20,
 			"unit": "px"
 		},
 		"tablet_default": {
-			"size": 20,
+			"size": 18,
 			"unit": "px"
 		},
 		"mobile_default": {
 			"size": 18,
 			"unit": "px"
 		},
-		"type": "responsive",
 		"breakpoints": ["desktop", "tablet", "mobile"]
 	},
-	"button_size": {
-		"default": "",
+	"mpl4e_button_size": {
 		"type": "responsive",
+		"default": {
+			"size": 20,
+			"unit": "px"
+		},
 		"breakpoints": ["desktop", "tablet", "mobile"]
 	},
-	"product_align":{
+	"mpl4e_product_align":{
 		"default": "center",
 		"type": "responsive",
 		"breakpoints": ["desktop", "tablet", "mobile"]
 	},
-	"product_vertical_align":{
+	"mpl4e_product_vertical_align":{
 		"default": "center",
 		"type": "responsive",
 		"breakpoints": ["desktop", "tablet", "mobile"]

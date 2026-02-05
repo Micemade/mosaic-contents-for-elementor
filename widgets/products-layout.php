@@ -226,7 +226,7 @@ class ProductsLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'per_page',
+			'mpl4e_per_page',
 			array(
 				'label'   => __( 'Products Per Page', 'mosaic-product-layouts-for-elementor' ),
 				'type'    => Controls_Manager::NUMBER,
@@ -237,7 +237,7 @@ class ProductsLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'orderby',
+			'mpl4e_orderby',
 			array(
 				'label'   => __( 'Order By', 'mosaic-product-layouts-for-elementor' ),
 				'type'    => Controls_Manager::SELECT,
@@ -253,7 +253,7 @@ class ProductsLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'order',
+			'mpl4e_order',
 			array(
 				'label'   => __( 'Order', 'mosaic-product-layouts-for-elementor' ),
 				'type'    => Controls_Manager::SELECT,
@@ -266,7 +266,7 @@ class ProductsLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'category',
+			'mpl4e_category',
 			array(
 				'label'   => __( 'Category', 'mosaic-product-layouts-for-elementor' ),
 				'type'    => Controls_Manager::SELECT,
@@ -276,7 +276,7 @@ class ProductsLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'on_sale',
+			'mpl4e_on_sale',
 			array(
 				'label'        => __( 'On Sale Only', 'mosaic-product-layouts-for-elementor' ),
 				'type'         => Controls_Manager::SWITCHER,
@@ -288,7 +288,7 @@ class ProductsLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'featured',
+			'mpl4e_featured',
 			array(
 				'label'        => __( 'Featured Only', 'mosaic-product-layouts-for-elementor' ),
 				'type'         => Controls_Manager::SWITCHER,
@@ -311,7 +311,7 @@ class ProductsLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'layout',
+			'mpl4e_layout',
 			array(
 				'label'       => __( 'Predefined Layouts', 'mosaic-product-layouts-for-elementor' ),
 				'type'        => Controls_Manager::SELECT,
@@ -337,7 +337,7 @@ class ProductsLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'custom_layout',
+			'mpl4e_custom_layout',
 			array(
 				'label'       => __( 'Custom Layout', 'mosaic-product-layouts-for-elementor' ),
 				'type'        => Controls_Manager::HIDDEN,
@@ -358,7 +358,7 @@ class ProductsLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'items_margin',
+			'mpl4e_items_margin',
 			array(
 				'label'   => __( 'Grid Gap', 'mosaic-product-layouts-for-elementor' ),
 				'type'    => Controls_Manager::SLIDER,
@@ -376,7 +376,7 @@ class ProductsLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'row_height',
+			'mpl4e_row_height',
 			array(
 				'label'   => __( 'Grid Row Height', 'mosaic-product-layouts-for-elementor' ),
 				'type'    => Controls_Manager::SLIDER,
@@ -394,7 +394,7 @@ class ProductsLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'allow_overlap',
+			'mpl4e_allow_overlap',
 			array(
 				'label'        => __( 'Allow Overlap', 'mosaic-product-layouts-for-elementor' ),
 				'type'         => Controls_Manager::SWITCHER,
@@ -407,7 +407,7 @@ class ProductsLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'compaction_type',
+			'mpl4e_compaction_type',
 			array(
 				'label'       => __( 'Compaction Type', 'mosaic-product-layouts-for-elementor' ),
 				'type'        => Controls_Manager::SELECT,
@@ -419,7 +419,7 @@ class ProductsLayout extends Widget_Base {
 				),
 				'description' => __( 'How items compact when moved. "None" keeps items in place.', 'mosaic-product-layouts-for-elementor' ),
 				'condition'   => array(
-					'allow_overlap!' => 'yes',
+					'mpl4e_allow_overlap!' => 'yes',
 				),
 			)
 		);
@@ -470,7 +470,7 @@ class ProductsLayout extends Widget_Base {
 		);
 
 		$this->add_responsive_control(
-			'title_size',
+			'mpl4e_title_size',
 			array(
 				'label'     => esc_html__( 'Title size', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::SLIDER,
@@ -491,7 +491,7 @@ class ProductsLayout extends Widget_Base {
 		);
 
 		$this->add_responsive_control(
-			'price_size',
+			'mpl4e_price_size',
 			array(
 				'label'     => esc_html__( 'Price size', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::SLIDER,
@@ -512,7 +512,7 @@ class ProductsLayout extends Widget_Base {
 		);
 
 		$this->add_responsive_control(
-			'button_size',
+			'mpl4e_button_size',
 			array(
 				'label'     => esc_html__( 'Button text size', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::SLIDER,
@@ -530,7 +530,7 @@ class ProductsLayout extends Widget_Base {
 			)
 		);
 		$this->add_control(
-			'product_layout',
+			'mpl4e_product_layout',
 			array(
 				'label'       => __( 'Product layout', 'mosaic-product-layouts-for-elementor' ),
 				'type'        => Controls_Manager::SELECT,
@@ -547,7 +547,7 @@ class ProductsLayout extends Widget_Base {
 		);
 
 		$this->add_responsive_control(
-			'image_size',
+			'mpl4e_image_size',
 			array(
 				'label'     => esc_html__( 'Image size', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::SLIDER,
@@ -567,7 +567,7 @@ class ProductsLayout extends Widget_Base {
 					'{{WRAPPER}} .product-wrapper .flex-wrapper' => 'flex-basis: calc(100% - {{size}}%);',
 				),
 				'condition'   => array(
-					'product_layout!' => 'image-background',
+					'mpl4e_product_layout!' => 'image-background',
 				)
 			)
 		);
@@ -577,7 +577,7 @@ class ProductsLayout extends Widget_Base {
 		);
 
 		$this->add_responsive_control(
-			'product_align',
+			'mpl4e_product_align',
 			array(
 				'label'        => esc_html__( 'Align', 'mosaic-product-layouts-for-elementor' ),
 				'type'         => Controls_Manager::CHOOSE,
@@ -601,7 +601,7 @@ class ProductsLayout extends Widget_Base {
 		);
 
 		$this->add_responsive_control(
-			'product_vertical_align',
+			'mpl4e_product_vertical_align',
 			array(
 				'label'     => esc_html__( 'Vertical align', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::CHOOSE,
@@ -624,7 +624,7 @@ class ProductsLayout extends Widget_Base {
 		);
 
 		$this->add_responsive_control(
-			'elements_gap',
+			'mpl4e_elements_gap',
 			array(
 				'label'     => esc_html__( 'Elements gap', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::SLIDER,
@@ -645,7 +645,7 @@ class ProductsLayout extends Widget_Base {
 		);
 
 		$this->add_responsive_control(
-			'padding',
+			'mpl4e_padding',
 			array(
 				'label'      => __( 'Padding', 'mosaic-product-layouts-for-elementor' ),
 				'type'       => Controls_Manager::DIMENSIONS,
@@ -667,7 +667,7 @@ class ProductsLayout extends Widget_Base {
 		);
 		
 		$this->add_control(
-			'text_color',
+			'mpl4e_text_color',
 			array(
 				'label'     => esc_html__( 'Text color', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::COLOR,
@@ -679,7 +679,7 @@ class ProductsLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'links_color',
+			'mpl4e_links_color',
 			array(
 				'label'     => esc_html__( 'Links color', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::COLOR,
@@ -692,7 +692,7 @@ class ProductsLayout extends Widget_Base {
 		$this->add_group_control(
 			\Elementor\Group_Control_Background::get_type(),
 			array(
-				'name'      => 'background_color',
+				'name'      => 'mpl4e_background_color',
 				'label'     => esc_html__( 'Background', 'mosaic-product-layouts-for-elementor' ),
 				'types'     => array( 'classic', 'gradient' ),
 				'selector' => '{{WRAPPER}} .product-wrapper .flex-wrapper',
@@ -714,14 +714,14 @@ class ProductsLayout extends Widget_Base {
 		$this->add_group_control(
 			Group_Control_Border::get_type(),
 			array(
-				'name'      => 'product_border',
+				'name'      => 'mpl4e_product_border',
 				'label'     => __( 'Products border', 'mosaic-product-layouts-for-elementor' ),
 				'selector'  => '{{WRAPPER}} .product-wrapper',
 			)
 		);
 
 		$this->add_control(
-			'border_radius',
+			'mpl4e_border_radius',
 			array(
 				'show_label' => true,
 				'label'      => __( 'Border Radius', 'mosaic-product-layouts-for-elementor' ),
@@ -736,7 +736,7 @@ class ProductsLayout extends Widget_Base {
 		$this->add_group_control(
 			Group_Control_Box_Shadow::get_type(),
 			array(
-				'name'      => 'box_shadow',
+				'name'      => 'mpl4e_box_shadow',
 				'selector'  => '{{WRAPPER}} .product-wrapper',
 			)
 		);
@@ -766,26 +766,38 @@ class ProductsLayout extends Widget_Base {
 		);
 
 		$this->add_responsive_control(
-			'badge_sale_size',
+			'mpl4e_badge_sale_size',
 			array(
 				'label'      => esc_html__( 'Sale badge text size', 'mosaic-product-layouts-for-elementor' ),
 				'type'       => Controls_Manager::SLIDER,
 				'size_units' => array( 'px', 'em', 'rem', 'vw', 'vh' ),
 				'range'      => self::get_range(),
 				'selectors'  => array(
-					'{{WRAPPER}} .product-wrapper .sale-badge' => 'font-size: {{SIZE}}{{UNIT}};',
+					'{{WRAPPER}} .sale-badge' => 'font-size: {{SIZE}}{{UNIT}};',
 				),
 			)
 		);
 
 		$this->add_control(
-			'sale_badge_color',
+			'mpl4e_sale_badge_color',
 			array(
 				'label'     => esc_html__( 'Sale badge text color', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::COLOR,
 				'default'   => '#FFFFFF',
 				'selectors' => array(
-					'{{WRAPPER}} .product-wrapper .sale-badge' => 'color: {{VALUE}};',
+					'{{WRAPPER}} .sale-badge' => 'color: {{VALUE}};',
+				),
+			)
+		);
+
+		$this->add_control(
+			'mpl4e_sale_badge_backcolor',
+			array(
+				'label'     => esc_html__( 'Sale badge background color', 'mosaic-product-layouts-for-elementor' ),
+				'type'      => Controls_Manager::COLOR,
+				'default'   => '#FFFFFF',
+				'selectors' => array(
+					'{{WRAPPER}} .sale-badge' => 'background-color: {{VALUE}};',
 				),
 			)
 		);
@@ -801,7 +813,7 @@ class ProductsLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'rating_size',
+			'mpl4e_rating_size',
 			array(
 				'label'     => esc_html__( 'Rating stars size', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::SLIDER,

@@ -120,7 +120,6 @@ class WidgetManager {
 			instance.updateSettings(newSettings);
 			return;
 		}
-		console.log("Update from Elementor?");
 		// Otherwise leave initialization to the widget initializer.
 		return;
 	}
@@ -139,9 +138,6 @@ class WidgetManager {
 	updateModelSetting(widgetType, widgetId, settingName, value) {
 		const modelKey = `${widgetType}_${widgetId}`;
 		const model = this.models[modelKey];
-
-		// console.log(model.get('settings'));
-		console.log("Update from React?");
 
 		if (model && model.setSetting) {
 		// Update Elementor model (triggers auto-save).

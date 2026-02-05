@@ -216,12 +216,17 @@
 
 		@include rating-stars;
 
-		@include sale-badge;
-
 	}// end .product-elements
 }// end %productLayout
 
-/* SHARED STYLES FOR ALL BLOCKS
+/*
+ * SALE BADGE STYLES
+ */
+@include sale-badge;
+
+
+/* 
+ * SHARED STYLES FOR ALL BLOCKS
  * FOR COMPATIBILITY WITH GROUP, COLUMNS BLOCK ETC.
  */
 // @include shared.style;
