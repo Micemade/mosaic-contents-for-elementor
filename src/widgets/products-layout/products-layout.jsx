@@ -12,6 +12,7 @@
  * External dependencies.
  */
 import React, { useState, useEffect, useMemo } from 'react';
+import DOMPurify from 'dompurify';
 
 /*
  * Internal dependencies.
@@ -20,6 +21,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import GridLayout from '../../shared/components/GridLayout.jsx';
 import ProductImage from './components/ProductImage.jsx';
 import RatingStars from './components/RatingStars.jsx';
+import AddToCartButton from './components/AddToCartButton.jsx';
 
 // Utilities and data.
 import Layouts from '../../shared/layouts.json';
@@ -27,6 +29,9 @@ import { decode } from '../../shared/utils/generalUtils.js';
 import { updateElementorSetting, isElementorEditor, getActiveBreakpoints } from '../../core/elementor-utils';
 
 import './products-layout.scss';
+
+// Sanitize HTML content.
+const Sanitizer = DOMPurify.sanitize;
 
 // LRU Cache class for Elementor editor (limits memory usage)
 class LRUCache {
@@ -489,34 +494,48 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 											featuredImageSize="automatic"
 										/>
 									</a>
-									{matchedProduct.onSale && (
-										<span className="product-badge sale">Sale</span>
-									)}
+
 								</figure>
 
 								<div className='flex-wrapper'>
 									<div className="product-info product-elements">
+
 										<h3 className="name">
 											<a href={matchedProduct.permalink}>{decode(matchedProduct.name)}</a>
 										</h3>
+
 										{matchedProduct.priceHtml && (
 											<div
 												className="price"
-												dangerouslySetInnerHTML={{ __html: matchedProduct.priceHtml }}
+												dangerouslySetInnerHTML={{ __html: Sanitizer(matchedProduct.priceHtml) }}
 											/>
 										)}
-										{/* <div className="product-rating">
-												{'★'.repeat(Math.round(parseFloat(matchedProduct.averageRating)))}
-												<span className="review-count">({matchedProduct.reviewCount})</span>
-											</div> */}
 										{matchedProduct.averageRating && matchedProduct.averageRating !== '0' && (
 
-											<div className={`rating-wrapper`}
-											// style={{ transform: `scale(${ratingSize})` }}
-											>
+											<div className={`rating-wrapper`}>
 												<RatingStars rating={Number(matchedProduct.averageRating)} reviewCount={matchedProduct.reviewCount} />
 											</div>
 
+										)}
+
+										{/* Add to Cart Button using WooCommerce Interactivity API */}
+										<div className="add-to-cart-wrapper">
+											<AddToCartButton
+												product={{
+													id: matchedProduct.id,
+													name: matchedProduct.name,
+													type: matchedProduct.type || 'simple',
+													sku: matchedProduct.sku || '',
+													permalink: matchedProduct.permalink,
+													addToCart: matchedProduct.addToCart,
+												}}
+											/>
+										</div>
+
+										{matchedProduct.onSale && (
+											<div className='sale-badge-wrapper'>
+												<span className="product-badge sale-badge rounded">Sale</span>
+											</div>
 										)}
 									</div>
 								</div>

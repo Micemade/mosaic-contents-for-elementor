@@ -68,6 +68,21 @@ class ProductsLayout extends Widget_Base {
 				'max'  => 10,
 				'step' => 0.1,
 			),
+			'vw' => array(
+				'min'  => 0,
+				'max'  => 10,
+				'step' => 0.1,
+			),
+			'vh' => array(
+				'min'  => 0,
+				'max'  => 10,
+				'step' => 0.1,
+			),
+			'%' => array(
+				'min'  => 0,
+				'max'  => 100,
+				'step' => 1,
+			),
 		);
 	}
 
@@ -453,6 +468,7 @@ class ProductsLayout extends Widget_Base {
 				'label' => esc_html__( 'Text', 'mosaic-product-layouts-for-elementor' ),
 			)
 		);
+
 		$this->add_responsive_control(
 			'title_size',
 			array(
@@ -473,6 +489,7 @@ class ProductsLayout extends Widget_Base {
 				'range'     => self::get_range(),
 			)
 		);
+
 		$this->add_responsive_control(
 			'price_size',
 			array(
@@ -490,6 +507,15 @@ class ProductsLayout extends Widget_Base {
 					'size' => 18,
 					'unit' => 'px',
 				],
+				'range'     => self::get_range(),
+			)
+		);
+
+		$this->add_responsive_control(
+			'button_size',
+			array(
+				'label'     => esc_html__( 'Button text size', 'mosaic-product-layouts-for-elementor' ),
+				'type'      => Controls_Manager::SLIDER,
 				'range'     => self::get_range(),
 			)
 		);
@@ -516,7 +542,7 @@ class ProductsLayout extends Widget_Base {
 					'vertical'         => __( 'Image top', 'mosaic-product-layouts-for-elementor' ),
 					'vertical-alt'     => __( 'Image bottom', 'mosaic-product-layouts-for-elementor' ),
 				),
-				'description' => __( 'Select predefined layout for product display.', 'mosaic-product-layouts-for-elementor' ),
+				// 'description' => __( 'Select predefined layout for product display.', 'mosaic-product-layouts-for-elementor' ),
 			)
 		);
 
@@ -546,6 +572,10 @@ class ProductsLayout extends Widget_Base {
 			)
 		);
 
+		$this->add_control(
+			'hr_layout_image', [ 'type' => Controls_Manager::DIVIDER, ]
+		);
+
 		$this->add_responsive_control(
 			'product_align',
 			array(
@@ -569,6 +599,7 @@ class ProductsLayout extends Widget_Base {
 				'default'      => '',
 			)
 		);
+
 		$this->add_responsive_control(
 			'product_vertical_align',
 			array(
@@ -593,39 +624,34 @@ class ProductsLayout extends Widget_Base {
 		);
 
 		$this->add_responsive_control(
-			'padding',
+			'elements_gap',
 			array(
-				'label'      => __( 'Padding', 'mosaic-product-layouts-for-elementor' ),
-				'type'       => Controls_Manager::DIMENSIONS,
-				'size_units' => array( 'px', '%' ),
+				'label'     => esc_html__( 'Elements gap', 'mosaic-product-layouts-for-elementor' ),
+				'type'      => Controls_Manager::SLIDER,
+				'size_units' => array( 'px', '%', 'em', 'rem', 'vw', 'vh' ),
+				'default'   => array(
+					'size' => 0.2,
+					'unit' => 'em',
+				),
+				'range'     => self::get_range(),
 				'selectors' => array(
-					'{{WRAPPER}} .product-wrapper .flex-wrapper' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+					'{{WRAPPER}} .product-elements' => 'gap:{{SIZE}}{{UNIT}};',
 				),
 			)
 		);
 
 		$this->add_control(
-			'hr', [ 'type' => Controls_Manager::DIVIDER, ]
+			'hr_align', [ 'type' => Controls_Manager::DIVIDER, ]
 		);
 
-		$this->add_control(
-			'rating_size',
+		$this->add_responsive_control(
+			'padding',
 			array(
-				'label'     => esc_html__( 'Rating stars size', 'mosaic-product-layouts-for-elementor' ),
-				'type'      => Controls_Manager::SLIDER,
-				'default'   => array(
-					'size' => 100,
-					'unit' => '',
-				),
-				'range'       => array(
-					'em' => array(
-						'min'  => 1,
-						'max'  => 100,
-						'step' => 1,
-					),
-				),
+				'label'      => __( 'Padding', 'mosaic-product-layouts-for-elementor' ),
+				'type'       => Controls_Manager::DIMENSIONS,
+				'size_units' => array( 'px', '%', 'em', 'rem', 'vw', 'vh' ),
 				'selectors' => array(
-					'{{WRAPPER}} .product-elements .rating-stars' => 'transform: scale(calc({{size}} / 100));',
+					'{{WRAPPER}} .product-wrapper .flex-wrapper' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
 				),
 			)
 		);
@@ -682,7 +708,7 @@ class ProductsLayout extends Widget_Base {
 		$this->start_controls_tab(
 			'product_border_tab',
 			array(
-				'label' => esc_html__( 'Border', 'mosaic-product-layouts-for-elementor' ),
+				'label' => esc_html__( 'Borders', 'mosaic-product-layouts-for-elementor' ),
 			)
 		);
 		$this->add_group_control(
@@ -697,6 +723,7 @@ class ProductsLayout extends Widget_Base {
 		$this->add_control(
 			'border_radius',
 			array(
+				'show_label' => true,
 				'label'      => __( 'Border Radius', 'mosaic-product-layouts-for-elementor' ),
 				'type'       => Controls_Manager::DIMENSIONS,
 				'size_units' => array( 'px', '%' ),
@@ -717,6 +744,86 @@ class ProductsLayout extends Widget_Base {
 		$this->end_controls_tab();
 
 		$this->end_controls_tabs();
+
+		$this->add_control(
+			'special_elements_heading',
+			array(
+				'label' => esc_html__( 'Special Elements', 'mosaic-product-layouts-for-elementor' ),
+				'type' => Controls_Manager::HEADING,
+				'separator' => 'before',
+			)
+		);
+
+		// Additional Tabs.
+		$this->start_controls_tabs( 'additional_tabs' );
+
+		// Badges tab.
+		$this->start_controls_tab(
+			'badges_sale_tab',
+			array(
+				'label' => esc_html__( 'Badges', 'mosaic-product-layouts-for-elementor' ),
+			)
+		);
+
+		$this->add_responsive_control(
+			'badge_sale_size',
+			array(
+				'label'      => esc_html__( 'Sale badge text size', 'mosaic-product-layouts-for-elementor' ),
+				'type'       => Controls_Manager::SLIDER,
+				'size_units' => array( 'px', 'em', 'rem', 'vw', 'vh' ),
+				'range'      => self::get_range(),
+				'selectors'  => array(
+					'{{WRAPPER}} .product-wrapper .sale-badge' => 'font-size: {{SIZE}}{{UNIT}};',
+				),
+			)
+		);
+
+		$this->add_control(
+			'sale_badge_color',
+			array(
+				'label'     => esc_html__( 'Sale badge text color', 'mosaic-product-layouts-for-elementor' ),
+				'type'      => Controls_Manager::COLOR,
+				'default'   => '#FFFFFF',
+				'selectors' => array(
+					'{{WRAPPER}} .product-wrapper .sale-badge' => 'color: {{VALUE}};',
+				),
+			)
+		);
+
+		$this->end_controls_tab();
+
+		// Other.
+		$this->start_controls_tab(
+			'badges_other_tab',
+			array(
+				'label' => esc_html__( 'Other', 'mosaic-product-layouts-for-elementor' ),
+			)
+		);
+
+		$this->add_control(
+			'rating_size',
+			array(
+				'label'     => esc_html__( 'Rating stars size', 'mosaic-product-layouts-for-elementor' ),
+				'type'      => Controls_Manager::SLIDER,
+				'default'   => array(
+					'size' => 100,
+					'unit' => '',
+				),
+				'range'       => array(
+					'em' => array(
+						'min'  => 1,
+						'max'  => 200,
+						'step' => 1,
+					),
+				),
+				'selectors' => array(
+					'{{WRAPPER}} .product-elements .rating-stars' => 'transform: scale(calc({{size}} / 100));',
+				),
+			)
+		);
+		$this->end_controls_tab();
+
+		$this->end_controls_tabs();// Additional Tabs end.
 
 		$this->end_controls_section();
 	}

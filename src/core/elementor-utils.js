@@ -154,6 +154,11 @@ export const injectBreakpointStylesheet = () => {
 	justify-content: var(--product-align-desktop, center);
 	text-align: var(--product-align-desktop, center);
 }
+.products-layout .flex-wrapper .product-elements .add-to-cart-wrapper {
+	font-size: var(--button-size-desktop, 16px);
+	justify-content: var(--product-align-desktop, center);
+	text-align: var(--product-align-desktop, center);
+}
 .products-layout .flex-wrapper .product-elements .rating-wrapper {
 	justify-content: var(--product-align-desktop, center);
 }
@@ -182,6 +187,11 @@ export const injectBreakpointStylesheet = () => {
 	}
 	.products-layout .flex-wrapper .product-elements .price {
 		font-size: var(--price-size-${name}, 16px);
+		justify-content: var(--product-align-${name}, center);
+		text-align: var(--product-align-${name}, center);
+	}
+	.products-layout .flex-wrapper .product-elements .add-to-cart-wrapper {
+		font-size: var(--button-size-${name}, 16px);
 		justify-content: var(--product-align-${name}, center);
 		text-align: var(--product-align-${name}, center);
 	}

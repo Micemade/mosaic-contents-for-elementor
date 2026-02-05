@@ -9,7 +9,7 @@
  * The actual breakpoint values are injected at runtime from elementorFrontend.config.
  */
 
-// Import shared grid layout mixin
+// Import shared mixins and variables for consistent styling across widgets.
 @use '../../shared/assets/gridLayout' as *;
 @use '../../shared/assets/productElements' as *;
 
@@ -18,22 +18,6 @@
 	@include gridLayout;
 }
 
-/**
- * CSS Custom Properties (scoped per widget instance)
- * These are set via inline styles on .products-layout wrapper
- * and provide responsive styling support for multiple widget instances
- * 
- * Note: Responsive media queries are now generated dynamically by
- * injectBreakpointStylesheet() in elementor-utils.js using Elementor's
- * active breakpoint configuration. This ensures perfect sync with
- * Elementor's breakpoint settings (including custom breakpoints).
- */
-.products-layout {
-	// Default desktop styles are applied here
-	// Responsive variants are injected dynamically at runtime
-}
-
-// @use '../shared/index' as shared;
 
 %productLayout {
 
@@ -232,7 +216,7 @@
 
 		@include rating-stars;
 
-		// @include shared.sale-badge
+		@include sale-badge;
 
 	}// end .product-elements
 }// end %productLayout

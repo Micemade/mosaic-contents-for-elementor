@@ -67,5 +67,74 @@
 		} //end .rating-stars
 	}
 	//end .rating-wrapper
+}
 
+@mixin sale-badge {
+
+	.sale-badge-wrapper {
+		--b: 100%; /* base for tag shape */
+		--h: 5%; /* height for tag shape */
+
+		align-items: center;
+		justify-content: center;
+		position: absolute;
+		z-index: 1;
+
+		&.top-left { top: 10%; left:0; }
+		&.top-right { top: 10%; right:0; }
+		&.bottom-left { bottom: 10%; left:0; }
+		&.bottom-right { bottom: 10%; right:0; }
+
+		.sale-badge {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 0.5em 1em;
+			width: 100%;
+			text-align: center;
+			background: red;
+			color: white;
+			span {
+				font-weight: bold;
+			}
+		}
+
+		.square {
+			aspect-ratio: 1;
+		}
+		.square-rounded {
+			aspect-ratio: 1;
+			border-radius: 5px;
+		}
+		.starburst {
+			aspect-ratio: 1;
+			padding: 1em;
+			clip-path: polygon(100% 50%,86.71% 59.84%,93.3% 75%,76.87% 76.87%,75% 93.3%,59.84% 86.71%,50% 100%,40.16% 86.71%,25% 93.3%,23.13% 76.87%,6.7% 75%,13.29% 59.84%,0% 50%,13.29% 40.16%,6.7% 25%,23.13% 23.13%,25% 6.7%,40.16% 13.29%,50% 0%,59.84% 13.29%,75% 6.7%,76.87% 23.13%,93.3% 25%,86.71% 40.16%);
+		}
+		&.top-right, &.bottom-right {
+			.tag {
+				padding-left: 1.2em;
+				clip-path: polygon(0 0,100% 0,100% 100%,0 100%,0 calc(50% + var(--b)/2),var(--h) 50%,0 calc(50% - var(--b)/2));
+			}
+		}
+		&.top-left, &.bottom-left {
+			.tag {
+				padding-right: 1.2em;
+				clip-path: polygon(0 0,100% 0,100% calc(50% - var(--b)/2),calc(100% - var(--h)) 50%,100% calc(50% + var(--b)/2),100% 100%,0 100%);
+			}
+		}
+		.tag {
+			clip-path: polygon(0 0,100% 0,100% calc(50% - var(--b)/2),calc(100% - var(--h)) 50%,100% calc(50% + var(--b)/2),100% 100%,0 100%,0 calc(50% + var(--b)/2),var(--h) 50%,0 calc(50% - var(--b)/2));
+		}
+
+		.circle {
+			aspect-ratio: 1;
+			padding: 1em;
+			clip-path: circle(50% at 50% 50%);
+		}
+		.rounded {
+			border-radius: 5px;
+		}
+
+	}
 }

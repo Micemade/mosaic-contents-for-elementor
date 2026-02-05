@@ -83,6 +83,11 @@
 		"type": "responsive",
 		"breakpoints": ["desktop", "tablet", "mobile"]
 	},
+	"button_size": {
+		"default": "",
+		"type": "responsive",
+		"breakpoints": ["desktop", "tablet", "mobile"]
+	},
 	"product_align":{
 		"default": "center",
 		"type": "responsive",

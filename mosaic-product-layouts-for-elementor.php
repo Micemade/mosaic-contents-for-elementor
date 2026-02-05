@@ -129,6 +129,40 @@ final class MosaicProductLayoutsElementor {
 			array(),
 			'1.0.0'
 		);
+
+		// Add WooCommerce Store API nonce for AJAX cart operations
+		$this->enqueue_store_api_nonce();
+	}
+
+	/**
+	 * Enqueue WooCommerce Store API nonce for AJAX add-to-cart functionality.
+	 * This allows our React components to interact with the WC Store API.
+	 */
+	private function enqueue_store_api_nonce() {
+		// Only proceed if WooCommerce is active
+		if ( ! class_exists( 'WooCommerce' ) ) {
+			return;
+		}
+
+		// Get the Store API nonce
+		$nonce = '';
+		if ( class_exists( '\Automattic\WooCommerce\StoreApi\StoreApi' ) ) {
+			// WooCommerce 8.3+
+			$nonce = wp_create_nonce( 'wc_store_api' );
+		} elseif ( function_exists( 'wc_store_api_nonce' ) ) {
+			// Fallback for older versions
+			$nonce = wc_store_api_nonce();
+		} else {
+			// Generate nonce manually
+			$nonce = wp_create_nonce( 'wc_store_api' );
+		}
+
+		// Localize script with Store API configuration
+		wp_localize_script( 'mpl4e-js', 'MPL4E', array(
+			'storeApiNonce' => $nonce,
+			'cartUrl'       => wc_get_cart_url(),
+			'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
+		) );
 	}
 
 	public function admin_notice_missing_elementor() {

@@ -1,0 +1,146 @@
+/**
+ * AddToCartButton Component Styles
+ *
+ * Styles for the WooCommerce-compatible add-to-cart button.
+ * Follows WooCommerce's block button patterns for consistency.
+ */
+
+.mosaic-add-to-cart-button {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 0.5em;
+	flex-wrap: wrap;
+
+	// Button wrapper
+	&.wp-block-button {
+		margin: 0;
+	}
+
+	// Main button styling
+	.wp-block-button__link,
+	.wc-block-components-product-button__button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5em;
+		cursor: pointer;
+		text-decoration: none;
+		border: none;
+		border-radius: 4px;
+		padding: 0.6em 1em;
+		font-size: inherit;
+		font-weight: 500;
+		line-height: 1.4;
+		text-align: center;
+		transition: all 0.2s ease;
+		min-width: 120px;
+		
+		// Default colors (can be overridden by theme)
+		background-color: var(--wp--preset--color--primary, #333);
+		color: var(--wp--preset--color--background, #fff);
+		
+		&:hover:not(:disabled) {
+			filter: brightness(1.1);
+			transform: translateY(-1px);
+		}
+		
+		&:active:not(:disabled) {
+			transform: translateY(0);
+		}
+
+		&:focus {
+			outline: 2px solid currentColor;
+			outline-offset: 2px;
+		}
+
+		&:disabled {
+			cursor: not-allowed;
+			opacity: 0.7;
+		}
+
+		// Loading state
+		&.loading {
+			pointer-events: none;
+		}
+
+		// Added to cart state
+		&.added {
+			background-color: var(--wp--preset--color--success, #28a745);
+		}
+	}
+
+	// Button text container
+	.mosaic-add-to-cart__text {
+		display: inline-block;
+	}
+
+	// Loading spinner
+	.mosaic-add-to-cart__spinner {
+		display: inline-block;
+		width: 1em;
+		height: 1em;
+		border: 2px solid currentColor;
+		border-right-color: transparent;
+		border-radius: 50%;
+		animation: mosaic-spin 0.6s linear infinite;
+	}
+
+	// Slide animations (matches WooCommerce's pattern)
+	.wc-block-slide-out {
+		animation: mosaic-slide-out 0.15s ease-out forwards;
+	}
+
+	.wc-block-slide-in {
+		animation: mosaic-slide-in 0.15s ease-out forwards;
+	}
+
+	// View cart link
+	.added_to_cart {
+		display: inline-block;
+		font-size: 0.85em;
+		color: inherit;
+		text-decoration: underline;
+		
+		&:hover {
+			text-decoration: none;
+		}
+	}
+
+	// Error message
+	.mosaic-add-to-cart__error {
+		display: block;
+		font-size: 0.8em;
+		color: var(--wp--preset--color--vivid-red, #dc3545);
+		margin-top: 0.3em;
+	}
+
+	// Status modifier classes
+	&.mosaic-add-to-cart--loading {
+		.wc-block-components-product-button__button {
+			opacity: 0.8;
+		}
+	}
+
+	&.mosaic-add-to-cart--added {
+		.wc-block-components-product-button__button {
+			background-color: var(--wp--preset--color--success, #28a745);
+		}
+	}
+
+	&.mosaic-add-to-cart--error {
+		.wc-block-components-product-button__button {
+			background-color: var(--wp--preset--color--vivid-red, #dc3545);
+		}
+	}
+}
+
+// Keyframe animations
+@keyframes mosaic-spin {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
