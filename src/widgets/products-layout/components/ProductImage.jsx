@@ -65,6 +65,7 @@ const ProductImage = ({ productId, name, images, featuredImageSize, style = {} }
 			style={style}
 			{...(sizes && isAuto && { sizes: sizes })}
 			loading="lazy"
+			className='fade-in-image'
 		/>
 	) : (
 		<>{fallback}</>

@@ -1,3 +1,35 @@
-.mpl-for-elementor-root {
-  background: #3d7538;
+/**
+ * STYLES FOR ALL WIDGETS
+ *
+ **/
+
+ .gradient-preloader {
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	overflow: hidden;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background: linear-gradient(-45deg, rgba(240,240,240,0.6), rgba(0, 0, 0, 0.5), rgb(229, 229, 229), rgba(35, 35, 35, 0.6)),rgba(240, 240, 240, 0.9);
+	background-size: 400% 400%;
+	animation: gradient 8s ease infinite;
+}
+@keyframes gradient {
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
+}
+
+.fade-in-image {
+	opacity: 0;
+	animation: fadeIn 0.4s ease forwards;
 }
