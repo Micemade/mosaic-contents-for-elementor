@@ -182,6 +182,30 @@ class ProductsLayout extends Widget_Base {
 	}
 
 	/**
+	 * Get registered image sizes for select control.
+	 *
+	 * @return array Associative array of size_name => label.
+	 */
+	private function get_image_sizes() {
+		$sizes = array(
+			'automatic' => __( 'Automatic (from Store API)', 'mosaic-product-layouts-for-elementor' ),
+		);
+
+		// Get all registered image sizes.
+		$registered_sizes = wp_get_registered_image_subsizes();
+
+		if ( ! empty( $registered_sizes ) ) {
+			foreach ( $registered_sizes as $name => $size ) {
+				$label = ucwords( str_replace( array( '-', '_' ), ' ', $name ) );
+				$dimensions = $size['width'] . 'x' . $size['height'];
+				$sizes[ $name ] = sprintf( '%s (%s)', $label, $dimensions );
+			}
+		}
+
+		return $sizes;
+	}
+
+	/**
 	 * Get product categories for select control.
 	 *
 	 * @return array Associative array of term_id => name.
@@ -430,7 +454,7 @@ class ProductsLayout extends Widget_Base {
 		$this->start_controls_section(
 			'product_style_settings_section',
 			[
-				'label' => esc_html__( 'Product Style Settings', 'mosaic-product-layouts-for-elementor' ),
+				'label' => esc_html__( 'Product Card Style', 'mosaic-product-layouts-for-elementor' ),
 				'tab' => \Elementor\Controls_Manager::TAB_STYLE,
 			]
 		);
@@ -475,11 +499,11 @@ class ProductsLayout extends Widget_Base {
 				'label'     => esc_html__( 'Title size', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::SLIDER,
 				'default'   => array(
-					'size' => 26,
+					'size' => 24,
 					'unit' => 'px',
 				),
 				'tablet_default' => [
-					'size' => 24,
+					'size' => 22,
 					'unit' => 'px',
 				],
 				'mobile_default' => [
@@ -496,11 +520,11 @@ class ProductsLayout extends Widget_Base {
 				'label'     => esc_html__( 'Price size', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::SLIDER,
 				'default'   => array(
-					'size' => 22,
+					'size' => 20,
 					'unit' => 'px',
 				),
 				'tablet_default' => [
-					'size' => 20,
+					'size' => 18,
 					'unit' => 'px',
 				],
 				'mobile_default' => [
@@ -520,7 +544,7 @@ class ProductsLayout extends Widget_Base {
 			)
 		);
 		$this->end_controls_tab();
-		
+
 		
 		// Product layout tab.
 		$this->start_controls_tab(
@@ -532,7 +556,7 @@ class ProductsLayout extends Widget_Base {
 		$this->add_control(
 			'mpl4e_product_layout',
 			array(
-				'label'       => __( 'Product layout', 'mosaic-product-layouts-for-elementor' ),
+				'label'       => __( 'Product Card Layout', 'mosaic-product-layouts-for-elementor' ),
 				'type'        => Controls_Manager::SELECT,
 				'default'     => 'vertical',
 				'options'     => array(
@@ -546,34 +570,8 @@ class ProductsLayout extends Widget_Base {
 			)
 		);
 
-		$this->add_responsive_control(
-			'mpl4e_image_size',
-			array(
-				'label'     => esc_html__( 'Image size', 'mosaic-product-layouts-for-elementor' ),
-				'type'      => Controls_Manager::SLIDER,
-				'default'   => array(
-					'size' => 50,
-					'unit' => '',
-				),
-				'range'       => array(
-					'em' => array(
-						'min'  => 1,
-						'max'  => 100,
-						'step' => 1,
-					),
-				),
-				'selectors' => array(
-					'{{WRAPPER}} .product-wrapper .product-image' => 'flex-basis: {{size}}%;',
-					'{{WRAPPER}} .product-wrapper .flex-wrapper' => 'flex-basis: calc(100% - {{size}}%);',
-				),
-				'condition'   => array(
-					'mpl4e_product_layout!' => 'image-background',
-				)
-			)
-		);
-
 		$this->add_control(
-			'hr_layout_image', [ 'type' => Controls_Manager::DIVIDER, ]
+			'hr_layout_align', [ 'type' => Controls_Manager::DIVIDER, ]
 		);
 
 		$this->add_responsive_control(
@@ -623,6 +621,10 @@ class ProductsLayout extends Widget_Base {
 			)
 		);
 
+		$this->add_control(
+			'hr_layout_gap', [ 'type' => Controls_Manager::DIVIDER, ]
+		);
+
 		$this->add_responsive_control(
 			'mpl4e_elements_gap',
 			array(
@@ -641,7 +643,7 @@ class ProductsLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'hr_align', [ 'type' => Controls_Manager::DIVIDER, ]
+			'hr_layout_padding', [ 'type' => Controls_Manager::DIVIDER, ]
 		);
 
 		$this->add_responsive_control(
@@ -652,6 +654,81 @@ class ProductsLayout extends Widget_Base {
 				'size_units' => array( 'px', '%', 'em', 'rem', 'vw', 'vh' ),
 				'selectors' => array(
 					'{{WRAPPER}} .product-wrapper .flex-wrapper' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+				),
+			)
+		);
+
+		$this->end_controls_tab();
+
+		// Product image controls tab.
+		$this->start_controls_tab(
+			'product_image_tab',
+			array(
+				'label' => esc_html__( 'Image', 'mosaic-product-layouts-for-elementor' ),
+			)
+		);
+		
+		$this->add_responsive_control(
+			'mpl4e_image_size',
+			array(
+				'label'     => esc_html__( 'Image size', 'mosaic-product-layouts-for-elementor' ),
+				'type'      => Controls_Manager::SLIDER,
+				'default'   => array(
+					'size' => 50,
+					'unit' => '',
+				),
+				'range'       => array(
+					'em' => array(
+						'min'  => 1,
+						'max'  => 100,
+						'step' => 1,
+					),
+				),
+				'selectors' => array(
+					'{{WRAPPER}} .product-wrapper .product-image' => 'flex-basis: {{size}}%;',
+					'{{WRAPPER}} .product-wrapper .flex-wrapper' => 'flex-basis: calc(100% - {{size}}%);',
+				),
+				'condition'   => array(
+					'mpl4e_product_layout!' => 'image-background',
+				)
+			)
+		);
+
+		$this->add_control(
+			'mpl4e_featured_image_size',
+			array(
+				'label'       => esc_html__( 'Image resolution', 'mosaic-product-layouts-for-elementor' ),
+				'type'        => Controls_Manager::SELECT,
+				'default'     => 'automatic',
+				'options'     => $this->get_image_sizes(),
+			)
+		);
+
+		$this->add_control(
+			'mpl4e_image_fit',
+			array(
+				'label'   => esc_html__( 'Image fit', 'mosaic-product-layouts-for-elementor' ),
+				'type'    => Controls_Manager::SELECT,
+				'default' => 'cover',
+				'options' => array(
+					'cover'      => __( 'Cover', 'mosaic-product-layouts-for-elementor' ),
+					'contain'    => __( 'Contain', 'mosaic-product-layouts-for-elementor' ),
+					'fill'       => __( 'Fill', 'mosaic-product-layouts-for-elementor' ),
+					'none'       => __( 'None', 'mosaic-product-layouts-for-elementor' ),
+					'scale-down' => __( 'Scale Down', 'mosaic-product-layouts-for-elementor' ),
+				),
+			)
+		);
+
+		$this->add_control(
+			'mpl4e_featured_image_position',
+			array(
+				'label'       => esc_html__( 'Image position', 'mosaic-product-layouts-for-elementor' ),
+				'description' => esc_html__( 'Drag the focal point to position the image within the product card.', 'mosaic-product-layouts-for-elementor' ),
+				'type'        => 'mpl4e_focal_point',
+				'default'     => array(
+					'x' => 50,
+					'y' => 50,
 				),
 			)
 		);
@@ -772,6 +849,10 @@ class ProductsLayout extends Widget_Base {
 				'type'       => Controls_Manager::SLIDER,
 				'size_units' => array( 'px', 'em', 'rem', 'vw', 'vh' ),
 				'range'      => self::get_range(),
+				'default'    => array(
+					'size' => 14,
+					'unit' => 'px',
+				),
 				'selectors'  => array(
 					'{{WRAPPER}} .sale-badge' => 'font-size: {{SIZE}}{{UNIT}};',
 				),
@@ -795,9 +876,22 @@ class ProductsLayout extends Widget_Base {
 			array(
 				'label'     => esc_html__( 'Sale badge background color', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::COLOR,
-				'default'   => '#FFFFFF',
+				'default'   => '#CC0000',
 				'selectors' => array(
 					'{{WRAPPER}} .sale-badge' => 'background-color: {{VALUE}};',
+				),
+			)
+		);
+
+		$this->add_control(
+			'mpl4e_sale_badge_position',
+			array(
+				'label'       => esc_html__( 'Sale badge position', 'mosaic-product-layouts-for-elementor' ),
+				'description' => esc_html__( 'Drag the focal point to position the sale badge within the product card.', 'mosaic-product-layouts-for-elementor' ),
+				'type'        => 'mpl4e_focal_point',
+				'default'     => array(
+					'x' => 10,
+					'y' => 10,
 				),
 			)
 		);
@@ -883,6 +977,10 @@ class ProductsLayout extends Widget_Base {
 			} elseif ( $type === 'number' ) {
 				// Number: settings.key || default
 				$js_settings[] = "\t{$key}: settings.{$key} || {$default}";
+			} elseif ( $type === 'object' ) {
+				// Object (e.g., focal point with x/y): settings.key || { default }
+				$default_json = wp_json_encode( $default );
+				$js_settings[] = "\t{$key}: settings.{$key} || {$default_json}";
 			} elseif ( $type === 'responsive' ) {
 				// Responsive: { desktop: ..., tablet: ..., mobile: ... }
 				// Get active breakpoints from Elementor

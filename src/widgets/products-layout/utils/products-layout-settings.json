@@ -100,5 +100,27 @@
 		"default": "center",
 		"type": "responsive",
 		"breakpoints": ["desktop", "tablet", "mobile"]
+	},
+	"mpl4e_sale_badge_position": {
+		"type": "object",
+		"default": {
+			"x": 10,
+			"y": 10
+		}
+	},
+	"mpl4e_featured_image_size": {
+		"type": "string",
+		"default": "automatic"
+	},
+	"mpl4e_featured_image_position": {
+		"type": "object",
+		"default": {
+			"x": 50,
+			"y": 50
+		}
+	},
+	"mpl4e_image_fit": {
+		"type": "string",
+		"default": "cover"
 	}
 }

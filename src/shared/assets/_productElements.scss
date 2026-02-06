@@ -80,14 +80,14 @@
 		justify-content: center;
 		position: absolute;
 		z-index: 1;
-
-		&.top-left { top: 10%; left:0; }
-		&.top-right { top: 10%; right:0; }
-		&.bottom-left { bottom: 10%; left:0; }
-		&.bottom-right { bottom: 10%; right:0; }
+		// Default position (will be overridden by inline styles from focal point control)
+		left: 10%;
+		top: 10%;
+		// Transform to center the badge on the focal point
+		transform: translate(-50%, -50%);
 
 		.sale-badge {
-			padding: 0.5em 1em;
+			padding: 0.6ch 1.4ch;
 			width: 100%;
 			text-align: center;
 			background: red;
@@ -109,22 +109,9 @@
 			padding: 1em;
 			clip-path: polygon(100% 50%,86.71% 59.84%,93.3% 75%,76.87% 76.87%,75% 93.3%,59.84% 86.71%,50% 100%,40.16% 86.71%,25% 93.3%,23.13% 76.87%,6.7% 75%,13.29% 59.84%,0% 50%,13.29% 40.16%,6.7% 25%,23.13% 23.13%,25% 6.7%,40.16% 13.29%,50% 0%,59.84% 13.29%,75% 6.7%,76.87% 23.13%,93.3% 25%,86.71% 40.16%);
 		}
-		&.top-right, &.bottom-right {
-			.tag {
-				padding-left: 1.2em;
-				clip-path: polygon(0 0,100% 0,100% 100%,0 100%,0 calc(50% + var(--b)/2),var(--h) 50%,0 calc(50% - var(--b)/2));
-			}
-		}
-		&.top-left, &.bottom-left {
-			.tag {
-				padding-right: 1.2em;
-				clip-path: polygon(0 0,100% 0,100% calc(50% - var(--b)/2),calc(100% - var(--h)) 50%,100% calc(50% + var(--b)/2),100% 100%,0 100%);
-			}
-		}
 		.tag {
 			clip-path: polygon(0 0,100% 0,100% calc(50% - var(--b)/2),calc(100% - var(--h)) 50%,100% calc(50% + var(--b)/2),100% 100%,0 100%,0 calc(50% + var(--b)/2),var(--h) 50%,0 calc(50% - var(--b)/2));
 		}
-
 		.circle {
 			aspect-ratio: 1;
 			padding: 1em;

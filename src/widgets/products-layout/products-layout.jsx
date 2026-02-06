@@ -262,8 +262,10 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 	const layoutId = widgetData?.mpl4e_layout || 'layout-1';
 	const customLayoutData = widgetData?.mpl4e_custom_layout || '';
 	const productLayout = widgetData?.mpl4e_product_layout || 'vertical';
-	const ratingSize = widgetData?.mpl4e_rating_size || 1;
-
+	const saleBadgePosition = widgetData?.mpl4e_sale_badge_position || { x: 10, y: 10 };
+	const featuredImageSize = widgetData?.mpl4e_featured_image_size || 'automatic';
+	const featuredImagePosition = widgetData?.mpl4e_featured_image_position || { x: 50, y: 50 };
+	const featuredImageFit = widgetData?.mpl4e_image_fit || 'cover';
 
 	// Grid settings from Elementor controls
 	const gridSettings = useMemo(
@@ -484,7 +486,13 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 							style={{ zIndex }}
 						>
 							{matchedProduct.onSale && (
-								<div className='sale-badge-wrapper'>
+								<div
+									className='sale-badge-wrapper'
+									style={{
+										left: `${saleBadgePosition.x}%`,
+										top: `${saleBadgePosition.y}%`,
+									}}
+								>
 									<span className="product-badge sale-badge rounded">Sale</span>
 								</div>
 							)}
@@ -497,7 +505,11 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 											productId={matchedProduct.id}
 											name={matchedProduct.name}
 											images={matchedProduct.images}
-											featuredImageSize="automatic"
+											featuredImageSize={featuredImageSize}
+											style={{
+												'object-position': `${featuredImagePosition.x}% ${featuredImagePosition.y}%`,
+												'object-fit': featuredImageFit,
+											}}
 										/>
 									</a>
 

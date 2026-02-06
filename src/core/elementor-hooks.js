@@ -147,7 +147,7 @@ export const registerEditorHooks = () => {
 			elementor.channels.editor.on('mosaic:resetLayout', () => {
 				// Only reset if this widget is currently open in the panel
 				if (elementor.getPanelView().getCurrentPageView().model.id === widgetId) {
-					model.setSetting('custom_layout', ''); // Clear custom layout setting
+					model.setSetting('mpl4e_custom_layout', ''); // Clear custom layout setting
 				}
 			});
 		});

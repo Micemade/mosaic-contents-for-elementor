@@ -3,11 +3,21 @@
  */
 
 import { useState, useEffect } from 'react';
-import apiFetch from '@wordpress/api-fetch';
+
+/**
+ * Get the WordPress REST API base URL.
+ * Uses wpApiSettings if available (set by wp-api script), otherwise falls back to /wp-json/.
+ */
+const getApiRoot = () => {
+	if (typeof window.wpApiSettings !== 'undefined' && window.wpApiSettings.root) {
+		return window.wpApiSettings.root;
+	}
+	return '/wp-json/';
+};
 
 export const getFeaturedImage = (productId, featuredImageSize) => {
 
-	const [loadingImg, setLoadingImg] = useState(true);
+	const [loadingFeaturedImg, setLoadingFeaturedImg] = useState(true);
 	const [featuredImage, setFeaturedImage] = useState(null);
 
 	useEffect(() => {
@@ -17,21 +27,27 @@ export const getFeaturedImage = (productId, featuredImageSize) => {
 		// If "featuredImageSize" is not set (is 'automatic'), get image source url from registered sizes.
 		async function fetchFeaturedImage() {
 			try {
-				setLoadingImg(true);
-				const response = await apiFetch({
-					path: `/wp/v2/product/${productId}?_embed`,
-				});
+				setLoadingFeaturedImg(true);
+				const apiRoot = getApiRoot();
+				const response = await fetch(`${apiRoot}wp/v2/product/${productId}?_embed`);
+
+				if (!response.ok) {
+					throw new Error(`WP REST API error: ${response.status}`);
+				}
+
+				const data = await response.json();
 
 				if (
-					typeof featuredImageSize !== "automatic" &&
-					typeof response._embedded['wp:featuredmedia'] !== 'undefined'
+					featuredImageSize !== "automatic" &&
+					typeof data._embedded?.['wp:featuredmedia'] !== 'undefined'
 				) {
-					const featuredImage = response._embedded['wp:featuredmedia'][0].media_details.sizes[featuredImageSize]?.source_url;
-					setFeaturedImage(featuredImage);
+					const featuredImg = data._embedded['wp:featuredmedia'][0]?.media_details?.sizes?.[featuredImageSize]?.source_url;
+					setFeaturedImage(featuredImg || null);
 				}
-				setLoadingImg(false);
+				setLoadingFeaturedImg(false);
 			} catch (error) {
 				console.error("Error fetching featured image size source url via WP Rest API:", error);
+				setLoadingFeaturedImg(false);
 			}
 
 		};
@@ -39,7 +55,7 @@ export const getFeaturedImage = (productId, featuredImageSize) => {
 
 	}, [productId, featuredImageSize]);
 
-	return { loadingImg, featuredImage };
+	return { loadingFeaturedImg, featuredImage };
 };
 
 export const getProduct = (productId) => {
@@ -51,13 +67,19 @@ export const getProduct = (productId) => {
 		if (!productId || typeof productId === "undefined") return;
 		async function fetchProduct() {
 			try {
-				const product = await apiFetch({
-					path: `/wc/store/v1/products/${productId}?_fields=id,name,short_description,price_html,images,permalink,add_to_cart,type`,
-				});
-				setProduct(product);
+				const apiRoot = getApiRoot();
+				const response = await fetch(`${apiRoot}wc/store/v1/products/${productId}?_fields=id,name,short_description,price_html,images,permalink,add_to_cart,type`);
+
+				if (!response.ok) {
+					throw new Error(`WC Store API error: ${response.status}`);
+				}
+
+				const data = await response.json();
+				setProduct(data);
 				setLoading(false);
 			} catch (error) {
 				console.error("getProduct - WC Store API error:", error);
+				setLoading(false);
 			}
 		}
 		fetchProduct();

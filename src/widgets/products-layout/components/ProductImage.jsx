@@ -4,7 +4,11 @@
 import { __ } from '@wordpress/i18n';
 import { memo } from '@wordpress/element';
 import PropTypes from 'prop-types';
-import placeholderImg from '../../../shared/woocommerce-placeholder-300x300.png';
+
+import placeholderImgForBuild from '../../../shared/woocommerce-placeholder-300x300.png';
+
+// Get placeholder image URL from localized script data
+const placeholderImg = window.MPL4E?.placeholderImg || '';
 
 /**
  * Internal dependencies.
@@ -32,7 +36,7 @@ const ProductImage = ({ productId, name, images, featuredImageSize, style = {} }
 	const fallback = (
 		<img
 			src={typeof wc === 'object' ? wc?.wcSettings?.PLACEHOLDER_IMG_SRC : placeholderImg}
-			alt={__('Product has no featured image', 'mosaic-product-layouts')}
+			alt={__('Product has no featured image', 'mosaic-product-layouts-for-elementor')}
 		/>
 	);
 
@@ -40,7 +44,7 @@ const ProductImage = ({ productId, name, images, featuredImageSize, style = {} }
 	const isAuto = featuredImageSize === 'automatic';
 
 	// Fallback for image alt attribute.
-	const altFallback = __('Product image', 'mosaic-product-layouts');
+	const altFallback = __('Product image', 'mosaic-product-layouts-for-elementor');
 
 	// Only fetch product and featured image if not in 'automatic' mode
 	const { product, loading } = isAuto ? { product: null, loading: false } : getProduct(productId);
@@ -85,14 +89,8 @@ ProductImage.propTypes = {
 	),
 
 	name: PropTypes.string,
-	// String with specific values
-	featuredImageSize: PropTypes.oneOf([
-		'automatic',
-		'thumbnail',
-		'medium',
-		'large',
-		'full'
-	]),
+	// String - accepts any registered WordPress image size name
+	featuredImageSize: PropTypes.string,
 
 	// Object for style
 	style: PropTypes.object

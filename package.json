@@ -5,13 +5,18 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "watch": "vite build --watch",
+    "build": "BUILD_ENTRY=main vite build && BUILD_ENTRY=focal-point-control vite build",
+    "build:main": "BUILD_ENTRY=main vite build",
+    "build:control": "BUILD_ENTRY=focal-point-control vite build",
+    "watch": "concurrently \"BUILD_ENTRY=main vite build --watch\" \"BUILD_ENTRY=focal-point-control vite build --watch\"",
+    "watch:main": "BUILD_ENTRY=main vite build --watch",
+    "watch:control": "BUILD_ENTRY=focal-point-control vite build --watch",
     "lint": "eslint .",
     "preview": "vite preview",
     "format": "prettier --write ."
   },
   "dependencies": {
+    "@lemoncode/react-image-focal-point": "^1.0.0",
     "@wordpress/api-fetch": "^7.14.0",
     "@wordpress/element": "^6.37.0",
     "@wordpress/i18n": "^5.14.0",
@@ -29,6 +34,7 @@
     "@vitejs/plugin-react": "^4.3.1",
     "browserslist": "^4.28.1",
     "caniuse-lite": "^1.0.30001763",
+    "concurrently": "^9.2.1",
     "eslint": "^9.9.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-react": "^7.35.0",

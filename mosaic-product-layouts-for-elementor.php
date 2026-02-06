@@ -33,7 +33,9 @@ final class MosaicProductLayoutsElementor {
 		add_action( 'plugins_loaded', array( $this, 'init_plugin' ) );
 		add_action( 'elementor/elements/categories_registered', array( $this, 'create_new_category' ) );
 		add_action( 'elementor/widgets/widgets_registered', array( $this, 'init_widgets' ) );
+		add_action( 'elementor/controls/register', array( $this, 'init_controls' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ), 100 );
+		add_action( 'elementor/editor/after_enqueue_scripts', array( $this, 'enqueue_editor_scripts' ) );
 	}
 
 	public function i18n() {
@@ -63,8 +65,28 @@ final class MosaicProductLayoutsElementor {
 		// bring in the controls
 	}
 
-	public function init_controls() {
+	/**
+	 * Register custom Elementor controls.
+	 *
+	 * @param \Elementor\Controls_Manager $controls_manager Elementor controls manager.
+	 */
+	public function init_controls( $controls_manager ) {
+		// Require the focal point control class.
+		require_once __DIR__ . '/controls/focal-point.php';
 
+		// Register the focal point control.
+		$controls_manager->register( new \Micemade\MosaicProductLayoutsElementor\Controls\Focal_Point() );
+	}
+
+	/**
+	 * Enqueue scripts for Elementor editor.
+	 */
+	public function enqueue_editor_scripts() {
+		// Enqueue React and ReactDOM for editor
+		wp_enqueue_script( 'react' );
+		wp_enqueue_script( 'react-dom' );
+
+		// The control script is enqueued by the control's enqueue() method
 	}
 
 	public function init_widgets( $widgets_manager ) {
@@ -159,9 +181,10 @@ final class MosaicProductLayoutsElementor {
 
 		// Localize script with Store API configuration
 		wp_localize_script( 'mpl4e-js', 'MPL4E', array(
-			'storeApiNonce' => $nonce,
-			'cartUrl'       => wc_get_cart_url(),
-			'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
+			'storeApiNonce'   => $nonce,
+			'cartUrl'         => wc_get_cart_url(),
+			'ajaxUrl'         => admin_url( 'admin-ajax.php' ),
+			'placeholderImg'  => plugins_url( 'assets/images/woocommerce-placeholder-300x300.png', __FILE__ ),
 		) );
 	}
 
