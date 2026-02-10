@@ -382,6 +382,17 @@ class ProductsLayout extends Widget_Base {
 		);
 
 		$this->add_control(
+			'add_grid_item',
+			array(
+				'label'        => __( 'Add Grid Item', 'mosaic-product-layouts-for-elementor' ),
+				'type'         => Controls_Manager::BUTTON,
+				'text'         => __( 'Add Item', 'mosaic-product-layouts-for-elementor' ),
+				'description'  => __( 'Add a new item to the grid layout.', 'mosaic-product-layouts-for-elementor' ),
+				'event'        => 'mosaic:addGridItem',
+			)
+		);
+
+		$this->add_control(
 			'mpl4e_items_margin',
 			array(
 				'label'   => __( 'Grid Gap', 'mosaic-product-layouts-for-elementor' ),

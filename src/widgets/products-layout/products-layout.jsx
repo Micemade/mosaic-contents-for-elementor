@@ -24,9 +24,10 @@ import RatingStars from './components/RatingStars.jsx';
 import AddToCartButton from './components/AddToCartButton.jsx';
 
 // Utilities and data.
-import Layouts from '../../shared/layouts.json';
 import { decode } from '../../shared/utils/generalUtils.js';
 import { updateElementorSetting, isElementorEditor, getActiveBreakpoints } from '../../core/elementor-utils';
+import { addItemToLayout } from '../../shared/utils/addGridItem.js';
+import { getLayout } from '../../shared/utils/layoutUtils.js';
 
 import './products-layout.scss';
 
@@ -127,48 +128,6 @@ async function fetchProducts(querySettings) {
 }
 
 /**
- * Get layout from predefined layouts.
- *
- * Parses the layout JSON and converts PascalCase breakpoint keys to lowercase.
- * Layout item IDs (item-0, item-1, etc.) are preserved for product mapping.
- *
- * @param {string} layoutId - ID of the layout to use (e.g., 'layout-1')
- * @param {number} itemCount - Number of items in the layout (for fallback selection)
- * @returns {Object} Parsed layouts object with desktop, tablet, mobile arrays
- */
-function getLayout(layoutId = 'layout-1', itemCount = 3) {
-	// Find layout by ID
-	let layoutData = Layouts.find((l) => l.id === layoutId);
-
-	// Fallback: find layout matching item count
-	if (!layoutData) {
-		if (itemCount <= 3) {
-			layoutData = Layouts.find((l) => l.id === 'layout-1');
-		} else if (itemCount <= 4) {
-			layoutData = Layouts.find((l) => l.id === 'layout-10');
-		} else {
-			layoutData = Layouts.find((l) => l.id === 'layout-10');
-		}
-	}
-
-	if (!layoutData) {
-		return { desktop: [], tablet: [], mobile: [], zindex: {} };
-	}
-
-	// Parse the JSON value
-	const parsed = JSON.parse(layoutData.value);
-	const zindex = layoutData.zindex ? JSON.parse(layoutData.zindex) : {};
-
-	// Convert PascalCase to lowercase for Elementor breakpoints
-	return {
-		desktop: parsed.Desktop || [],
-		tablet: parsed.Tablet || [],
-		mobile: parsed.Mobile || [],
-		zindex,
-	};
-}
-
-/**
  * Prepare products data with layout item assignments.
  *
  * Assigns each product to a layout item ID (item-0, item-1, etc.)
@@ -266,6 +225,9 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 	const featuredImageSize = widgetData?.mpl4e_featured_image_size || 'automatic';
 	const featuredImagePosition = widgetData?.mpl4e_featured_image_position || { x: 50, y: 50 };
 	const featuredImageFit = widgetData?.mpl4e_image_fit || 'cover';
+
+	console.log(customLayoutData);
+
 
 	// Grid settings from Elementor controls
 	const gridSettings = useMemo(
@@ -419,6 +381,23 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 		}
 	};
 
+	// Handle adding a new grid item (editor only)
+	const handleAddItem = () => {
+		if (!isElementorEditor() || !widgetId) return;
+
+		const gridColumns = {
+			desktop: gridSettings.columns.desktop,
+			tablet: gridSettings.columns.tablet,
+			mobile: gridSettings.columns.mobile
+		};
+
+		// Use current layoutData (either from custom layout or predefined layout)
+		// This ensures predefined layout items are preserved when adding new items
+		const currentLayout = customLayoutData || JSON.stringify(layoutData);
+		const { newLayoutJson } = addItemToLayout(currentLayout, gridColumns);
+		updateElementorSetting('products-layout', widgetId, 'mpl4e_custom_layout', newLayoutJson);
+	};
+
 	if (isLoading) {
 		return (
 			<div className="products-layout">
@@ -556,6 +535,24 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 					);
 				})}
 			</GridLayout>
+
+			{/* Editor-only floating toolbar */}
+			{isElementorEditor() && (
+				<div className="mpl4e-editor-toolbar">
+					<button
+						type="button"
+						className="mpl4e-toolbar-btn mpl4e-add-item-btn"
+						onClick={handleAddItem}
+						title="Add Grid Item"
+					>
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+							<line x1="12" y1="5" x2="12" y2="19"></line>
+							<line x1="5" y1="12" x2="19" y2="12"></line>
+						</svg>
+						<span>Add Item</span>
+					</button>
+				</div>
+			)}
 		</div>
 	);
 };

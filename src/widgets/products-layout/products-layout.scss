@@ -343,3 +343,61 @@
  * are now generated dynamically in elementor-utils.js -> injectBreakpointStylesheet()
  * using actual Elementor breakpoint values from elementorFrontend.config
  */
+
+/**
+ * Editor-only toolbar styles
+ * Floating toolbar for widget actions in Elementor editor
+ */
+.mpl4e-editor-toolbar {
+	position: absolute;
+	bottom: 10px;
+	right: 10px;
+	z-index: 9999;
+	display: flex;
+	gap: 8px;
+	background: #fff;
+	border-radius: 4px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+	padding: 4px;
+
+	.mpl4e-toolbar-btn {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		padding: 8px 12px;
+		border: none;
+		border-radius: 3px;
+		background: #0073aa;
+		color: #fff;
+		font-size: 13px;
+		font-weight: 500;
+		cursor: pointer;
+		transition: background-color 0.2s ease;
+
+		&:hover {
+			background: #005a87;
+		}
+
+		&:active {
+			background: #004a73;
+		}
+
+		svg {
+			width: 14px;
+			height: 14px;
+			flex-shrink: 0;
+		}
+
+		span {
+			white-space: nowrap;
+		}
+	}
+
+	.mpl4e-add-item-btn {
+		background: #2271b1;
+
+		&:hover {
+			background: #135e96;
+		}
+	}
+}

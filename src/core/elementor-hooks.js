@@ -11,6 +11,8 @@ import { getRegisteredWidgets, getWidgetConfig } from './widget-registry';
 import { createWidgetInitializer } from './widget-initializer';
 import widgetManager from './widget-manager';
 import { getActiveBreakpoints } from './elementor-utils';
+import { addItemToLayout } from '../shared/utils/addGridItem';
+import { getComputedLayout } from '../shared/utils/layoutUtils';
 
 /**
  * Register frontend hooks for all widgets.
@@ -142,12 +144,47 @@ export const registerEditorHooks = () => {
 				);
 			});
 
+			// Clear custom layout when predefined layout changes
+			// This ensures switching predefined layouts applies immediately
+			model.get('settings').on('change:mpl4e_layout', (settingsModel, newLayoutId) => {
+				const customLayout = model.getSetting('mpl4e_custom_layout');
+				if (customLayout) {
+					// Clear custom layout so new predefined layout takes effect
+					model.setSetting('mpl4e_custom_layout', '');
+				}
+			});
+
 			// Listen for custom 'reset layout' event from React component
 			// (React → Elementor)
 			elementor.channels.editor.on('mosaic:resetLayout', () => {
 				// Only reset if this widget is currently open in the panel
 				if (elementor.getPanelView().getCurrentPageView().model.id === widgetId) {
 					model.setSetting('mpl4e_custom_layout', ''); // Clear custom layout setting
+				}
+			});
+
+			// Listen for 'add grid item' event from panel button
+			// (Elementor Panel → React)
+			elementor.channels.editor.on('mosaic:addGridItem', () => {
+				// Only add if this widget is currently open in the panel
+				if (elementor.getPanelView().getCurrentPageView().model.id === widgetId) {
+					const customLayoutData = model.getSetting('mpl4e_custom_layout') || '';
+					const layoutId = model.getSetting('mpl4e_layout') || 'layout-1';
+					const gridColumns = {
+						desktop: 48,
+						tablet: 24,
+						mobile: 12
+					};
+
+					// Get the actual layout data (from custom or predefined)
+					const currentLayoutData = getComputedLayout(customLayoutData, layoutId);
+					const { newLayoutJson, newItemId } = addItemToLayout(JSON.stringify(currentLayoutData), gridColumns);
+					model.setSetting('mpl4e_custom_layout', newLayoutJson);
+
+					// Mark document as changed
+					if (elementor.saver) {
+						elementor.saver.setFlagEditorChange(true);
+					}
 				}
 			});
 		});
