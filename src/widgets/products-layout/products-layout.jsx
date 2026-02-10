@@ -26,7 +26,7 @@ import AddToCartButton from './components/AddToCartButton.jsx';
 // Utilities and data.
 import { decode } from '../../shared/utils/generalUtils.js';
 import { updateElementorSetting, isElementorEditor, getActiveBreakpoints } from '../../core/elementor-utils';
-import { addItemToLayout, removeItemFromLayout } from '../../shared/utils/addGridItem.js';
+import { addItemToLayout, removeItemFromLayout } from '../../shared/utils/addItem.js';
 import { getLayout } from '../../shared/utils/layoutUtils.js';
 
 import './products-layout.scss';
@@ -97,7 +97,17 @@ async function fetchProducts(querySettings) {
 	if (mpl4e_per_page) params.append('per_page', mpl4e_per_page);
 	if (mpl4e_orderby) params.append('orderby', mpl4e_orderby);
 	if (mpl4e_order) params.append('order', mpl4e_order);
-	if (mpl4e_category) params.append('category', mpl4e_category);
+
+	// Handle multiple categories (array or comma-separated string)
+	if (mpl4e_category) {
+		if (Array.isArray(mpl4e_category) && mpl4e_category.length > 0) {
+			// WC Store API accepts comma-separated category IDs
+			params.append('category', mpl4e_category.join(','));
+		} else if (typeof mpl4e_category === 'string' && mpl4e_category) {
+			params.append('category', mpl4e_category);
+		}
+	}
+
 	if (mpl4e_on_sale) params.append('on_sale', 'true');
 	if (mpl4e_featured) params.append('featured', 'true');
 
@@ -471,13 +481,13 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 									<button
 										type="button"
 										className="mpl4e-remove-item-btn"
-										onClick={(e) => {
+										onMouseDownCapture={(e) => {
 											e.stopPropagation();
 											handleRemoveItem(layoutItem.i);
 										}}
 										title="Remove Layout Item"
 									>
-										<i class="eicon-close" aria-hidden="true"></i>
+										<i className="eicon-close" aria-hidden="true" />
 									</button>
 								)}
 								<div className="product-wrapper empty">

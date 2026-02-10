@@ -51,18 +51,17 @@ const isPositionOccupied = (existingLayouts, x, y, w, h) => {
 };
 
 /**
- * Find the first available gap in the grid that can fit an item
+ * Find the first available gap in the grid and calculate available space
  * Scans from top-left, row by row
  * 
  * @param {Array} existingLayouts - Existing layout items
  * @param {number} gridWidth - Number of columns in the grid
- * @param {number} itemWidth - Width of the new item
- * @param {number} itemHeight - Height of the new item
- * @returns {Object|null} Position { x, y } or null if no gap found
+ * @param {number} minWidth - Minimum width to consider as a valid gap
+ * @returns {Object|null} Position { x, y, availableWidth } or null if no gap found
  */
-const findFirstAvailableGap = (existingLayouts, gridWidth, itemWidth, itemHeight) => {
+const findFirstAvailableGap = (existingLayouts, gridWidth, minWidth = 1) => {
 	if (!existingLayouts || existingLayouts.length === 0) {
-		return { x: 0, y: 0 };
+		return { x: 0, y: 0, availableWidth: gridWidth };
 	}
 
 	// Calculate the bounding box of existing items
@@ -70,10 +69,21 @@ const findFirstAvailableGap = (existingLayouts, gridWidth, itemWidth, itemHeight
 
 	// Scan the grid from top-left, row by row
 	for (let y = 0; y <= maxY; y++) {
-		for (let x = 0; x <= gridWidth - itemWidth; x++) {
-			// Check if this position can fit the new item
-			if (!isPositionOccupied(existingLayouts, x, y, itemWidth, itemHeight)) {
-				return { x, y };
+		for (let x = 0; x <= gridWidth - minWidth; x++) {
+			// Check if this position is free (check with 1x1 to find any gap start)
+			if (!isPositionOccupied(existingLayouts, x, y, 1, 1)) {
+				// Found a gap start, calculate available horizontal space
+				let availableWidth = 0;
+				for (let testX = x; testX < gridWidth; testX++) {
+					if (!isPositionOccupied(existingLayouts, testX, y, 1, 1)) {
+						availableWidth++;
+					} else {
+						break;
+					}
+				}
+				if (availableWidth >= minWidth) {
+					return { x, y, availableWidth };
+				}
 			}
 		}
 	}
@@ -82,12 +92,75 @@ const findFirstAvailableGap = (existingLayouts, gridWidth, itemWidth, itemHeight
 };
 
 /**
+ * Calculate the maximum height available at a position without overlapping
+ * 
+ * @param {Array} existingLayouts - Existing layout items
+ * @param {number} x - X position
+ * @param {number} y - Y position
+ * @param {number} width - Width of the item
+ * @param {number} maxHeight - Maximum height to check
+ * @returns {number} Maximum available height
+ */
+const getAvailableHeight = (existingLayouts, x, y, width, maxHeight) => {
+	for (let h = 1; h <= maxHeight; h++) {
+		if (isPositionOccupied(existingLayouts, x, y, width, h)) {
+			return h - 1;
+		}
+	}
+	return maxHeight;
+};
+
+/**
+ * Find the height to use for a new item based on nearby items,
+ * constrained to not overlap with any existing items
+ * 
+ * @param {Array} existingLayouts - Existing layout items
+ * @param {number} gapX - X position of the gap
+ * @param {number} gapY - Y position of the gap
+ * @param {number} gapWidth - Width of the new item
+ * @param {number} defaultHeight - Default height to use if no match found
+ * @returns {number} Height to use
+ */
+const getHeightFromNearbyItems = (existingLayouts, gapX, gapY, gapWidth, defaultHeight) => {
+	if (!existingLayouts || existingLayouts.length === 0) {
+		return defaultHeight;
+	}
+
+	// First, calculate the maximum available height without overlapping
+	const maxAvailableHeight = getAvailableHeight(existingLayouts, gapX, gapY, gapWidth, defaultHeight * 2);
+
+	if (maxAvailableHeight <= 0) {
+		return 1; // Minimum height
+	}
+
+	// Look for items on the same row (same y position) to match height
+	const sameRowItems = existingLayouts.filter(item => item.y === gapY);
+	if (sameRowItems.length > 0) {
+		const targetHeight = sameRowItems[0].h;
+		return Math.min(targetHeight, maxAvailableHeight);
+	}
+
+	// Look for items that overlap vertically with this y position
+	const overlappingItems = existingLayouts.filter(item =>
+		item.y <= gapY && item.y + item.h > gapY
+	);
+	if (overlappingItems.length > 0) {
+		const targetHeight = overlappingItems[0].h;
+		return Math.min(targetHeight, maxAvailableHeight);
+	}
+
+	// Fall back to last item's height, constrained by available space
+	const lastItem = existingLayouts[existingLayouts.length - 1];
+	const targetHeight = lastItem ? lastItem.h : defaultHeight;
+	return Math.min(targetHeight, maxAvailableHeight);
+};
+
+/**
  * Build a new item for a specific breakpoint
  * 
  * Placement priority:
- * 1. First available gap in existing layout (from top-left)
- * 2. Right of the last row if space available
- * 3. New row at the bottom
+ * 1. First available gap in existing layout (from top-left), filling horizontal space
+ * 2. New row at the bottom
  * 
  * @param {string} device - Breakpoint name (desktop, tablet, mobile)
  * @param {Array} existingLayouts - Existing layout items for this breakpoint
@@ -98,14 +171,14 @@ const findFirstAvailableGap = (existingLayouts, gridWidth, itemWidth, itemHeight
 const buildNewItemForDevice = (device, existingLayouts, gridWidth, itemId) => {
 	// Default dimensions based on device
 	const defaultDimensions = {
-		desktop: { w: 12, h: 15 },
-		tablet: { w: 8, h: 12 },
-		mobile: { w: 6, h: 10 },
+		desktop: { w: 12, h: 20 },
+		tablet: { w: 8, h: 16 },
+		mobile: { w: 6, h: 12 },
 	};
 
 	const defaults = defaultDimensions[device] || defaultDimensions.desktop;
 
-	// If no existing layouts, place at origin
+	// If no existing layouts, place at origin with default dimensions
 	if (!existingLayouts || existingLayouts.length === 0) {
 		return {
 			i: itemId,
@@ -116,43 +189,49 @@ const buildNewItemForDevice = (device, existingLayouts, gridWidth, itemId) => {
 		};
 	}
 
-	// Get dimensions from the last item or use defaults
+	// Get last item's dimensions for reference
 	const lastItem = existingLayouts[existingLayouts.length - 1];
-	const itemWidth = lastItem ? lastItem.w : defaults.w;
-	const itemHeight = lastItem ? lastItem.h : defaults.h;
 
 	// Priority 1: Find first available gap in existing layout
-	const gap = findFirstAvailableGap(existingLayouts, gridWidth, itemWidth, itemHeight);
+	// Gap must be at least defaults.w wide (minimum width)
+	const gap = findFirstAvailableGap(existingLayouts, gridWidth, defaults.w);
 	if (gap) {
-		return {
-			i: itemId,
-			x: gap.x,
-			y: gap.y,
-			w: itemWidth,
-			h: itemHeight,
-		};
-	}
+		// Use available width (fill the gap horizontally), minimum is defaults.w
+		let itemWidth = Math.max(gap.availableWidth, defaults.w);
 
-	// Priority 2: Try to place right of the last row
-	const lastRowY = Math.max(...existingLayouts.map(l => l.y));
-	const lastRowItems = existingLayouts.filter(l => l.y === lastRowY);
-	const lastRowMaxX = Math.max(...lastRowItems.map(l => l.x + l.w));
+		// For desktop/tablet: if width is half of grid width or more, limit to last item's width
+		if (device !== 'mobile' && itemWidth >= gridWidth / 2 && lastItem) {
+			itemWidth = Math.max(lastItem.w, defaults.w);
+		}
 
-	if (lastRowMaxX + itemWidth <= gridWidth) {
-		// Check if this position is actually free (no overlapping items)
-		if (!isPositionOccupied(existingLayouts, lastRowMaxX, lastRowY, itemWidth, itemHeight)) {
+		// Get height from nearby items, constrained to not overlap
+		const itemHeight = getHeightFromNearbyItems(existingLayouts, gap.x, gap.y, itemWidth, defaults.h);
+
+		// Only use this gap if dimensions meet minimum requirements
+		if (itemWidth >= defaults.w && itemHeight >= defaults.h) {
 			return {
 				i: itemId,
-				x: lastRowMaxX,
-				y: lastRowY,
+				x: gap.x,
+				y: gap.y,
 				w: itemWidth,
 				h: itemHeight,
 			};
 		}
 	}
 
-	// Priority 3: Place on a new row at the bottom
+	// Priority 2: Place on a new row at the bottom
 	const maxY = Math.max(...existingLayouts.map(layout => layout.y + layout.h));
+	// Use last item's height but ensure minimum height requirement
+	const itemHeight = Math.max(lastItem ? lastItem.h : defaults.h, defaults.h);
+
+	// For desktop/tablet: use last item's width; for mobile: use full grid width
+	let itemWidth;
+	if (device !== 'mobile' && lastItem) {
+		itemWidth = Math.max(lastItem.w, defaults.w);
+	} else {
+		itemWidth = Math.max(gridWidth, defaults.w);
+	}
+
 	return {
 		i: itemId,
 		x: 0,

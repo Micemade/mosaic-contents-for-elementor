@@ -11,7 +11,7 @@ import { getRegisteredWidgets, getWidgetConfig } from './widget-registry';
 import { createWidgetInitializer } from './widget-initializer';
 import widgetManager from './widget-manager';
 import { getActiveBreakpoints } from './elementor-utils';
-import { addItemToLayout } from '../shared/utils/addGridItem';
+import { addItemToLayout } from '../shared/utils/addItem';
 import { getComputedLayout } from '../shared/utils/layoutUtils';
 
 /**
@@ -165,7 +165,7 @@ export const registerEditorHooks = () => {
 
 			// Listen for 'add grid item' event from panel button
 			// (Elementor Panel → React)
-			elementor.channels.editor.on('mosaic:addGridItem', () => {
+			elementor.channels.editor.on('mosaic:addItem', () => {
 				// Only add if this widget is currently open in the panel
 				if (elementor.getPanelView().getCurrentPageView().model.id === widgetId) {
 					const customLayoutData = model.getSetting('mpl4e_custom_layout') || '';

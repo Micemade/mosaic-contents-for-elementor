@@ -12,8 +12,8 @@
 		"default": "desc"
 	},
 	"mpl4e_category": {
-		"type": "string",
-		"default": ""
+		"type": "array",
+		"default": []
 	},
 	"mpl4e_on_sale": {
 		"type": "boolean",

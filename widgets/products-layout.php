@@ -211,9 +211,7 @@ class ProductsLayout extends Widget_Base {
 	 * @return array Associative array of term_id => name.
 	 */
 	private function get_product_categories() {
-		$categories = array(
-			'' => __( 'All Categories', 'mosaic-product-layouts-for-elementor' ),
-		);
+		$categories = array();
 
 		if ( ! taxonomy_exists( 'product_cat' ) ) {
 			return $categories;
@@ -228,7 +226,8 @@ class ProductsLayout extends Widget_Base {
 
 		if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
 			foreach ( $terms as $term ) {
-				$categories[ $term->term_id ] = $term->name;
+				// SELECT2 requires string keys.
+				$categories[ (string) $term->term_id ] = $term->name;
 			}
 		}
 
@@ -292,10 +291,12 @@ class ProductsLayout extends Widget_Base {
 		$this->add_control(
 			'mpl4e_category',
 			array(
-				'label'   => __( 'Category', 'mosaic-product-layouts-for-elementor' ),
-				'type'    => Controls_Manager::SELECT,
-				'default' => '',
-				'options' => $this->get_product_categories(),
+				'label'       => __( 'Categories', 'mosaic-product-layouts-for-elementor' ),
+				'type'        => Controls_Manager::SELECT2,
+				'default'     => array(),
+				'options'     => $this->get_product_categories(),
+				'multiple'    => true,
+				'label_block' => true,
 			)
 		);
 
@@ -371,7 +372,7 @@ class ProductsLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'reset_layout',
+			'mpl4e_reset_layout',
 			array(
 				'label'        => __( 'Reset to Predefined Layout', 'mosaic-product-layouts-for-elementor' ),
 				'type'         => Controls_Manager::BUTTON,
@@ -382,13 +383,13 @@ class ProductsLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'add_grid_item',
+			'mpl4e_add_item',
 			array(
-				'label'        => __( 'Add Grid Item', 'mosaic-product-layouts-for-elementor' ),
+				'label'        => __( 'Add Item', 'mosaic-product-layouts-for-elementor' ),
 				'type'         => Controls_Manager::BUTTON,
 				'text'         => __( 'Add Item', 'mosaic-product-layouts-for-elementor' ),
-				'description'  => __( 'Add a new item to the grid layout.', 'mosaic-product-layouts-for-elementor' ),
-				'event'        => 'mosaic:addGridItem',
+				'description'  => __( 'Add a new item to the layout.', 'mosaic-product-layouts-for-elementor' ),
+				'event'        => 'mosaic:addItem',
 			)
 		);
 
@@ -1015,6 +1016,10 @@ class ProductsLayout extends Widget_Base {
 					}
 				}
 				$js_settings[] = "\t{$key}: { " . implode( ', ', $responsive_values ) . ' }';
+			} elseif ( $type === 'array' ) {
+				// Array: settings.key || []
+				$default_json = wp_json_encode( $default );
+				$js_settings[] = "\t{$key}: settings.{$key} || {$default_json}";
 			} else {
 				// String: settings.key || 'default'
 				$default_escaped = addslashes( $definition['default'] );
