@@ -26,7 +26,7 @@ import AddToCartButton from './components/AddToCartButton.jsx';
 // Utilities and data.
 import { decode } from '../../shared/utils/generalUtils.js';
 import { updateElementorSetting, isElementorEditor, getActiveBreakpoints } from '../../core/elementor-utils';
-import { addItemToLayout } from '../../shared/utils/addGridItem.js';
+import { addItemToLayout, removeItemFromLayout } from '../../shared/utils/addGridItem.js';
 import { getLayout } from '../../shared/utils/layoutUtils.js';
 
 import './products-layout.scss';
@@ -226,9 +226,6 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 	const featuredImagePosition = widgetData?.mpl4e_featured_image_position || { x: 50, y: 50 };
 	const featuredImageFit = widgetData?.mpl4e_image_fit || 'cover';
 
-	console.log(customLayoutData);
-
-
 	// Grid settings from Elementor controls
 	const gridSettings = useMemo(
 		() => ({
@@ -398,6 +395,21 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 		updateElementorSetting('products-layout', widgetId, 'mpl4e_custom_layout', newLayoutJson);
 	};
 
+	// Handle removing a grid item (editor only)
+	const handleRemoveItem = (itemId) => {
+		if (!isElementorEditor() || !widgetId) return;
+
+		// Prevent removing if only one item left
+		if (layoutData.mobile.length <= 1) {
+			return;
+		}
+
+		// Use current layoutData (either from custom layout or predefined layout)
+		const currentLayout = customLayoutData || JSON.stringify(layoutData);
+		const newLayoutJson = removeItemFromLayout(currentLayout, itemId);
+		updateElementorSetting('products-layout', widgetId, 'mpl4e_custom_layout', newLayoutJson);
+	};
+
 	if (isLoading) {
 		return (
 			<div className="products-layout">
@@ -424,12 +436,12 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 
 	return (
 		<div
-			className="products-layout mosaic-products-layout"
+			className="products-layout mosaic-products-layout micemade-widgets"
 			data-widget-id={widgetId}
 			style={cssVariables}
 		>
 			{isFetching && (
-				<p className="products-layout-loading">Loading products...</p>
+				<p className="products-layout-loading">Fetching products...</p>
 			)}
 			<GridLayout
 				layouts={layoutData}
@@ -450,8 +462,25 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 					// Skip empty items (no product assigned)
 					if (!matchedProduct || matchedProduct.empty) {
 						return (
-							<div key={layoutItem.i} className="product-item product-item--empty">
-								<div className="product-info">
+							<div
+								key={layoutItem.i}
+								className="product-item product-item--empty"
+							>
+								{/* Editor-only remove button */}
+								{isElementorEditor() && layoutData.mobile.length > 1 && (
+									<button
+										type="button"
+										className="mpl4e-remove-item-btn"
+										onClick={(e) => {
+											e.stopPropagation();
+											handleRemoveItem(layoutItem.i);
+										}}
+										title="Remove Layout Item"
+									>
+										<i class="eicon-close" aria-hidden="true"></i>
+									</button>
+								)}
+								<div className="product-wrapper empty">
 									<p>No product</p>
 								</div>
 							</div>
@@ -464,6 +493,20 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 							className="product-item"
 							style={{ zIndex }}
 						>
+							{/* Editor-only remove button */}
+							{isElementorEditor() && layoutData.mobile.length > 1 && (
+								<button
+									type="button"
+									className="mpl4e-remove-item-btn"
+									onMouseDownCapture={(e) => {
+										e.stopPropagation();
+										handleRemoveItem(layoutItem.i);
+									}}
+									title="Remove Layout Item"
+								>
+									<i className="eicon-close" aria-hidden="true" />
+								</button>
+							)}
 							{matchedProduct.onSale && (
 								<div
 									className='sale-badge-wrapper'
