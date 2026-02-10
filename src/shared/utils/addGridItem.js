@@ -32,7 +32,62 @@ const getHighestItemNumber = (layouts, itemPrefix = 'item-') => {
 };
 
 /**
+ * Check if a position is occupied by any existing item
+ * 
+ * @param {Array} existingLayouts - Existing layout items
+ * @param {number} x - X position to check
+ * @param {number} y - Y position to check
+ * @param {number} w - Width of item to place
+ * @param {number} h - Height of item to place
+ * @returns {boolean} True if position overlaps with any existing item
+ */
+const isPositionOccupied = (existingLayouts, x, y, w, h) => {
+	return existingLayouts.some(item => {
+		// Check for overlap: items overlap if they share any cells
+		const overlapX = x < item.x + item.w && x + w > item.x;
+		const overlapY = y < item.y + item.h && y + h > item.y;
+		return overlapX && overlapY;
+	});
+};
+
+/**
+ * Find the first available gap in the grid that can fit an item
+ * Scans from top-left, row by row
+ * 
+ * @param {Array} existingLayouts - Existing layout items
+ * @param {number} gridWidth - Number of columns in the grid
+ * @param {number} itemWidth - Width of the new item
+ * @param {number} itemHeight - Height of the new item
+ * @returns {Object|null} Position { x, y } or null if no gap found
+ */
+const findFirstAvailableGap = (existingLayouts, gridWidth, itemWidth, itemHeight) => {
+	if (!existingLayouts || existingLayouts.length === 0) {
+		return { x: 0, y: 0 };
+	}
+
+	// Calculate the bounding box of existing items
+	const maxY = Math.max(...existingLayouts.map(item => item.y + item.h));
+
+	// Scan the grid from top-left, row by row
+	for (let y = 0; y <= maxY; y++) {
+		for (let x = 0; x <= gridWidth - itemWidth; x++) {
+			// Check if this position can fit the new item
+			if (!isPositionOccupied(existingLayouts, x, y, itemWidth, itemHeight)) {
+				return { x, y };
+			}
+		}
+	}
+
+	return null; // No gap found within existing layout bounds
+};
+
+/**
  * Build a new item for a specific breakpoint
+ * 
+ * Placement priority:
+ * 1. First available gap in existing layout (from top-left)
+ * 2. Right of the last row if space available
+ * 3. New row at the bottom
  * 
  * @param {string} device - Breakpoint name (desktop, tablet, mobile)
  * @param {Array} existingLayouts - Existing layout items for this breakpoint
@@ -66,18 +121,26 @@ const buildNewItemForDevice = (device, existingLayouts, gridWidth, itemId) => {
 	const itemWidth = lastItem ? lastItem.w : defaults.w;
 	const itemHeight = lastItem ? lastItem.h : defaults.h;
 
-	// Calculate the maximum y position (bottom of layout)
-	const maxY = Math.max(...existingLayouts.map(layout => layout.y + layout.h));
-	const maxX = Math.max(...existingLayouts.map(layout => layout.x + layout.w));
+	// Priority 1: Find first available gap in existing layout
+	const gap = findFirstAvailableGap(existingLayouts, gridWidth, itemWidth, itemHeight);
+	if (gap) {
+		return {
+			i: itemId,
+			x: gap.x,
+			y: gap.y,
+			w: itemWidth,
+			h: itemHeight,
+		};
+	}
 
-	// Try to place the item to the right of the last row first
-	if (maxX + itemWidth <= gridWidth) {
-		// Find items in the last row
-		const lastRowY = Math.max(...existingLayouts.map(l => l.y));
-		const lastRowItems = existingLayouts.filter(l => l.y === lastRowY);
-		const lastRowMaxX = Math.max(...lastRowItems.map(l => l.x + l.w));
-		
-		if (lastRowMaxX + itemWidth <= gridWidth) {
+	// Priority 2: Try to place right of the last row
+	const lastRowY = Math.max(...existingLayouts.map(l => l.y));
+	const lastRowItems = existingLayouts.filter(l => l.y === lastRowY);
+	const lastRowMaxX = Math.max(...lastRowItems.map(l => l.x + l.w));
+
+	if (lastRowMaxX + itemWidth <= gridWidth) {
+		// Check if this position is actually free (no overlapping items)
+		if (!isPositionOccupied(existingLayouts, lastRowMaxX, lastRowY, itemWidth, itemHeight)) {
 			return {
 				i: itemId,
 				x: lastRowMaxX,
@@ -88,7 +151,8 @@ const buildNewItemForDevice = (device, existingLayouts, gridWidth, itemId) => {
 		}
 	}
 
-	// If there's no space to the right, place it below
+	// Priority 3: Place on a new row at the bottom
+	const maxY = Math.max(...existingLayouts.map(layout => layout.y + layout.h));
 	return {
 		i: itemId,
 		x: 0,
@@ -97,6 +161,7 @@ const buildNewItemForDevice = (device, existingLayouts, gridWidth, itemId) => {
 		h: itemHeight,
 	};
 };
+
 
 /**
  * Add a new item to the layout
