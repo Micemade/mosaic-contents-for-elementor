@@ -499,19 +499,17 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 
 							<div className={`product-wrapper ${productLayout}`}>
 
-								<figure className="product-image product-featured-image">
-									<a href={matchedProduct.permalink}>
-										<ProductImage
-											productId={matchedProduct.id}
-											name={matchedProduct.name}
-											images={matchedProduct.images}
-											featuredImageSize={featuredImageSize}
-											style={{
-												'object-position': `${featuredImagePosition.x}% ${featuredImagePosition.y}%`,
-												'object-fit': featuredImageFit,
-											}}
-										/>
-									</a>
+								<figure className="product-image product-featured-image gradient-preloader">
+									<ProductImage
+										productId={matchedProduct.id}
+										name={matchedProduct.name}
+										images={matchedProduct.images}
+										featuredImageSize={featuredImageSize}
+										style={{
+											'object-position': `${featuredImagePosition.x}% ${featuredImagePosition.y}%`,
+											'object-fit': featuredImageFit,
+										}}
+									/>
 
 								</figure>
 

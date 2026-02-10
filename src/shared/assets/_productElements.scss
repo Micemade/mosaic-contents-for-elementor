@@ -75,9 +75,6 @@
 		--b: 100%; /* base for tag shape */
 		--h: 5%; /* height for tag shape */
 
-		display: flex;
-		align-items: center;
-		justify-content: center;
 		position: absolute;
 		z-index: 1;
 		// Default position (will be overridden by inline styles from focal point control)
@@ -87,6 +84,9 @@
 		transform: translate(-50%, -50%);
 
 		.sale-badge {
+			display: flex;
+			align-items: center;
+			justify-content: center;
 			padding: 0.6ch 1.4ch;
 			width: 100%;
 			text-align: center;

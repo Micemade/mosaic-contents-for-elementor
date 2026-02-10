@@ -18,6 +18,9 @@ const entry = process.env.BUILD_ENTRY || 'main';
 // Check if --watch flag is present (used by npm run watch)
 const isWatch = process.argv.includes('--watch');
 
+// Check if sourcemaps should be generated (default: true, set SOURCEMAP=false to disable)
+const generateSourcemap = process.env.SOURCEMAP !== 'false';
+
 // Entry configurations
 const entries = {
 	main: {
@@ -63,9 +66,9 @@ export default defineConfig({
 				},
 			},
 		},
-		sourcemap: true,
+		sourcemap: generateSourcemap,
 		outDir: currentEntry.outDir,
-		emptyOutDir: entry === 'main', // Only empty on first build
+		emptyOutDir: false, // Never empty - prevents deleting other entry's output
 		cssCodeSplit: false,
 	},
 });

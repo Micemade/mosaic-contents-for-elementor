@@ -13,7 +13,7 @@ const placeholderImg = window.MPL4E?.placeholderImg || '';
 /**
  * Internal dependencies.
  */
-import { getProduct, getFeaturedImage } from '../../../shared/utils/productUtils';
+import { getFeaturedImage } from '../../../shared/utils/productUtils';
 
 const getImageProperties = (images) => {
 
@@ -46,26 +46,26 @@ const ProductImage = ({ productId, name, images, featuredImageSize, style = {} }
 	// Fallback for image alt attribute.
 	const altFallback = __('Product image', 'mosaic-product-layouts-for-elementor');
 
-	// Only fetch product and featured image if not in 'automatic' mode
-	const { product, loading } = isAuto ? { product: null, loading: false } : getProduct(productId);
+	// Get featured image using custom hook
+	// (only if not in 'automatic' mode, otherwise we get srcset and sizes from "images" prop)
 	const { loadingFeaturedImg, featuredImage } = isAuto ? { loadingFeaturedImg: false, featuredImage: null } : getFeaturedImage(productId, featuredImageSize);
 
-	if (loading || loadingFeaturedImg) {
-		return <div className='gradient-preloader' />;
-	}
+	// if (loadingFeaturedImg) {
+	// 	return <div className='gradient-preloader' />;
+	// }
 
 	// Get image properties only if in 'automatic' mode
 	const { srcset, src, sizes } = isAuto ? getImageProperties(images) : {};
 
 	return (images.length) ? (
 		<img
-			{...(srcset && isAuto && { srcSet: srcset })}
+			{...(isAuto && srcset && { srcSet: srcset })}
 			src={isAuto ? src : featuredImage}
-			alt={isAuto ? (name || altFallback) : (product?.name || altFallback)}
+			alt={(name || altFallback)}
 			style={style}
 			{...(sizes && isAuto && { sizes: sizes })}
 			loading="lazy"
-			className='fade-in-image'
+			className={`fade-in-image${!loadingFeaturedImg ? ' loaded' : ''}`}
 		/>
 	) : (
 		<>{fallback}</>

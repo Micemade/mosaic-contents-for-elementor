@@ -6,11 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "BUILD_ENTRY=main vite build && BUILD_ENTRY=focal-point-control vite build",
-    "build:main": "BUILD_ENTRY=main vite build",
-    "build:control": "BUILD_ENTRY=focal-point-control vite build",
-    "watch": "concurrently \"BUILD_ENTRY=main vite build --watch\" \"BUILD_ENTRY=focal-point-control vite build --watch\"",
-    "watch:main": "BUILD_ENTRY=main vite build --watch",
+    "build:prod": "BUILD_ENTRY=main SOURCEMAP=false vite build && BUILD_ENTRY=focal-point-control SOURCEMAP=false vite build",
+    "watch": "BUILD_ENTRY=main vite build --watch",
     "watch:control": "BUILD_ENTRY=focal-point-control vite build --watch",
+    "watch:all": "concurrently \"BUILD_ENTRY=main vite build --watch\" \"BUILD_ENTRY=focal-point-control vite build --watch\"",
     "lint": "eslint .",
     "preview": "vite preview",
     "format": "prettier --write ."
