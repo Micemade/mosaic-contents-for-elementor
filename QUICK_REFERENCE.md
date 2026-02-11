@@ -1,16 +1,26 @@
 # Quick Reference: Widget System Flow
 
-## Component Hierarchy
+## Dual-Bundle Architecture
 
 ```
-main.jsx (orchestrator)
-  ├─→ widget-registry.js (widget definitions)
-  ├─→ elementor-hooks.js (Elementor integration)
-  │     ├─→ widget-initializer.js (init factory)
-  │     │     └─→ widget-manager.jsx (instance manager)
-  │     └─→ settings-mappers.js (extract settings)
-  └─→ widget-manager.jsx (global singleton)
-        └─→ Renders widget components from registry
+Frontend Bundle (main-frontend.jsx)          Editor Bundle (main-editor.jsx)
+  ├─→ widget-registry.js                       ├─→ widget-registry.js
+  ├─→ frontend-hooks.js (minimal)              ├─→ editor-hooks.js (full)
+  │     └─→ widget-initializer.js               │     ├─→ widget-initializer.js
+  ├─→ widget-manager.jsx (singleton)           │     ├─→ widget-manager.jsx
+  └─→ elementor-utils.js                       │     └─→ settings-mappers.js
+       └─→ Display only                         └─→ elementor-utils.js
+                                                     └─→ Drag/resize, sync, add/remove
+```
+
+## Build Commands
+
+```bash
+npm run build           # Build all (dev, with sourcemaps)
+npm run build:prod      # Build all (production, no sourcemaps)
+npm run watch           # Watch frontend bundle (recommended)
+npm run watch:editor    # Watch editor bundle
+npm run watch:all       # Watch all bundles (resource intensive)
 ```
 
 ## Data Flow Diagrams
@@ -20,27 +30,54 @@ main.jsx (orchestrator)
 ```
 Elementor loads page
   ↓
-elementor/frontend/init event
+elementor/frontend/init event (in editor preview iframe)
   ↓
-registerFrontendHooks() - registers all widget types
-  ↓
-registerEditorHooks() - sets up live sync
-  ↓
-setupEditorObserver() - watches for new widgets
+main-editor.js → initializeEditorHooks()
+  ├─→ registerFrontendHooks() - registers all widget types (mode: 'edit')
+  ├─→ registerEditorHooks() - sets up live sync, conditional renderOnChange
+  └─→ setupEditorObserver() - watches for new widgets
   ↓
 frontend/element_ready/{widget-type}.default
   ↓
-createWidgetInitializer(widgetType)
+createWidgetInitializer(widgetType, 'edit')
   ↓
-Extract widgetId, wrapper, rootElement
+Extract widgetId from data-widget-id
+  ↓
+Find wrapper (.{widget-type}-wrapper)
+  ↓
+Find React root (.{widget-type}-react-root)
   ↓
 Parse settings from hidden input OR modelGetter
   ↓
-widgetManager.init(widgetType, widgetId, rootElement, settings)
+widgetManager.init(widgetType, widgetId, rootElement, settings, 'edit')
   ↓
 Create React root with WidgetComponent from registry
   ↓
-Widget renders with initial settings
+Widget renders with initial settings (mode: 'edit')
+```
+
+### 1b. Initial Widget Load (Frontend)
+
+```
+Published page loads
+  ↓
+elementor/frontend/init event
+  ↓
+main-frontend.js → registerFrontendHooks()
+  ↓
+frontend/element_ready/{widget-type}.default
+  ↓
+createWidgetInitializer(widgetType, 'display')
+  ↓
+Extract widgetId, wrapper, rootElement
+  ↓
+Parse settings from hidden input
+  ↓
+widgetManager.init(widgetType, widgetId, rootElement, settings, 'display')
+  ↓
+Create React root with WidgetComponent
+  ↓
+Widget renders (display mode - no drag/resize)
 ```
 
 ### 2. Settings Change in Editor Panel
@@ -108,13 +145,56 @@ Widget re-renders with predefined layout
 ```
 User drags widget from panel to page
   ↓
-MutationObserver detects new DOM node
+MutationObserver (in editor-hooks.js) detects new DOM node
   ↓
-Check if node contains widget wrapper
+Check if node contains widget wrapper for registered types
   ↓
-createWidgetInitializer(widgetType)
+Verify instance not already initialized
+  ↓
+createWidgetInitializer(widgetType, 'edit')
   ↓
 Initialize new instance (see #1)
+```
+
+### 6. WooCommerce Product Fetch
+
+```
+Widget component mounts (useEffect)
+  ↓
+Extract query params from widgetData
+  ↓
+Fetch /wp-json/wc/store/products
+  ├─→ Include query params (category, per_page, orderby, etc.)
+  └─→ Add nonce header (window.MPL4E.storeApiNonce)
+  ↓
+WooCommerce Store API processes request
+  ↓
+Return product data (JSON)
+  ↓
+Component setState with products
+  ↓
+Render product grid
+```
+
+### 7. Add to Cart
+
+```
+User clicks Add to Cart button
+  ↓
+AddToCartButton component
+  ↓
+POST /wp-json/wc/store/cart/add-item
+  ├─→ product_id: productId
+  ├─→ quantity: 1
+  └─→ Nonce header
+  ↓
+WooCommerce adds to cart
+  ↓
+Success response
+  ↓
+Show confirmation notification
+  ↓
+Update cart count (if present in DOM)
 ```
 
 ## Key Methods Reference
@@ -130,9 +210,20 @@ widgetManager.getModel(widgetType, widgetId)
 ### Elementor Utils (for components)
 ```javascript
 updateElementorSetting(widgetType, widgetId, settingName, value)
-triggerLayoutReset()
 isElementorEditor()
-getElementorModel(widgetType, widgetId)
+getActiveBreakpoints()  // ['desktop', 'tablet', 'mobile']
+injectBreakpointStylesheet()  // Inject responsive CSS
+```
+
+### Event System
+```javascript
+// In React component
+elementor.channels.editor.trigger('mosaic:resetLayout')
+elementor.channels.editor.trigger('mosaic:addItem')
+
+// In editor-hooks.js listener
+elementor.channels.editor.on('mosaic:resetLayout', () => { /* ... */ })
+elementor.channels.editor.on('mosaic:addItem', () => { /* ... */ })
 ```
 
 ### Registry
@@ -146,16 +237,52 @@ getWidgetConfig(widgetType)      // { component, settingsMapper }
 
 ```
 1. MOUNT
-   widgetManager.init() → Create React root → Render component
+   widgetManager.init() → Create React root → Store in instances[key] → Render
    
-2. UPDATE (Settings Change)
-   updateInstance() → setState → Re-render (same root)
+2. UPDATE (Settings Change - No Remount)
+   model.on('change') → updateInstance() → setState → Re-render (same root)
    
-3. UPDATE (DOM Replaced)
-   init() detects disconnected → unmount old → create new root
+3. UPDATE (Core/Advanced Change - Allow Remount)
+   Conditional renderOnChange detects non-widget change → Original renderOnChange called
    
-4. UNMOUNT (Page Leave)
-   Browser garbage collection
+4. UPDATE (DOM Replaced by Elementor)
+   init() detects rootElement.isConnected === false → unmount old → create new root
+   
+5. UNMOUNT (Page Leave)
+   Browser garbage collection (React cleans up automatically)
+```
+
+## Script Loading
+
+### Frontend (Published Pages)
+```
+wp_enqueue_scripts hook
+  ├─→ Check: NOT preview mode
+  ├─→ Check: Page built with Elementor
+  └─→ Enqueue:
+      ├─→ react (WordPress)
+      ├─→ react-dom (WordPress)
+      ├─→ main-frontend.js (~150KB)
+      └─→ main-frontend.css
+```
+
+### Editor (Elementor Editor Only)
+```
+elementor/preview/enqueue_scripts hook
+  └─→ Enqueue:
+      ├─→ react (WordPress)
+      ├─→ react-dom (WordPress)
+      ├─→ main-editor.js (~300KB)
+      └─→ main-editor.css
+```
+
+### Custom Controls (Editor Panel)
+```
+elementor/editor/after_enqueue_scripts hook
+  └─→ Enqueue:
+      ├─→ react (WordPress)
+      ├─→ react-dom (WordPress)
+      └─→ focal-point-control.js
 ```
 
 ## Common Patterns
@@ -163,46 +290,224 @@ getWidgetConfig(widgetType)      // { component, settingsMapper }
 ### In Widget Components
 ```javascript
 // Import utilities
-import { updateElementorSetting } from '../../core/elementor-utils';
-
-// Update Elementor setting
-const handleLayoutChange = (newLayout) => {
-    updateElementorSetting('products-layout', widgetId, 'custom_layout', JSON.stringify(newLayout));
-};
+import { updateElementorSetting, isElementorEditor } from '../../core/elementor-utils';
 
 // Component structure
-const MyWidget = ({ widgetData, widgetId }) => {
-    // Extract settings
-    const setting1 = widgetData?.setting1 || 'default';
+const MyWidget = ({ widgetData, widgetId, mode }) => {
+    // Extract settings (with responsive support)
+    const titleSize = widgetData?.title_size || { desktop: '24px', tablet: '20px', mobile: '18px' };
+    const showRating = widgetData?.show_rating || true;  // boolean converted from 'yes'/'no'
     
-    // Use in JSX
+    // Check if in editor
+    const inEditor = mode === 'edit' || isElementorEditor();
+    
+    // Update Elementor setting (editor only)
+    const handleLayoutChange = (newLayout) => {
+        if (inEditor) {
+            updateElementorSetting('products-layout', widgetId, 'custom_layout', JSON.stringify(newLayout));
+        }
+    };
+    
+    // Fetch products (both modes)
+    useEffect(() => {
+        fetch('/wp-json/wc/store/products?' + new URLSearchParams({
+            per_page: widgetData?.per_page || 12,
+            category: widgetData?.category_ids || '',
+        }), {
+            headers: {
+                'Nonce': window.MPL4E?.storeApiNonce || ''
+            }
+        })
+        .then(res => res.json())
+        .then(data => setProducts(data));
+    }, [widgetData]);
+    
     return <div>{/* ... */}</div>;
 };
 ```
 
 ### Adding New Widget
 ```javascript
-// 1. Component (src/widgets/new-widget/new-widget.jsx)
-const NewWidget = ({ widgetData, widgetId }) => { /* ... */ };
+// 1. Settings schema (src/widgets/new-widget/utils/new-widget-settings.json)
+{
+    "title_size": {
+        "type": "responsive",
+        "default": "24px",
+        "tablet_default": "20px",
+        "mobile_default": "18px"
+    },
+    "show_excerpt": {
+        "type": "boolean",
+        "default": true
+    },
+    "items_per_page": {
+        "type": "number",
+        "default": 12
+    }
+}
+
+// 2. Component (src/widgets/new-widget/new-widget.jsx)
+import React from 'react';
+import './new-widget.scss';
+
+const NewWidget = ({ widgetData, widgetId, mode }) => {
+    const titleSize = widgetData?.title_size || {};
+    const showExcerpt = widgetData?.show_excerpt;
+    
+    return (
+        <div className="new-widget-container">
+            {/* Widget content */}
+        </div>
+    );
+};
 export default NewWidget;
 
-// 2. Settings mapper (src/widgets/settings-mappers.js)
+// 3. Settings mapper (src/widgets/settings-mappers.js)
+import newWidgetSettings from './new-widget/utils/new-widget-settings.json';
+import { getActiveBreakpoints } from '../core/elementor-utils';
+
 export const mapNewWidgetSettings = (model) => {
     const settings = model.get('settings');
-    return {
-        setting1: settings.get('setting1'),
-        // ...
-    };
+    const result = {};
+    
+    Object.keys(newWidgetSettings).forEach(key => {
+        const definition = newWidgetSettings[key];
+        const value = settings.get(key);
+        
+        if (definition.type === 'responsive') {
+            result[key] = getResponsiveValue(settings, key, getActiveBreakpoints(), definition);
+        } else if (definition.type === 'boolean') {
+            result[key] = value === 'yes';
+        } else {
+            result[key] = value !== undefined ? value : definition.default;
+        }
+    });
+    
+    return result;
 };
 
-// 3. Registry (src/core/widget-registry.js)
+// 4. Registry (src/core/widget-registry.js)
 import NewWidget from '../widgets/new-widget/new-widget';
 import { mapNewWidgetSettings } from '../widgets/settings-mappers';
 
 export const WIDGET_REGISTRY = {
+    'products-layout': { /* existing */ },
     'new-widget': {
         component: NewWidget,
         settingsMapper: mapNewWidgetSettings
     }
 };
+
+// 5. PHP Widget (widgets/new-widget.php)
+class NewWidget extends \Elementor\Widget_Base {
+    public function get_name() {
+        return 'new-widget';  // MUST match registry key
+    }
+    
+    protected function content_template() {
+        ?>
+        <div class="new-widget-wrapper" data-widget-id="{{ view.model.id }}">
+            <div class="new-widget-react-root"></div>
+            <input type="hidden" class="elementor-settings-data" value="{{ JSON.stringify(settings.attributes) }}">
+        </div>
+        <?php
+    }
+}
+
+// 6. Register in main plugin (mosaic-product-layouts-for-elementor.php)
+public function init_widgets( $widgets_manager ) {
+    require_once __DIR__ . '/widgets/products-layout.php';
+    require_once __DIR__ . '/widgets/new-widget.php';
+    
+    $widgets_manager->register( new ProductsLayout() );
+    $widgets_manager->register( new NewWidget() );
+}
+```
+
+## File Paths Quick Reference
+
+```
+src/
+├── main-frontend.jsx              # Frontend entry
+├── main-editor.jsx                # Editor entry
+├── globalStyles.scss              # Global styles
+├── core/
+│   ├── widget-registry.js
+│   ├── widget-manager.jsx
+│   ├── widget-initializer.js
+│   ├── frontend-hooks.js         # Minimal frontend
+│   ├── editor-hooks.js           # Full editor
+│   └── elementor-utils.js
+├── widgets/
+│   ├── settings-mappers.js
+│   └── products-layout/
+│       ├── products-layout.jsx
+│       ├── products-layout.scss
+│       ├── components/           # Widget-specific
+│       └── utils/
+│           └── products-layout-settings.json
+├── shared/
+│   ├── layouts.json
+│   ├── components/
+│   │   └── GridLayout.jsx       # Shared grid
+│   ├── utils/                   # Shared utilities
+│   └── assets/                  # Shared styles
+└── controls/
+    ├── focal-point-control.jsx
+    └── FocalPointControlView.jsx
+
+widgets/                          # PHP
+└── products-layout.php
+
+controls/                         # PHP
+└── focal-point.php
+
+assets/                           # Built (Vite output)
+├── js/main-frontend.js
+├── css/main-frontend.css
+└── admin/
+    ├── js/
+    │   ├── main-editor.js
+    │   └── focal-point-control.js
+    └── css/
+```
+
+## Debugging Tips
+
+**Frontend Issues:**
+```javascript
+// Check if manager exists
+console.log(window.MosaicLayoutsReact);
+
+// Check instances
+console.log(window.MosaicLayoutsReact.instances);
+
+// Check WooCommerce config
+console.log(window.MPL4E);
+```
+
+**Editor Issues:**
+```javascript
+// Check if in editor (in preview iframe console)
+console.log(window.elementor !== undefined);
+console.log(window.elementorFrontend !== undefined);
+
+// Check model getters
+console.log(window.MosaicLayoutsReact.modelGetters);
+
+// Check models
+console.log(window.MosaicLayoutsReact.models);
+
+// Trigger events manually
+elementor.channels.editor.trigger('mosaic:resetLayout');
+```
+
+**Build Issues:**
+```bash
+# Clear and rebuild
+rm -rf assets/js assets/css assets/admin
+npm run build
+
+# Check for errors
+npm run lint
 ```

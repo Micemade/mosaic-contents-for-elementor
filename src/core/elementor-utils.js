@@ -27,16 +27,6 @@ export const updateElementorSetting = (widgetType, widgetId, settingName, value)
 };
 
 /**
- * Trigger layout reset event
- * Sends event to Elementor to clear custom_layout setting
- */
-export const triggerLayoutReset = () => {
-	if (typeof elementor !== 'undefined' && elementor.channels?.editor) {
-		elementor.channels.editor.trigger('mosaic:resetLayout');
-	}
-};
-
-/**
  * Get active Elementor breakpoints
  * 
  * @returns {Array} Array of breakpoint names (e.g., ['desktop', 'tablet', 'mobile'])
@@ -58,31 +48,6 @@ export const getActiveBreakpoints = () => {
 };
 
 /**
- * Get Elementor breakpoint values
- * Returns object with breakpoint names and their pixel values
- * 
- * @returns {Object} Object mapping breakpoint names to values (e.g., { mobile: 767, tablet: 1024 })
- */
-export const getBreakpointValues = () => {
-	if (typeof elementorFrontend !== 'undefined' && elementorFrontend.config?.responsive?.activeBreakpoints) {
-		const breakpoints = elementorFrontend.config.responsive.activeBreakpoints;
-		const values = {};
-
-		Object.entries(breakpoints).forEach(([name, config]) => {
-			values[name] = config.value;
-		});
-
-		return values;
-	}
-
-	// Fallback to Elementor default breakpoint values
-	return {
-		mobile: 767,
-		tablet: 1024
-	};
-};
-
-/**
  * Check if currently in Elementor editor mode
  * 
  * @returns {boolean} True if in editor mode
@@ -90,21 +55,6 @@ export const getBreakpointValues = () => {
 export const isElementorEditor = () => {
 	return typeof elementor !== 'undefined' || 
 		(typeof window.elementorFrontend !== 'undefined' && window.elementorFrontend.isEditMode());
-};
-
-/**
- * Get current Elementor model for a widget
- * 
- * @param {string} widgetType - Widget type
- * @param {string} widgetId - Widget ID
- * @returns {Object|null} Elementor model or null
- */
-export const getElementorModel = (widgetType, widgetId) => {
-	if (typeof window.MosaicLayoutsReact === 'undefined') {
-		return null;
-	}
-	
-	return window.MosaicLayoutsReact.getModel(widgetType, widgetId);
 };
 
 /**

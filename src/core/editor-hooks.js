@@ -1,10 +1,8 @@
 /**
- * Elementor Hooks Registration
+ * Editor Hooks Registration
  *
- * Registers frontend and editor hooks for registered widgets. This module
- * wires the Elementor hooks to the widget initializer and ensures that the
- * React instances receive live settings updates without triggering DOM
- * re-renders from Elementor.
+ * Editor-only hooks for Elementor integration. Handles model binding,
+ * settings sync, and DOM re-render prevention. Not loaded on frontend.
  */
 
 import { getRegisteredWidgets, getWidgetConfig } from './widget-registry';
@@ -15,9 +13,8 @@ import { addItemToLayout } from '../shared/utils/addItem';
 import { getComputedLayout } from '../shared/utils/layoutUtils';
 
 /**
- * Register frontend hooks for all widgets.
- *
- * Initializes widgets when they are rendered on the frontend.
+ * Register frontend hooks for editor preview.
+ * Same as frontend-hooks but with 'edit' mode.
  *
  * @return void
  */
@@ -26,13 +23,10 @@ export const registerFrontendHooks = () => {
 		return;
 	}
 
-	// Register initialization hook for each widget type
 	getRegisteredWidgets().forEach(widgetType => {
-		// Hook pattern: frontend/element_ready/{widget-name}.default
-		// Matches widget's get_name() in PHP
 		elementorFrontend.hooks.addAction(
 			`frontend/element_ready/${widgetType}.default`,
-			createWidgetInitializer(widgetType)
+			createWidgetInitializer(widgetType, 'edit')
 		);
 	});
 };
@@ -53,13 +47,13 @@ export const registerEditorHooks = () => {
 
 	// Prevent Elementor from re-rendering widget DOM on every settings change
 	// React will handle updates internally without DOM replacement
-	elementor.hooks.addFilter('editor/widget/renderOnChange', function(renderOnChange, widgetType) {
+	elementor.hooks.addFilter('editor/widget/renderOnChange', function (renderOnChange, widgetType) {
 		if (getRegisteredWidgets().includes(widgetType)) {
 			return false; // Disable automatic DOM re-renders for our widgets
 		}
 		return renderOnChange;
 	});
-	
+
 	// Register panel open hooks for each widget type
 	getRegisteredWidgets().forEach(widgetType => {
 		elementor.hooks.addAction(`panel/open_editor/widget/${widgetType}`, (panel, model, view) => {
@@ -213,7 +207,7 @@ export const setupEditorObserver = () => {
 			setTimeout(initPreview, 100);
 			return;
 		}
-		
+
 		// Watch for new widgets added to DOM (e.g., drag & drop in editor)
 		const observer = new MutationObserver((mutations) => {
 			mutations.forEach((mutation) => {
@@ -223,12 +217,12 @@ export const setupEditorObserver = () => {
 						getRegisteredWidgets().forEach(widgetType => {
 							const wrapperClass = `${widgetType}-wrapper`;
 							const elementorClass = `elementor-widget-${widgetType}`;
-							
+
 							// Find widget wrappers in added nodes
 							const widgets = node.classList?.contains(wrapperClass)
 								? [node]
 								: (node.querySelectorAll ? node.querySelectorAll(`.${wrapperClass}`) : []);
-							
+
 							// Initialize each widget wrapper found
 							widgets.forEach((wrapper) => {
 								const $wrapper = jQuery(wrapper).closest(`.${elementorClass}`);
@@ -237,7 +231,7 @@ export const setupEditorObserver = () => {
 									const instanceKey = `${widgetType}_${widgetId}`;
 									// Only initialize if not already initialized
 									if (!widgetManager.instances[instanceKey]) {
-										createWidgetInitializer(widgetType)($wrapper);
+										createWidgetInitializer(widgetType, 'edit')($wrapper);
 									}
 								}
 							});
@@ -246,7 +240,7 @@ export const setupEditorObserver = () => {
 				});
 			});
 		});
-		
+
 		// Observe entire preview document for changes
 		observer.observe(previewDoc.body, { childList: true, subtree: true });
 
@@ -254,19 +248,19 @@ export const setupEditorObserver = () => {
 		getRegisteredWidgets().forEach(widgetType => {
 			const wrapperClass = `${widgetType}-wrapper`;
 			const elementorClass = `elementor-widget-${widgetType}`;
-			
+
 			previewDoc.querySelectorAll(`.${wrapperClass}`).forEach((wrapper) => {
 				const $wrapper = jQuery(wrapper).closest(`.${elementorClass}`);
 				if ($wrapper.length) {
 					const instanceKey = `${widgetType}_${$wrapper.data('id')}`;
 					if (!widgetManager.instances[instanceKey]) {
-						createWidgetInitializer(widgetType)($wrapper);
+						createWidgetInitializer(widgetType, 'edit')($wrapper);
 					}
 				}
 			});
 		});
 	};
-	
+
 	// Start initialization based on iframe load state
 	if (previewFrame.contentDocument?.readyState === 'complete') {
 		initPreview(); // Already loaded
@@ -276,11 +270,11 @@ export const setupEditorObserver = () => {
 };
 
 /**
- * Initialize all Elementor hooks used by the plugin.
+ * Initialize all editor hooks.
  *
  * @return void
  */
-export const initializeElementorHooks = () => {
+export const initializeEditorHooks = () => {
 	registerFrontendHooks();
 	registerEditorHooks();
 	setupEditorObserver();

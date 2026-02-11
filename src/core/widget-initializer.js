@@ -11,9 +11,10 @@ import widgetManager from './widget-manager';
  * Factory function to create widget initializers for each widget type
  * 
  * @param {string} widgetType - Widget type (e.g., 'products-layout')
+ * @param {string} mode - Widget mode: 'display' (frontend) or 'edit' (editor)
  * @returns {Function} Widget initializer function
  */
-export const createWidgetInitializer = (widgetType) => {
+export const createWidgetInitializer = (widgetType, mode = 'display') => {
 	return ($scope) => {
 
 		// Widget-specific class names (e.g., .products-layout-wrapper)
@@ -62,7 +63,7 @@ export const createWidgetInitializer = (widgetType) => {
 		}
 		
 		// Initialize or update the React widget
-		widgetManager.init(widgetType, widgetId, rootElement, settings);
+		widgetManager.init(widgetType, widgetId, rootElement, settings, mode);
 		
 		// Fallback: if no settings source found, wait briefly for model getter to be registered
 		if (!settingsInput && !modelGetter) {

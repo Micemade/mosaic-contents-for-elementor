@@ -32,9 +32,10 @@ class WidgetManager {
 	 * @param {string} widgetId
 	 * @param {HTMLElement} rootElement
 	 * @param {Object} initialSettings
+	 * @param {string} mode - 'display' (frontend) or 'edit' (editor)
 	 * @return void
 	 */
-	init(widgetType, widgetId, rootElement, initialSettings) {
+	init(widgetType, widgetId, rootElement, initialSettings, mode = 'display') {
 		const widgetConfig = getWidgetConfig(widgetType);
 		if (!widgetConfig) {
 			return;
@@ -79,7 +80,7 @@ class WidgetManager {
 			
 			// Dynamically render the correct widget component from registry
 			const WidgetComponent = widgetConfig.component;
-			return <WidgetComponent widgetData={settings} widgetId={widgetId} />;
+			return <WidgetComponent widgetData={settings} widgetId={widgetId} mode={mode} />;
 		};
 		
 		root.render(<App />);

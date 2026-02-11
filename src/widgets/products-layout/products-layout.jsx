@@ -168,8 +168,12 @@ function prepareProductsData(products, layoutItems) {
  * @param {Object} props
  * @param {Object} props.widgetData - Settings from Elementor controls.
  * @param {string} props.widgetId - Unique widget instance ID.
+ * @param {string} props.mode - 'display' (frontend) or 'edit' (editor).
  */
-const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
+const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display' }) => {
+
+	// Determine if we're in edit mode (from prop, not runtime detection)
+	const isEditMode = mode === 'edit';
 
 	const [products, setProducts] = useState([]);
 	const [isLoading, setIsLoading] = useState(true);
@@ -371,7 +375,7 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 	};
 
 	const selectWidget = () => {
-		if (!isElementorEditor() || !widgetId) return;
+		if (!isEditMode || !widgetId) return;
 
 		try {
 			// Find the editor view at selection time
@@ -390,7 +394,7 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 
 	// Handle adding a new grid item (editor only)
 	const handleAddItem = () => {
-		if (!isElementorEditor() || !widgetId) return;
+		if (!isEditMode || !widgetId) return;
 
 		const gridColumns = {
 			desktop: gridSettings.columns.desktop,
@@ -407,7 +411,7 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 
 	// Handle removing a grid item (editor only)
 	const handleRemoveItem = (itemId) => {
-		if (!isElementorEditor() || !widgetId) return;
+		if (!isEditMode || !widgetId) return;
 
 		// Prevent removing if only one item left
 		if (layoutData.mobile.length <= 1) {
@@ -460,8 +464,10 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 				rowHeight={gridSettings.rowHeight}
 				allowOverlap={widgetData?.mpl4e_allow_overlap || false}
 				compactionType={widgetData?.mpl4e_compaction_type || 'vertical'}
-				context="frontend"
-				onLayoutChange={handleLayoutChange}
+				context={isEditMode ? 'edit' : 'frontend'}
+				isDraggable={isEditMode}
+				isResizable={isEditMode}
+				onLayoutChange={isEditMode ? handleLayoutChange : undefined}
 				selectWidget={selectWidget}
 			>
 				{/* Map over layout items (Mobile is source of truth), find matching product */}
@@ -477,7 +483,7 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 								className="product-item product-item--empty"
 							>
 								{/* Editor-only remove button */}
-								{isElementorEditor() && layoutData.mobile.length > 1 && (
+								{isEditMode && layoutData.mobile.length > 1 && (
 									<button
 										type="button"
 										className="mpl4e-remove-item-btn"
@@ -504,7 +510,7 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 							style={{ zIndex }}
 						>
 							{/* Editor-only remove button */}
-							{isElementorEditor() && layoutData.mobile.length > 1 && (
+							{isEditMode && layoutData.mobile.length > 1 && (
 								<button
 									type="button"
 									className="mpl4e-remove-item-btn"
@@ -590,7 +596,7 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null }) => {
 			</GridLayout>
 
 			{/* Editor-only floating toolbar */}
-			{isElementorEditor() && (
+			{isEditMode && (
 				<div className="mpl4e-editor-toolbar">
 					<button
 						type="button"

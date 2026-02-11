@@ -57,34 +57,3 @@ export const getFeaturedImage = (productId, featuredImageSize) => {
 
 	return { loadingFeaturedImg, featuredImage };
 };
-
-export const getProduct = (productId) => {
-	const [product, setProduct] = useState(null);
-	const [loading, setLoading] = useState(true);
-
-	useEffect(() => {
-
-		if (!productId || typeof productId === "undefined") return;
-		async function fetchProduct() {
-			try {
-				const apiRoot = getApiRoot();
-				const response = await fetch(`${apiRoot}wc/store/v1/products/${productId}?_fields=id,name,short_description,price_html,images,permalink,add_to_cart,type`);
-
-				if (!response.ok) {
-					throw new Error(`WC Store API error: ${response.status}`);
-				}
-
-				const data = await response.json();
-				setProduct(data);
-				setLoading(false);
-			} catch (error) {
-				console.error("getProduct - WC Store API error:", error);
-				setLoading(false);
-			}
-		}
-		fetchProduct();
-
-	}, [productId]);
-
-	return { product, loading };
-};

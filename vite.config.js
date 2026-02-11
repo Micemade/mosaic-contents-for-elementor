@@ -23,10 +23,17 @@ const generateSourcemap = process.env.SOURCEMAP !== 'false';
 
 // Entry configurations
 const entries = {
-	main: {
-		input: path.resolve(__dirname, 'src/main.jsx'),
+	// Frontend-only entry (lightweight, for published pages)
+	'main-frontend': {
+		input: path.resolve(__dirname, 'src/main-frontend.jsx'),
 		outDir: 'assets',
 	},
+	// Editor entry (full functionality, for Elementor editor preview)
+	'main-editor': {
+		input: path.resolve(__dirname, 'src/main-editor.jsx'),
+		outDir: 'assets/admin',
+	},
+	// Focal point control (editor panel only)
 	'focal-point-control': {
 		input: path.resolve(__dirname, 'src/controls/focal-point-control.jsx'),
 		outDir: 'assets/admin',

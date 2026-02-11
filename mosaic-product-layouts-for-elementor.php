@@ -36,6 +36,7 @@ final class MosaicProductLayoutsElementor {
 		add_action( 'elementor/controls/register', array( $this, 'init_controls' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ), 100 );
 		add_action( 'elementor/editor/after_enqueue_scripts', array( $this, 'enqueue_editor_scripts' ) );
+		add_action( 'elementor/preview/enqueue_scripts', array( $this, 'enqueue_preview_scripts' ) );
 	}
 
 	public function i18n() {
@@ -89,6 +90,35 @@ final class MosaicProductLayoutsElementor {
 		// The control script is enqueued by the control's enqueue() method
 	}
 
+	/**
+	 * Enqueue scripts for Elementor editor preview (iframe).
+	 * Full-featured script with drag/resize, add/remove items, settings sync.
+	 */
+	public function enqueue_preview_scripts() {
+		// Enqueue WordPress's React and ReactDOM
+		wp_enqueue_script( 'react' );
+		wp_enqueue_script( 'react-dom' );
+
+		// Editor script (full functionality)
+		wp_enqueue_script(
+			'mpl4e-editor-js',
+			plugin_dir_url( __FILE__ ) . 'assets/admin/js/main-editor.js',
+			array( 'jquery', 'elementor-frontend', 'react', 'react-dom' ),
+			'1.0.0',
+			true
+		);
+
+		wp_enqueue_style(
+			'mpl4e-editor-css',
+			plugin_dir_url( __FILE__ ) . 'assets/admin/css/main-editor.css',
+			array(),
+			'1.0.0'
+		);
+
+		// Add WooCommerce Store API nonce for editor preview
+		$this->enqueue_store_api_nonce();
+	}
+
 	public function init_widgets( $widgets_manager ) {
 
 		// Require the widget class.
@@ -127,6 +157,11 @@ final class MosaicProductLayoutsElementor {
 			return;
 		}
 		
+		// Skip on Elementor preview (editor uses its own script)
+		if ( \Elementor\Plugin::$instance->preview->is_preview_mode() ) {
+			return;
+		}
+		
 		// Check if current page uses Elementor
 		$post_id = get_the_ID();
 		if ( ! $post_id || ! \Elementor\Plugin::$instance->db->is_built_with_elementor( $post_id ) ) {
@@ -137,9 +172,10 @@ final class MosaicProductLayoutsElementor {
 		wp_enqueue_script( 'react' );
 		wp_enqueue_script( 'react-dom' );
 		
+		// Frontend-only script (lightweight, no editor features)
 		wp_enqueue_script(
-			'mpl4e-js',
-			plugin_dir_url( __FILE__ ) . 'assets/js/main.js',
+			'mpl4e-frontend-js',
+			plugin_dir_url( __FILE__ ) . 'assets/js/main-frontend.js',
 			array( 'jquery', 'elementor-frontend', 'react', 'react-dom' ),
 			'1.0.0',
 			true
@@ -147,7 +183,7 @@ final class MosaicProductLayoutsElementor {
 
 		wp_enqueue_style(
 			'mpl4e-css',
-			plugin_dir_url( __FILE__ ) . 'assets/css/style.css',
+			plugin_dir_url( __FILE__ ) . 'assets/css/main-frontend.css',
 			array(),
 			'1.0.0'
 		);
@@ -179,13 +215,17 @@ final class MosaicProductLayoutsElementor {
 			$nonce = wp_create_nonce( 'wc_store_api' );
 		}
 
-		// Localize script with Store API configuration
-		wp_localize_script( 'mpl4e-js', 'MPL4E', array(
+		$localize_data = array(
 			'storeApiNonce'   => $nonce,
 			'cartUrl'         => wc_get_cart_url(),
 			'ajaxUrl'         => admin_url( 'admin-ajax.php' ),
 			'placeholderImg'  => plugins_url( 'assets/images/woocommerce-placeholder-300x300.png', __FILE__ ),
-		) );
+		);
+
+		// Localize scripts with Store API configuration
+		wp_localize_script( 'mpl4e-frontend-js', 'MPL4E', $localize_data );
+		wp_localize_script( 'mpl4e-editor-js', 'MPL4E', $localize_data );
+
 	}
 
 	public function admin_notice_missing_elementor() {
