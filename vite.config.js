@@ -38,6 +38,11 @@ const entries = {
 		input: path.resolve(__dirname, 'src/controls/focal-point-control.jsx'),
 		outDir: 'assets/admin',
 	},
+	// Saved setups control (editor panel only)
+	'saved-setups-control': {
+		input: path.resolve(__dirname, 'src/controls/saved-setups-control.jsx'),
+		outDir: 'assets/admin',
+	},
 };
 
 const currentEntry = entries[entry];
@@ -50,8 +55,8 @@ export default defineConfig({
 		} : undefined,
 		rollupOptions: {
 			input: currentEntry.input,
-			// Externalize React and ReactDOM to use WordPress's versions
-			external: ['react', 'react-dom'],
+			// Externalize React, ReactDOM, and WP globals used by controls
+			external: ['react', 'react-dom', '@wordpress/api-fetch', '@wordpress/i18n'],
 			output: {
 				format: 'iife',
 				entryFileNames: `js/${entry}.js`,
@@ -70,6 +75,8 @@ export default defineConfig({
 				globals: {
 					react: 'React',
 					'react-dom': 'ReactDOM',
+					'@wordpress/api-fetch': 'wp.apiFetch',
+					'@wordpress/i18n': 'wp.i18n',
 				},
 			},
 		},

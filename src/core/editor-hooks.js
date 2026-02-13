@@ -77,6 +77,10 @@ export const registerEditorHooks = () => {
 					// But in mapped settings they appear as single key with breakpoints object
 					const expandedWidgetKeys = new Set(widgetKeys);
 
+					// Include the saved-setup control key so changing it
+					// doesn't trigger a DOM re-render.
+					expandedWidgetKeys.add('mpl4e_saved_setup');
+
 					widgetKeys.forEach(key => {
 						const value = mapped[key];
 						// Check if this is a responsive setting (object with breakpoint keys)
@@ -97,17 +101,22 @@ export const registerEditorHooks = () => {
 					const widgetKeysArray = Array.from(expandedWidgetKeys);
 
 					// Override view.renderOnChange to be conditional:
-					// - For widget-owned changes, false (React handles it)
-					// - For core/advanced changes, call the original renderOnChange
+					// - For widget-owned changes: renderUI() only (regenerates
+					//   CSS for controls with `selectors` without DOM destruction)
+					// - For core/advanced changes: call the original renderOnChange
 					const originalRenderOnChange = view.renderOnChange.bind(view);
 					view.renderOnChange = (settings) => {
 						const changed = settings.changedAttributes();
-						const hasNonWidgetChange = Object.keys(changed).some(k => !widgetKeysArray.includes(k));
+						const changedKeys = Object.keys(changed || {});
+						const hasNonWidgetChange = changedKeys.some(k => !widgetKeysArray.includes(k));
 						if (hasNonWidgetChange) {
 							// Call original to handle core/advanced changes
 							originalRenderOnChange(settings);
+						} else if (changedKeys.length) {
+							// Widget-owned changes: refresh CSS (selectors) without
+							// full DOM re-render so the React root stays intact.
+							try { view.renderUI(); } catch (_) { /* swallow */ }
 						}
-						// For widget-owned changes, do nothing (React updates in-place)
 					};
 
 				} catch (e) {
@@ -130,12 +139,22 @@ export const registerEditorHooks = () => {
 			);
 
 			// Update React component whenever Elementor model settings change (Elementor → React).
+			// Also regenerate CSS for controls with `selectors` (colours, borders,
+			// shadows, etc.).  The global `editor/widget/renderOnChange` filter
+			// returns false for our widgets, so Elementor's own onSettingsChange
+			// never calls renderOnChange → renderUI is never triggered.  We call
+			// it explicitly here so every individual panel change refreshes CSS.
 			model.get('settings').on('change', (settingsModel) => {
 				widgetManager.updateInstance(
 					widgetType,
 					widgetId,
 					getSettingsFromModel()
 				);
+
+				// Regenerate selector-based CSS without DOM destruction.
+				if (view && typeof view.renderUI === 'function') {
+					try { view.renderUI(); } catch (_) { /* swallow */ }
+				}
 			});
 
 			// Clear custom layout when predefined layout changes
@@ -154,6 +173,68 @@ export const registerEditorHooks = () => {
 				// Only reset if this widget is currently open in the panel
 				if (elementor.getPanelView().getCurrentPageView().model.id === widgetId) {
 					model.setSetting('mpl4e_custom_layout', ''); // Clear custom layout setting
+				}
+			});
+
+			// Listen for 'apply setup' event from the Saved Setups control.
+			// Batch-sets all settings atomically, preventing mid-batch DOM
+			// destruction that causes lost React updates and stale CSS.
+			elementor.channels.editor.on('mosaic:applySetup', ({ widgetId: targetWidgetId, settings: setupSettings }) => {
+				// Only apply if this widget is currently open in the panel
+				if (elementor.getPanelView().getCurrentPageView().model.id !== widgetId || targetWidgetId !== widgetId) {
+					return;
+				}
+
+				const settingsModel = model.get('settings');
+
+				// 1. Temporarily disable view.renderOnChange to prevent DOM
+				//    re-renders mid-batch (which would destroy the React root).
+				let savedRenderOnChange = null;
+				if (view && view.renderOnChange) {
+					savedRenderOnChange = view.renderOnChange;
+					view.renderOnChange = () => { };
+				}
+
+				// 2. Temporarily remove change:mpl4e_layout listeners to prevent
+				//    the clearance handler from wiping mpl4e_custom_layout.
+				const layoutEvents = settingsModel._events?.['change:mpl4e_layout'];
+				const savedLayoutListeners = layoutEvents ? [...layoutEvents] : null;
+				if (layoutEvents) {
+					settingsModel.off('change:mpl4e_layout');
+				}
+
+				// 3. Batch-set ALL settings atomically. Backbone sets all
+				//    attributes first, then fires change:key events, then a
+				//    single aggregate 'change'.  The change handler above
+				//    pushes one correct React update + renderUI().
+				settingsModel.set(setupSettings);
+
+				// 4. Restore view.renderOnChange.
+				if (view && savedRenderOnChange) {
+					view.renderOnChange = savedRenderOnChange;
+				}
+
+				// 5. Restore change:mpl4e_layout listeners.
+				if (savedLayoutListeners) {
+					savedLayoutListeners.forEach(listener => {
+						settingsModel.on('change:mpl4e_layout', listener.callback, listener.context);
+					});
+				}
+
+				// 6. Ensure React has the final correct settings.
+				widgetManager.updateInstance(widgetType, widgetId, getSettingsFromModel());
+
+				// 7. Regenerate CSS for selector-based styles (colours,
+				//    borders, shadows).  renderUI() rebuilds the widget's
+				//    stylesheet from control `selectors` definitions without
+				//    touching the DOM template → React root stays intact.
+				if (view && typeof view.renderUI === 'function') {
+					try { view.renderUI(); } catch (_) { /* swallow */ }
+				}
+
+				// 8. Mark document as changed.
+				if (elementor.saver) {
+					elementor.saver.setFlagEditorChange(true);
 				}
 			});
 

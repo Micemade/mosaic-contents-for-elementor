@@ -1,0 +1,162 @@
+/**
+ * Saved Setups Control Styles
+ *
+ * Styles for the custom Elementor panel control that manages
+ * layout+style setups (save, load, delete).
+ */
+
+.mpl4e-saved-setups-ui {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	width: 100%;
+}
+
+// ── Loading / Error ──────────────────────────────────────────
+.mpl4e-setups-loading {
+	padding: 8px 0;
+	color: #888;
+	font-size: 12px;
+	text-align: center;
+}
+
+.mpl4e-setups-error {
+	padding: 6px 10px;
+	background: #fef0f0;
+	border: 1px solid #f5c6c6;
+	border-radius: 3px;
+	color: #b32d2e;
+	font-size: 12px;
+	line-height: 1.4;
+}
+
+// ── Select row (dropdown + delete button) ────────────────────
+.mpl4e-setups-select-row {
+	display: flex;
+	gap: 4px;
+	align-items: stretch;
+}
+
+.mpl4e-setups-select {
+	flex: 1;
+	min-width: 0;
+	height: 30px;
+	padding: 0 6px;
+	border-radius: 3px;
+	font-size: 12px;
+	cursor: pointer;
+
+	&:focus {
+		border-color: #3858e9;
+		box-shadow: 0 0 0 1px #3858e9;
+		outline: none;
+	}
+
+	&:disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
+	}
+}
+
+.mpl4e-setups-delete-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 30px;
+	height: 30px;
+	padding: 0;
+	border: 1px solid #cc1818;
+	border-radius: 3px;
+	background: transparent;
+	color: #cc1818;
+	cursor: pointer;
+	flex-shrink: 0;
+	transition: background 0.15s, color 0.15s;
+
+	i {
+		font-size: 14px;
+		line-height: 1;
+	}
+
+	&:hover {
+		background: #cc1818;
+		color: #fff;
+	}
+
+	&:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+}
+
+// ── Save row (text input + save button) ──────────────────────
+.mpl4e-setups-save-row {
+	display: flex;
+	gap: 4px;
+	align-items: stretch;
+}
+
+.mpl4e-setups-name-input {
+	flex: 1;
+	min-width: 0;
+	height: 30px;
+	padding: 0 8px;
+	border-radius: 3px;
+	font-size: 12px;
+	transition: border-color 0.15s, box-shadow 0.15s;
+
+	&::placeholder {
+		color: #a7aaad;
+	}
+
+	&:focus {
+		border-color: #3858e9;
+		box-shadow: 0 0 0 1px #3858e9;
+		outline: none;
+	}
+
+	&:disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
+	}
+
+	// Error flash animation
+	&.mpl4e-input-error {
+		border-color: #cc1818;
+		box-shadow: 0 0 0 1px #cc1818;
+		animation: mpl4e-shake 0.3s ease-in-out;
+	}
+}
+
+.mpl4e-setups-save-btn {
+	height: 30px;
+	padding: 0 14px;
+	border: none;
+	border-radius: 3px;
+	background: #3858e9;
+	color: #fff;
+	font-size: 12px;
+	font-weight: 500;
+	cursor: pointer;
+	white-space: nowrap;
+	flex-shrink: 0;
+	transition: background 0.15s;
+
+	&:hover {
+		background: #2145d4;
+	}
+
+	&:disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
+	}
+}
+
+// ── Shake animation for validation ──────────────────────────
+@keyframes mpl4e-shake {
+	0%, 100% { transform: translateX(0); }
+	20% { transform: translateX(-4px); }
+	40% { transform: translateX(4px); }
+	60% { transform: translateX(-2px); }
+	80% { transform: translateX(2px); }
+}

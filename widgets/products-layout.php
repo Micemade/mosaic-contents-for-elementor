@@ -462,6 +462,27 @@ class ProductsLayout extends Widget_Base {
 
 		$this->end_controls_section();
 
+		// Saved Setups Section.
+		$this->start_controls_section(
+			'saved_setups_section',
+			array(
+				'label' => __( 'Saved Setups', 'mosaic-product-layouts-for-elementor' ),
+				'tab'   => Controls_Manager::TAB_CONTENT,
+			)
+		);
+
+		$this->add_control(
+			'mpl4e_saved_setup',
+			array(
+				'label'       => __( 'Layout & Style Setups', 'mosaic-product-layouts-for-elementor' ),
+				'description' => __( 'Save, load, or delete layout and style configurations.', 'mosaic-product-layouts-for-elementor' ),
+				'type'        => 'mpl4e_saved_setups',
+				'default'     => '',
+			)
+		);
+
+		$this->end_controls_section();
+
 		// Style Section.
 		$this->start_controls_section(
 			'product_style_settings_section',

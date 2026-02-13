@@ -37,6 +37,10 @@ final class MosaicProductLayoutsElementor {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ), 100 );
 		add_action( 'elementor/editor/after_enqueue_scripts', array( $this, 'enqueue_editor_scripts' ) );
 		add_action( 'elementor/preview/enqueue_scripts', array( $this, 'enqueue_preview_scripts' ) );
+
+		// Register plugin settings for saved setups (wp_options via REST API).
+		add_action( 'admin_init', array( $this, 'register_settings' ) );
+		add_action( 'rest_api_init', array( $this, 'register_settings' ) );
 	}
 
 	public function i18n() {
@@ -77,6 +81,10 @@ final class MosaicProductLayoutsElementor {
 
 		// Register the focal point control.
 		$controls_manager->register( new \Micemade\MosaicProductLayoutsElementor\Controls\Focal_Point() );
+
+		// Require and register the saved setups control.
+		require_once __DIR__ . '/controls/saved-setups.php';
+		$controls_manager->register( new \Micemade\MosaicProductLayoutsElementor\Controls\Saved_Setups() );
 	}
 
 	/**
@@ -226,6 +234,27 @@ final class MosaicProductLayoutsElementor {
 		wp_localize_script( 'mpl4e-frontend-js', 'MPL4E', $localize_data );
 		wp_localize_script( 'mpl4e-editor-js', 'MPL4E', $localize_data );
 
+	}
+
+	/**
+	 * Register plugin settings for saved setups.
+	 *
+	 * Registers WP option 'mpl4e_products_layout_setups' with show_in_rest
+	 * so it can be read/written via wp.apiFetch({ path: '/wp/v2/settings' }).
+	 */
+	public function register_settings() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		$setting_args = array(
+			'type'              => 'string',
+			'show_in_rest'      => true,
+			'sanitize_callback' => 'sanitize_text_field',
+			'default'           => '',
+		);
+
+		register_setting( 'options', 'mpl4e_products_layout_setups', $setting_args );
 	}
 
 	public function admin_notice_missing_elementor() {

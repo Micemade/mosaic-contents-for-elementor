@@ -5,12 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "BUILD_ENTRY=main-frontend vite build && BUILD_ENTRY=main-editor vite build && BUILD_ENTRY=focal-point-control vite build",
-    "build:prod": "BUILD_ENTRY=main-frontend SOURCEMAP=false vite build && BUILD_ENTRY=main-editor SOURCEMAP=false vite build && BUILD_ENTRY=focal-point-control SOURCEMAP=false vite build",
+    "build": "BUILD_ENTRY=main-frontend vite build && BUILD_ENTRY=main-editor vite build && BUILD_ENTRY=focal-point-control vite build && BUILD_ENTRY=saved-setups-control vite build",
+    "build:prod": "BUILD_ENTRY=main-frontend SOURCEMAP=false vite build && BUILD_ENTRY=main-editor SOURCEMAP=false vite build && BUILD_ENTRY=focal-point-control SOURCEMAP=false vite build && BUILD_ENTRY=saved-setups-control SOURCEMAP=false vite build",
     "watch": "BUILD_ENTRY=main-frontend vite build --watch",
     "watch:editor": "BUILD_ENTRY=main-editor vite build --watch",
     "watch:control": "BUILD_ENTRY=focal-point-control vite build --watch",
-    "watch:all": "concurrently \"BUILD_ENTRY=main-frontend vite build --watch\" \"BUILD_ENTRY=main-editor vite build --watch\" \"BUILD_ENTRY=focal-point-control vite build --watch\"",
+    "watch:setups": "BUILD_ENTRY=saved-setups-control vite build --watch",
+    "watch:all": "concurrently \"BUILD_ENTRY=main-frontend vite build --watch\" \"BUILD_ENTRY=main-editor vite build --watch\" \"BUILD_ENTRY=focal-point-control vite build --watch\" \"BUILD_ENTRY=saved-setups-control vite build --watch\"",
     "lint": "eslint .",
     "preview": "vite preview",
     "format": "prettier --write ."
