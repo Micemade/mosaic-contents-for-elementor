@@ -5,20 +5,23 @@
  * Add new widgets here to make them available throughout the system.
  */
 
+import { createSettingsMapper } from '../widgets/settings-mappers';
+
 import ProductsLayoutWidget from '../widgets/products-layout/products-layout';
-import { mapProductsLayoutSettings } from '../widgets/settings-mappers';
+import CategoriesLayoutWidget from '../widgets/categories-layout/categories-layout';
+import productsSettingsDef from '../widgets/products-layout/utils/products-layout-settings.json';
+import categoriesSettingsDef from '../widgets/categories-layout/utils/categories-layout-settings.json';
 
 // Registry mapping widget types to their configurations
 export const WIDGET_REGISTRY = {
 	'products-layout': {
 		component: ProductsLayoutWidget,
-		settingsMapper: mapProductsLayoutSettings
+		settingsMapper: createSettingsMapper(productsSettingsDef)
 	},
-	// Future widgets will be added here:
-	// 'categories-layout': {
-	//     component: CategoriesLayoutWidget,
-	//     settingsMapper: mapCategoriesLayoutSettings
-	// },
+	'categories-layout': {
+		component: CategoriesLayoutWidget,
+		settingsMapper: createSettingsMapper(categoriesSettingsDef)
+	},
 	// 'single-product-layout': {
 	//     component: SingleProductLayoutWidget,
 	//     settingsMapper: mapSingleProductLayoutSettings

@@ -115,6 +115,29 @@ export const injectBreakpointStylesheet = () => {
 .mosaic-hide-desktop {
 	display: none !important;
 }
+
+/* Categories Layout - Desktop */
+.categories-layout .flex-wrapper {
+	align-items: var(--mpl4e-cat-vertical-align-desktop, center);
+}
+.categories-layout .flex-wrapper .category-elements {
+	justify-content: var(--mpl4e-cat-align-desktop, center);
+}
+.categories-layout .flex-wrapper .category-elements .name {
+	font-size: var(--mpl4e-cat-title-size-desktop, 24px);
+	justify-content: var(--mpl4e-cat-align-desktop, center);
+	text-align: var(--mpl4e-cat-align-desktop, center);
+}
+.categories-layout .flex-wrapper .category-elements .cat-count {
+	font-size: var(--mpl4e-cat-count-size-desktop, 16px);
+	justify-content: var(--mpl4e-cat-align-desktop, center);
+	text-align: var(--mpl4e-cat-align-desktop, center);
+}
+.categories-layout .flex-wrapper .category-elements .cat-description {
+	font-size: var(--mpl4e-cat-description-size-desktop, 14px);
+	justify-content: var(--mpl4e-cat-align-desktop, center);
+	text-align: var(--mpl4e-cat-align-desktop, center);
+}
 `;
 	// Generate responsive styles for products-layout widget
 	sortedBreakpoints.forEach(([name, config]) => {
@@ -150,6 +173,29 @@ export const injectBreakpointStylesheet = () => {
 	}
 	.mosaic-hide-${name} {
 		display: none !important;
+	}
+
+	/* Categories Layout - ${name} */
+	.categories-layout .flex-wrapper {
+		align-items: var(--mpl4e-cat-vertical-align-${name}, center);
+	}
+	.categories-layout .flex-wrapper .category-elements {
+		justify-content: var(--mpl4e-cat-align-${name}, center);
+	}
+	.categories-layout .flex-wrapper .category-elements .name {
+		font-size: var(--mpl4e-cat-title-size-${name}, 20px);
+		justify-content: var(--mpl4e-cat-align-${name}, center);
+		text-align: var(--mpl4e-cat-align-${name}, center);
+	}
+	.categories-layout .flex-wrapper .category-elements .cat-count {
+		font-size: var(--mpl4e-cat-count-size-${name}, 14px);
+		justify-content: var(--mpl4e-cat-align-${name}, center);
+		text-align: var(--mpl4e-cat-align-${name}, center);
+	}
+	.categories-layout .flex-wrapper .category-elements .cat-description {
+		font-size: var(--mpl4e-cat-description-size-${name}, 12px);
+		justify-content: var(--mpl4e-cat-align-${name}, center);
+		text-align: var(--mpl4e-cat-align-${name}, center);
 	}
 }`;
 	});

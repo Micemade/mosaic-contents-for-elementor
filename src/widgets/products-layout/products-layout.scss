@@ -350,12 +350,6 @@
 	padding: 1em;
 }
 
-/* 
- * Note: Responsive hide classes (.mobile-hide, .tablet-hide, .desktop-hide) 
- * are now generated dynamically in elementor-utils.js -> injectBreakpointStylesheet()
- * using actual Elementor breakpoint values from elementorFrontend.config
- */
-
 /**
  * Editor-only toolbar styles
  * Floating toolbar for widget actions in Elementor editor

@@ -15,6 +15,7 @@
 namespace Micemade\MosaicProductLayoutsElementor;
 
 use Micemade\MosaicProductLayoutsElementor\Widgets\ProductsLayout;
+use Micemade\MosaicProductLayoutsElementor\Widgets\CategoriesLayout;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -129,11 +130,13 @@ final class MosaicProductLayoutsElementor {
 
 	public function init_widgets( $widgets_manager ) {
 
-		// Require the widget class.
+		// Require the widget classes.
 		require_once __DIR__ . '/widgets/products-layout.php';
+		require_once __DIR__ . '/widgets/categories-layout.php';
 
-		// Register widget with elementor.
+		// Register widgets with elementor.
 		$widgets_manager->register( new ProductsLayout() );
+		$widgets_manager->register( new CategoriesLayout() );
 
 	}
 
@@ -255,6 +258,7 @@ final class MosaicProductLayoutsElementor {
 		);
 
 		register_setting( 'options', 'mpl4e_products_layout_setups', $setting_args );
+		register_setting( 'options', 'mpl4e_categories_layout_setups', $setting_args );
 	}
 
 	public function admin_notice_missing_elementor() {

@@ -2,11 +2,10 @@
  * Settings Mappers
  * 
  * Extract and format widget settings from Elementor models.
- * Each widget type has its own mapper function.
+ * Uses a generic factory driven by JSON setting definitions.
  * Not all settings are mapped; only those needed for React components.
  */
 
-import productsLayoutSettingsDefinition from './products-layout/utils/products-layout-settings.json';
 import { getActiveBreakpoints } from '../core/elementor-utils';
 
 /**
@@ -48,21 +47,22 @@ const getResponsiveValue = (settings, key, breakpoints, definition) => {
 };
 
 /**
- * Extract settings for Products Layout widget
+ * Create a settings mapper function for any widget type.
  * 
- * @param {Object} model - Elementor widget model
- * @returns {Object} Formatted settings object
+ * Returns a mapper that reads an Elementor model and produces
+ * a plain settings object based on the provided JSON definition.
+ * 
+ * @param {Object} settingsDefinition - JSON schema defining the widget's settings
+ * @returns {Function} (model) => Object  — settings mapper
  */
-export const mapProductsLayoutSettings = (model) => {
+export const createSettingsMapper = (settingsDefinition) => (model) => {
 	const settings = model.get('settings');
 	const result = {};
 
-	// Iterate through all settings defined in JSON
-	Object.keys(productsLayoutSettingsDefinition).forEach(key => {
-		const definition = productsLayoutSettingsDefinition[key];
+	Object.keys(settingsDefinition).forEach(key => {
+		const definition = settingsDefinition[key];
 		const value = settings.get(key);
 
-		// Handle responsive settings (Elementor responsive controls)
 		if (definition.type === 'responsive') {
 			result[key] = getResponsiveValue(
 				settings,
@@ -70,48 +70,16 @@ export const mapProductsLayoutSettings = (model) => {
 				getActiveBreakpoints(),
 				definition
 			);
-		}
-		// Apply type-specific conversion for regular settings
-		else if (definition.type === 'boolean') {
-			// Convert 'yes'/'no' string to boolean
+		} else if (definition.type === 'boolean') {
 			result[key] = value === 'yes';
 		} else if (definition.type === 'number') {
-			// Ensure numeric values
 			result[key] = value !== undefined ? value : definition.default;
 		} else {
-			// String values
 			result[key] = value !== undefined ? value : definition.default;
 		}
 	});
 
 	return result;
-};
-
-/**
- * Extract settings for Categories Layout widget (placeholder for future use)
- * 
- * @param {Object} model - Elementor widget model
- * @returns {Object} Formatted settings object
- */
-export const mapCategoriesLayoutSettings = (model) => {
-	const settings = model.get('settings');
-	return {
-		// Category query settings
-		per_page: settings.get('per_page'),
-		orderby: settings.get('orderby'),
-		order: settings.get('order'),
-		hide_empty: settings.get('hide_empty') === 'yes',
-		parent: settings.get('parent'),
-		
-		// Grid layout settings
-		layout: settings.get('layout'),
-		custom_layout: settings.get('custom_layout'),
-		items_margin: settings.get('items_margin'),
-		row_height: settings.get('row_height'),
-		
-		// Category card styling
-		show_count: settings.get('show_count') === 'yes',
-	};
 };
 
 /**

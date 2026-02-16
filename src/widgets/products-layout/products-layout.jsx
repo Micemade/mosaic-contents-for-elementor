@@ -25,59 +25,19 @@ import AddToCartButton from './components/AddToCartButton.jsx';
 
 // Utilities and data.
 import { decode } from '../../shared/utils/generalUtils.js';
-import { updateElementorSetting, isElementorEditor, getActiveBreakpoints } from '../../core/elementor-utils';
+import { updateElementorSetting } from '../../core/elementor-utils';
 import { addItemToLayout, removeItemFromLayout } from '../../shared/utils/addItem.js';
 import { getLayout } from '../../shared/utils/layoutUtils.js';
+import { LRUCache, createCache } from '../../shared/utils/LRUCache.js';
+import { useCssVariables, useGridSettings } from '../../shared/utils/hooks.js';
 
 import './products-layout.scss';
 
 // Sanitize HTML content.
 const Sanitizer = DOMPurify.sanitize;
 
-// LRU Cache class for Elementor editor (limits memory usage)
-class LRUCache {
-	constructor(maxSize = 20) {
-		this.maxSize = maxSize;
-		this.cache = new Map(); // Map maintains insertion order
-	}
-
-	get(key) {
-		if (!this.cache.has(key)) return undefined;
-		
-		// Move to end (most recently used)
-		const value = this.cache.get(key);
-		this.cache.delete(key);
-		this.cache.set(key, value);
-		return value;
-	}
-
-	set(key, value) {
-		// Remove if exists (will re-add at end)
-		if (this.cache.has(key)) {
-			this.cache.delete(key);
-		}
-		
-		// Add to end (most recent)
-		this.cache.set(key, value);
-		
-		// Evict oldest if over limit
-		if (this.cache.size > this.maxSize) {
-			const firstKey = this.cache.keys().next().value;
-			this.cache.delete(firstKey);
-		}
-	}
-
-	has(key) {
-		return this.cache.has(key);
-	}
-}
-
-// Detect if we're in Elementor editor mode
-const isEditorMode = isElementorEditor;
-
-// Use LRU cache in editor (prevents memory issues during long editing sessions)
-// Use simple object in frontend (no remounts, less memory pressure)
-const productsCache = isEditorMode() ? new LRUCache(20) : {};
+// Cache: LRU in editor, plain object on frontend.
+const productsCache = createCache();
 
 /**
  * Fetch products from WooCommerce Store API.
@@ -180,56 +140,8 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 	const [isFetching, setIsFetching] = useState(false);
 	const [error, setError] = useState(null);
 
-	/**
-	 * Generate CSS custom properties from responsive settings
-	 * These will be scoped to this widget instance only
-	 * Memoized to react to widgetData changes
-	 */
-	const cssVariables = useMemo(() => {
-		const vars = {};
-		const breakpoints = getActiveBreakpoints();
-
-		// Iterate through all settings in widgetData
-		Object.keys(widgetData).forEach(settingKey => {
-			const settingValue = widgetData[settingKey];
-
-			// Check if this is a responsive setting (has breakpoint properties)
-			if (settingValue && typeof settingValue === 'object' && !Array.isArray(settingValue)) {
-				// Check if it has breakpoint keys
-				const hasBreakpoints = breakpoints.some(bp => settingValue.hasOwnProperty(bp));
-
-				if (hasBreakpoints) {
-					// Generate CSS variables for each breakpoint
-					breakpoints.forEach(breakpoint => {
-						const value = settingValue[breakpoint];
-
-						if (value !== undefined && value !== null) {
-							const varName = `--${settingKey.replace(/_/g, '-')}-${breakpoint}`;
-
-							// Handle different value types
-							if (typeof value === 'object' && value.size !== undefined) {
-								// Elementor slider format: { size: 26, unit: 'px' }
-								vars[varName] = `${value.size}${value.unit || 'px'}`;
-							} else if (typeof value === 'string' || typeof value === 'number') {
-								// Plain value
-								vars[varName] = value;
-							}
-						}
-					});
-				}
-			} else if (typeof settingValue === 'string' || typeof settingValue === 'number') {
-				// Handle non-responsive CSS values (colors, etc.)
-				// Only process settings that look like CSS values
-				if (settingKey.includes('color') || settingKey.includes('background') ||
-					settingKey.includes('border') || settingKey.includes('shadow')) {
-					const varName = `--${settingKey.replace(/_/g, '-')}`;
-					vars[varName] = settingValue;
-				}
-			}
-		});
-
-		return vars;
-	}, [widgetData]);
+	// Generate CSS custom properties from responsive settings
+	const cssVariables = useCssVariables(widgetData);
 
 	// Extract settings with defaults
 	const layoutId = widgetData?.mpl4e_layout || 'layout-1';
@@ -241,18 +153,7 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 	const featuredImageFit = widgetData?.mpl4e_image_fit || 'cover';
 
 	// Grid settings from Elementor controls
-	const gridSettings = useMemo(
-		() => ({
-			columns: {
-				desktop: 48, // react-grid-layout default columns
-				tablet: 24,
-				mobile: 12,
-			},
-			itemsMargin: widgetData?.mpl4e_items_margin?.size || 15,
-			rowHeight: widgetData?.mpl4e_row_height?.size || 10,
-		}),
-		[widgetData?.mpl4e_items_margin, widgetData?.mpl4e_row_height]
-	);
+	const gridSettings = useGridSettings(widgetData, 'mpl4e_items_margin', 'mpl4e_row_height');
 
 	// Memoize query settings to prevent unnecessary re-fetches
 	const querySettings = useMemo(

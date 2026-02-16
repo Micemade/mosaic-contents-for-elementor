@@ -13,6 +13,33 @@ import { addItemToLayout } from '../shared/utils/addItem';
 import { getComputedLayout } from '../shared/utils/layoutUtils';
 
 /**
+ * Widget-specific settings key mapping.
+ *
+ * Maps each widget type to its layout/custom_layout keys and channel events.
+ * This allows the generic editor hooks to work with any registered widget.
+ */
+const WIDGET_KEYS = {
+	'products-layout': {
+		layoutKey: 'mpl4e_layout',
+		customLayoutKey: 'mpl4e_custom_layout',
+		savedSetupKey: 'mpl4e_saved_setup',
+		resetEvent: 'mosaic:resetLayout',
+		applySetupEvent: 'mosaic:applySetup',
+		addItemEvent: 'mosaic:addItem',
+		gridColumns: { desktop: 48, tablet: 24, mobile: 12 },
+	},
+	'categories-layout': {
+		layoutKey: 'mpl4e_cat_layout',
+		customLayoutKey: 'mpl4e_cat_custom_layout',
+		savedSetupKey: 'mpl4e_cat_saved_setup',
+		resetEvent: 'mosaic:catResetLayout',
+		applySetupEvent: 'mosaic:catApplySetup',
+		addItemEvent: 'mosaic:catAddItem',
+		gridColumns: { desktop: 48, tablet: 24, mobile: 12 },
+	},
+};
+
+/**
  * Register frontend hooks for editor preview.
  * Same as frontend-hooks but with 'edit' mode.
  *
@@ -79,7 +106,10 @@ export const registerEditorHooks = () => {
 
 					// Include the saved-setup control key so changing it
 					// doesn't trigger a DOM re-render.
-					expandedWidgetKeys.add('mpl4e_saved_setup');
+					const wKeys = WIDGET_KEYS[widgetType];
+					if (wKeys?.savedSetupKey) {
+						expandedWidgetKeys.add(wKeys.savedSetupKey);
+					}
 
 					widgetKeys.forEach(key => {
 						const value = mapped[key];
@@ -159,109 +189,101 @@ export const registerEditorHooks = () => {
 
 			// Clear custom layout when predefined layout changes
 			// This ensures switching predefined layouts applies immediately
-			model.get('settings').on('change:mpl4e_layout', (settingsModel, newLayoutId) => {
-				const customLayout = model.getSetting('mpl4e_custom_layout');
-				if (customLayout) {
-					// Clear custom layout so new predefined layout takes effect
-					model.setSetting('mpl4e_custom_layout', '');
-				}
-			});
+			const wKeys = WIDGET_KEYS[widgetType];
+			if (wKeys) {
+				model.get('settings').on(`change:${wKeys.layoutKey}`, (settingsModel, newLayoutId) => {
+					const customLayout = model.getSetting(wKeys.customLayoutKey);
+					if (customLayout) {
+			// Clear custom layout so new predefined layout takes effect
+						model.setSetting(wKeys.customLayoutKey, '');
+					}
+				});
 
-			// Listen for custom 'reset layout' event from React component
-			// (React → Elementor)
-			elementor.channels.editor.on('mosaic:resetLayout', () => {
-				// Only reset if this widget is currently open in the panel
-				if (elementor.getPanelView().getCurrentPageView().model.id === widgetId) {
-					model.setSetting('mpl4e_custom_layout', ''); // Clear custom layout setting
-				}
-			});
+				// Listen for custom 'reset layout' event from React component
+				// (React → Elementor)
+				elementor.channels.editor.on(wKeys.resetEvent, () => {
+					// Only reset if this widget is currently open in the panel
+					if (elementor.getPanelView().getCurrentPageView().model.id === widgetId) {
+						model.setSetting(wKeys.customLayoutKey, ''); // Clear custom layout setting
+					}
+				});
 
-			// Listen for 'apply setup' event from the Saved Setups control.
-			// Batch-sets all settings atomically, preventing mid-batch DOM
-			// destruction that causes lost React updates and stale CSS.
-			elementor.channels.editor.on('mosaic:applySetup', ({ widgetId: targetWidgetId, settings: setupSettings }) => {
-				// Only apply if this widget is currently open in the panel
-				if (elementor.getPanelView().getCurrentPageView().model.id !== widgetId || targetWidgetId !== widgetId) {
-					return;
-				}
+				// Listen for 'apply setup' event from the Saved Setups control.
+				// Batch-sets all settings atomically, preventing mid-batch DOM
+				// destruction that causes lost React updates and stale CSS.
+				elementor.channels.editor.on(wKeys.applySetupEvent, ({ widgetId: targetWidgetId, settings: setupSettings }) => {
+					// Only apply if this widget is currently open in the panel
+					if (elementor.getPanelView().getCurrentPageView().model.id !== widgetId || targetWidgetId !== widgetId) {
+						return;
+					}
 
-				const settingsModel = model.get('settings');
+					const settingsModel = model.get('settings');
 
-				// 1. Temporarily disable view.renderOnChange to prevent DOM
-				//    re-renders mid-batch (which would destroy the React root).
-				let savedRenderOnChange = null;
-				if (view && view.renderOnChange) {
-					savedRenderOnChange = view.renderOnChange;
-					view.renderOnChange = () => { };
-				}
+					// 1. Temporarily disable view.renderOnChange to prevent DOM
+					//    re-renders mid-batch (which would destroy the React root).
+					let savedRenderOnChange = null;
+					if (view && view.renderOnChange) {
+						savedRenderOnChange = view.renderOnChange;
+						view.renderOnChange = () => { };
+					}
 
-				// 2. Temporarily remove change:mpl4e_layout listeners to prevent
-				//    the clearance handler from wiping mpl4e_custom_layout.
-				const layoutEvents = settingsModel._events?.['change:mpl4e_layout'];
-				const savedLayoutListeners = layoutEvents ? [...layoutEvents] : null;
-				if (layoutEvents) {
-					settingsModel.off('change:mpl4e_layout');
-				}
+					// 2. Temporarily remove change:layoutKey listeners to prevent
+					//    the clearance handler from wiping custom_layout.
+					const layoutEvents = settingsModel._events?.[`change:${wKeys.layoutKey}`];
+					const savedLayoutListeners = layoutEvents ? [...layoutEvents] : null;
+					if (layoutEvents) {
+						settingsModel.off(`change:${wKeys.layoutKey}`);
+					}
 
-				// 3. Batch-set ALL settings atomically. Backbone sets all
-				//    attributes first, then fires change:key events, then a
-				//    single aggregate 'change'.  The change handler above
-				//    pushes one correct React update + renderUI().
-				settingsModel.set(setupSettings);
+					// 3. Batch-set ALL settings atomically.
+					settingsModel.set(setupSettings);
 
-				// 4. Restore view.renderOnChange.
-				if (view && savedRenderOnChange) {
-					view.renderOnChange = savedRenderOnChange;
-				}
+					// 4. Restore view.renderOnChange.
+					if (view && savedRenderOnChange) {
+						view.renderOnChange = savedRenderOnChange;
+					}
 
-				// 5. Restore change:mpl4e_layout listeners.
-				if (savedLayoutListeners) {
-					savedLayoutListeners.forEach(listener => {
-						settingsModel.on('change:mpl4e_layout', listener.callback, listener.context);
-					});
-				}
+					// 5. Restore change:layoutKey listeners.
+					if (savedLayoutListeners) {
+						savedLayoutListeners.forEach(listener => {
+							settingsModel.on(`change:${wKeys.layoutKey}`, listener.callback, listener.context);
+						});
+					}
 
-				// 6. Ensure React has the final correct settings.
-				widgetManager.updateInstance(widgetType, widgetId, getSettingsFromModel());
+					// 6. Ensure React has the final correct settings.
+					widgetManager.updateInstance(widgetType, widgetId, getSettingsFromModel());
 
-				// 7. Regenerate CSS for selector-based styles (colours,
-				//    borders, shadows).  renderUI() rebuilds the widget's
-				//    stylesheet from control `selectors` definitions without
-				//    touching the DOM template → React root stays intact.
-				if (view && typeof view.renderUI === 'function') {
-					try { view.renderUI(); } catch (_) { /* swallow */ }
-				}
+					// 7. Regenerate CSS for selector-based styles.
+					if (view && typeof view.renderUI === 'function') {
+						try { view.renderUI(); } catch (_) { /* swallow */ }
+					}
 
-				// 8. Mark document as changed.
-				if (elementor.saver) {
-					elementor.saver.setFlagEditorChange(true);
-				}
-			});
-
-			// Listen for 'add grid item' event from panel button
-			// (Elementor Panel → React)
-			elementor.channels.editor.on('mosaic:addItem', () => {
-				// Only add if this widget is currently open in the panel
-				if (elementor.getPanelView().getCurrentPageView().model.id === widgetId) {
-					const customLayoutData = model.getSetting('mpl4e_custom_layout') || '';
-					const layoutId = model.getSetting('mpl4e_layout') || 'layout-1';
-					const gridColumns = {
-						desktop: 48,
-						tablet: 24,
-						mobile: 12
-					};
-
-					// Get the actual layout data (from custom or predefined)
-					const currentLayoutData = getComputedLayout(customLayoutData, layoutId);
-					const { newLayoutJson, newItemId } = addItemToLayout(JSON.stringify(currentLayoutData), gridColumns);
-					model.setSetting('mpl4e_custom_layout', newLayoutJson);
-
-					// Mark document as changed
+					// 8. Mark document as changed.
 					if (elementor.saver) {
 						elementor.saver.setFlagEditorChange(true);
 					}
-				}
-			});
+				});
+
+				// Listen for 'add grid item' event from panel button
+				// (Elementor Panel → React)
+				elementor.channels.editor.on(wKeys.addItemEvent, () => {
+					// Only add if this widget is currently open in the panel
+					if (elementor.getPanelView().getCurrentPageView().model.id === widgetId) {
+						const customLayoutData = model.getSetting(wKeys.customLayoutKey) || '';
+						const layoutId = model.getSetting(wKeys.layoutKey) || 'layout-1';
+
+						// Get the actual layout data (from custom or predefined)
+						const currentLayoutData = getComputedLayout(customLayoutData, layoutId);
+						const { newLayoutJson, newItemId } = addItemToLayout(JSON.stringify(currentLayoutData), wKeys.gridColumns);
+						model.setSetting(wKeys.customLayoutKey, newLayoutJson);
+
+						// Mark document as changed
+						if (elementor.saver) {
+							elementor.saver.setFlagEditorChange(true);
+						}
+					}
+				});
+			}
 		});
 	});
 };

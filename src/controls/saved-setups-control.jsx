@@ -16,67 +16,140 @@ import { createRoot } from 'react-dom/client';
 const apiFetch = wp.apiFetch;
 const { __ } = wp.i18n;
 
-// ── WP option key for storing setups ──────────────────────────────────────
-const OPTION_KEY = 'mpl4e_products_layout_setups';
-
-// ── Settings manifest: keys captured in a setup ───────────────────────────
+// ── Widget-specific configuration ─────────────────────────────────────────
+// Each widget type has its own WP option key, settings manifest, and channel events.
+const WIDGET_CONFIGS = {
+	'products-layout': {
+		optionKey: 'mpl4e_products_layout_setups',
+		applySetupEvent: 'mosaic:applySetup',
 // Layout settings (React-mapped)
-const LAYOUT_KEYS = [
-	'mpl4e_layout',
-	'mpl4e_custom_layout',
-	'mpl4e_items_margin',
-	'mpl4e_row_height',
-	'mpl4e_allow_overlap',
-	'mpl4e_compaction_type',
-];
+		layoutKeys: [
+			'mpl4e_layout',
+			'mpl4e_custom_layout',
+			'mpl4e_items_margin',
+			'mpl4e_row_height',
+			'mpl4e_allow_overlap',
+			'mpl4e_compaction_type',
+		],
+		// Style settings (React-mapped)
+		styleKeys: [
+			'mpl4e_product_layout',
+			'mpl4e_title_size',
+			'mpl4e_price_size',
+			'mpl4e_button_size',
+			'mpl4e_product_align',
+			'mpl4e_product_vertical_align',
+			'mpl4e_featured_image_size',
+			'mpl4e_featured_image_position',
+			'mpl4e_image_fit',
+			'mpl4e_sale_badge_position',
+		],
+		// Responsive setting keys (have _tablet, _mobile variants)
+		responsiveKeys: [
+			'mpl4e_title_size',
+			'mpl4e_price_size',
+			'mpl4e_button_size',
+			'mpl4e_product_align',
+			'mpl4e_product_vertical_align',
+			'mpl4e_elements_gap',
+			'mpl4e_padding',
+			'mpl4e_image_size',
+			'mpl4e_badge_sale_size',
+		],
+		// Selector-only style settings (NOT in React mapper but affect visual appearance)
+		selectorStyleKeys: [
+			'mpl4e_elements_gap',
+			'mpl4e_padding',
+			'mpl4e_image_size',
+			'mpl4e_text_color',
+			'mpl4e_links_color',
+			'mpl4e_border_radius',
+			'mpl4e_rating_size',
+			'mpl4e_badge_sale_size',
+			'mpl4e_sale_badge_color',
+			'mpl4e_sale_badge_backcolor',
+		],
+		// Group control prefixes
+		groupControlPrefixes: [
+			'mpl4e_background_color',
+			'mpl4e_product_border',
+			'mpl4e_box_shadow',
+		],
+	},
+	'categories-layout': {
+		optionKey: 'mpl4e_categories_layout_setups',
+		applySetupEvent: 'mosaic:catApplySetup',
+		layoutKeys: [
+			'mpl4e_cat_layout',
+			'mpl4e_cat_custom_layout',
+			'mpl4e_cat_items_margin',
+			'mpl4e_cat_row_height',
+			'mpl4e_cat_allow_overlap',
+			'mpl4e_cat_compaction_type',
+		],
+		styleKeys: [
+			'mpl4e_cat_card_layout',
+			'mpl4e_cat_title_size',
+			'mpl4e_cat_count_size',
+			'mpl4e_cat_show_count',
+			'mpl4e_cat_show_description',
+			'mpl4e_cat_align',
+			'mpl4e_cat_vertical_align',
+			'mpl4e_cat_image_fit',
+			'mpl4e_cat_image_position',
+		],
+		responsiveKeys: [
+			'mpl4e_cat_title_size',
+			'mpl4e_cat_count_size',
+			'mpl4e_cat_align',
+			'mpl4e_cat_vertical_align',
+			'mpl4e_cat_elements_gap',
+			'mpl4e_cat_padding',
+			'mpl4e_cat_image_size',
+		],
+		selectorStyleKeys: [
+			'mpl4e_cat_elements_gap',
+			'mpl4e_cat_padding',
+			'mpl4e_cat_image_size',
+			'mpl4e_cat_text_color',
+			'mpl4e_cat_links_color',
+			'mpl4e_cat_border_radius',
+		],
+		groupControlPrefixes: [
+			'mpl4e_cat_background_color',
+			'mpl4e_cat_border',
+			'mpl4e_cat_box_shadow',
+		],
+	},
+};
 
-// Style settings (React-mapped)
-const STYLE_KEYS = [
-	'mpl4e_product_layout',
-	'mpl4e_title_size',
-	'mpl4e_price_size',
-	'mpl4e_button_size',
-	'mpl4e_product_align',
-	'mpl4e_product_vertical_align',
-	'mpl4e_featured_image_size',
-	'mpl4e_featured_image_position',
-	'mpl4e_image_fit',
-	'mpl4e_sale_badge_position',
-];
+/**
+ * Detect the current widget type from the Elementor panel.
+ * @returns {string} Widget type name (e.g., 'products-layout', 'categories-layout')
+ */
+function detectWidgetType() {
+	try {
+		const panelView = elementor.getPanelView().getCurrentPageView();
+		const model = panelView?.model;
+		if (model) {
+			const widgetType = model.get('widgetType');
+			if (widgetType && WIDGET_CONFIGS[widgetType]) {
+				return widgetType;
+			}
+		}
+	} catch (e) {
+		// fallback
+	}
+	return 'products-layout'; // default fallback
+}
 
-// Responsive setting keys (have _tablet, _mobile variants)
-const RESPONSIVE_KEYS = [
-	'mpl4e_title_size',
-	'mpl4e_price_size',
-	'mpl4e_button_size',
-	'mpl4e_product_align',
-	'mpl4e_product_vertical_align',
-	'mpl4e_elements_gap',
-	'mpl4e_padding',
-	'mpl4e_image_size',
-	'mpl4e_badge_sale_size',
-];
-
-// Selector-only style settings (NOT in React mapper but affect visual appearance)
-const SELECTOR_STYLE_KEYS = [
-	'mpl4e_elements_gap',
-	'mpl4e_padding',
-	'mpl4e_image_size',
-	'mpl4e_text_color',
-	'mpl4e_links_color',
-	'mpl4e_border_radius',
-	'mpl4e_rating_size',
-	'mpl4e_badge_sale_size',
-	'mpl4e_sale_badge_color',
-	'mpl4e_sale_badge_backcolor',
-];
-
-// Group control prefixes (Elementor stores sub-keys like prefix_border, prefix_width, etc.)
-const GROUP_CONTROL_PREFIXES = [
-	'mpl4e_background_color',
-	'mpl4e_product_border',
-	'mpl4e_box_shadow',
-];
+/**
+ * Get widget config for the currently open widget.
+ * @returns {Object} Widget configuration
+ */
+function getActiveWidgetConfig() {
+	return WIDGET_CONFIGS[detectWidgetType()];
+}
 
 // Responsive breakpoint suffixes
 const BREAKPOINT_SUFFIXES = ['', '_tablet', '_mobile'];
@@ -128,6 +201,7 @@ function getWidgetModel() {
 /**
  * Read all setup-relevant settings from the Elementor widget model.
  * Returns a flat object of { settingKey: value }.
+ * Uses widget-specific key manifests based on the current widget type.
  */
 function captureSettingsFromModel(model) {
 	if (!model) return {};
@@ -138,12 +212,14 @@ function captureSettingsFromModel(model) {
 	const allAttributes = settingsModel.attributes || {};
 	const captured = {};
 
+	const config = getActiveWidgetConfig();
+
 	// Capture layout + style (React-mapped) keys
-	const baseKeys = [...LAYOUT_KEYS, ...STYLE_KEYS, ...SELECTOR_STYLE_KEYS];
+	const baseKeys = [...config.layoutKeys, ...config.styleKeys, ...config.selectorStyleKeys];
 
 	baseKeys.forEach(key => {
 		// For responsive keys, also capture _tablet and _mobile variants
-		if (RESPONSIVE_KEYS.includes(key)) {
+		if (config.responsiveKeys.includes(key)) {
 			BREAKPOINT_SUFFIXES.forEach(suffix => {
 				const fullKey = key + suffix;
 				const value = settingsModel.get(fullKey);
@@ -160,7 +236,7 @@ function captureSettingsFromModel(model) {
 	});
 
 	// Capture group control sub-keys by scanning all attributes
-	GROUP_CONTROL_PREFIXES.forEach(prefix => {
+	config.groupControlPrefixes.forEach(prefix => {
 		Object.keys(allAttributes).forEach(attrKey => {
 			if (attrKey.startsWith(prefix)) {
 				const value = allAttributes[attrKey];
@@ -177,20 +253,22 @@ function captureSettingsFromModel(model) {
 /**
  * Apply setup settings to the Elementor widget model.
  *
- * Delegates to editor-hooks via the 'mosaic:applySetup' channel event.
+ * Delegates to editor-hooks via the widget-specific channel event.
  * editor-hooks has full access to the widget view, model, and widgetManager
  * in the preview iframe context, allowing it to:
  * - Temporarily disable view.renderOnChange (prevent mid-batch DOM destruction)
- * - Temporarily disable change:mpl4e_layout handler (prevent custom_layout clearance)
+ * - Temporarily disable change:layoutKey handler (prevent custom_layout clearance)
  * - Batch-set all settings atomically via settingsModel.set()
  * - Push final settings to React and regenerate CSS
  */
 function applySettingsToModel(model, settings) {
 	if (!model || !settings) return;
 
+	const config = getActiveWidgetConfig();
+
 	// Delegate to editor-hooks which has access to the widget view in the
 	// preview iframe — needed to disable renderOnChange during batch.
-	elementor.channels.editor.trigger('mosaic:applySetup', {
+	elementor.channels.editor.trigger(config.applySetupEvent, {
 		widgetId: model.id,
 		settings,
 	});
@@ -215,6 +293,11 @@ function SavedSetupsUI({ initialValue, onValueChange }) {
 	const [error, setError] = useState(null);
 	const nameInputRef = useRef(null);
 
+	// Determine the WP option key based on which widget is currently open.
+	// This is evaluated once on mount — the widget type won't change while
+	// the control is rendered.
+	const optionKey = useRef(getActiveWidgetConfig().optionKey).current;
+
 	// ── Load setups from WP options on mount ──
 	useEffect(() => {
 		const controller = new AbortController();
@@ -222,7 +305,7 @@ function SavedSetupsUI({ initialValue, onValueChange }) {
 
 		apiFetch({ path: '/wp/v2/settings', signal: controller.signal })
 			.then(response => {
-				const raw = response[OPTION_KEY];
+				const raw = response[optionKey];
 				setSetups(raw ? JSON.parse(raw) : []);
 			})
 			.catch(err => {
@@ -243,7 +326,7 @@ function SavedSetupsUI({ initialValue, onValueChange }) {
 			await apiFetch({
 				path: '/wp/v2/settings',
 				method: 'POST',
-				data: { [OPTION_KEY]: JSON.stringify(setupsToSave) },
+				data: { [optionKey]: JSON.stringify(setupsToSave) },
 			});
 			return true;
 		} catch (err) {
