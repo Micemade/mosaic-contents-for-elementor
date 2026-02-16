@@ -6,21 +6,22 @@
 Frontend Bundle (main-frontend.jsx)          Editor Bundle (main-editor.jsx)
   ├─→ widget-registry.js                       ├─→ widget-registry.js
   ├─→ frontend-hooks.js (minimal)              ├─→ editor-hooks.js (full)
-  │     └─→ widget-initializer.js               │     ├─→ widget-initializer.js
+  │     └─→ widget-initializer.js              │     ├─→ widget-initializer.js
   ├─→ widget-manager.jsx (singleton)           │     ├─→ widget-manager.jsx
   └─→ elementor-utils.js                       │     └─→ settings-mappers.js
-       └─→ Display only                         └─→ elementor-utils.js
+       └─→ Display only                        └─→ elementor-utils.js
                                                      └─→ Drag/resize, sync, add/remove
 ```
 
 ## Build Commands
 
 ```bash
-npm run build           # Build all (dev, with sourcemaps)
-npm run build:prod      # Build all (production, no sourcemaps)
+npm run build           # Build all 4 entries (dev, with sourcemaps)
+npm run build:prod      # Build all 4 entries (production, no sourcemaps)
 npm run watch           # Watch frontend bundle (recommended)
 npm run watch:editor    # Watch editor bundle
-npm run watch:all       # Watch all bundles (resource intensive)
+npm run watch:setups    # Watch saved-setups-control
+npm run watch:all       # Watch all 4 bundles (resource intensive)
 ```
 
 ## Data Flow Diagrams
@@ -92,6 +93,8 @@ getSettingsFromModel() extracts new values
 widgetManager.updateInstance(widgetType, widgetId, newSettings)
   ↓
 instance.updateSettings(newSettings)
+  ↓
+view.renderUI() → Regenerates CSS from selectors (no DOM destruction)
   ↓
 React setState merges new settings
   ↓
@@ -197,6 +200,55 @@ Show confirmation notification
 Update cart count (if present in DOM)
 ```
 
+### 8. Saved Setup Load
+
+```
+User selects a saved setup from dropdown
+  ↓
+apiFetch GET /wp/v2/settings → mpl4e_products_layout_setups
+  ↓
+Find matching setup by name
+  ↓
+applySettingsToModel(setup.settings, model)
+  ↓
+elementor.channels.editor.trigger('mosaic:applySetup', { widgetId, settings })
+  ↓
+editor-hooks.js handler in preview iframe
+  ↓
+Disable renderOnChange + change:mpl4e_layout listener
+  ↓
+settingsModel.set(setupSettings) ← atomic batch (single Backbone change)
+  ↓
+Restore renderOnChange + layout listener
+  ↓
+widgetManager.updateInstance() → React setState
+  ↓
+view.renderUI() → CSS regeneration from selectors
+  ↓
+saver.setFlagEditorChange(true) → Enable Update button
+```
+
+### 9. Saved Setup Save
+
+```
+User types setup name + clicks Save
+  ↓
+captureSettingsFromModel(model)
+  ↓
+Capture keys from manifest:
+  ├─→ LAYOUT_KEYS (layout, custom_layout, columns, etc.)
+  ├─→ STYLE_KEYS (gap, padding, border_radius, etc.)
+  ├─→ SELECTOR_STYLE_KEYS (colors, backgrounds, typography)
+  ├─→ GROUP_CONTROL_PREFIXES expanded with _type, _color, _width...
+  └─→ RESPONSIVE_KEYS with _tablet, _mobile variants
+  ↓
+apiFetch POST /wp/v2/settings
+  ├─→ { mpl4e_products_layout_setups: [...existing, { name, settings }] }
+  └─→ Persisted in wp_options table
+  ↓
+Show toast notification
+```
+
 ## Key Methods Reference
 
 ### Widget Manager
@@ -217,13 +269,15 @@ injectBreakpointStylesheet()  // Inject responsive CSS
 
 ### Event System
 ```javascript
-// In React component
+// In React component (triggers)
 elementor.channels.editor.trigger('mosaic:resetLayout')
 elementor.channels.editor.trigger('mosaic:addItem')
+elementor.channels.editor.trigger('mosaic:applySetup', { widgetId, settings })
 
-// In editor-hooks.js listener
+// In editor-hooks.js listener (handlers)
 elementor.channels.editor.on('mosaic:resetLayout', () => { /* ... */ })
 elementor.channels.editor.on('mosaic:addItem', () => { /* ... */ })
+elementor.channels.editor.on('mosaic:applySetup', (data) => { /* batch apply */ })
 ```
 
 ### Registry
@@ -240,7 +294,7 @@ getWidgetConfig(widgetType)      // { component, settingsMapper }
    widgetManager.init() → Create React root → Store in instances[key] → Render
    
 2. UPDATE (Settings Change - No Remount)
-   model.on('change') → updateInstance() → setState → Re-render (same root)
+   model.on('change') → updateInstance() → setState → renderUI() (CSS) → Re-render (same root)
    
 3. UPDATE (Core/Advanced Change - Allow Remount)
    Conditional renderOnChange detects non-widget change → Original renderOnChange called
@@ -282,7 +336,10 @@ elementor/editor/after_enqueue_scripts hook
   └─→ Enqueue:
       ├─→ react (WordPress)
       ├─→ react-dom (WordPress)
-      └─→ focal-point-control.js
+      ├─→ focal-point-control.js
+      └─→ saved-setups-control.js
+            ├─→ deps: wp-api-fetch, wp-i18n
+            └─→ Persistence: wp_options via /wp/v2/settings
 ```
 
 ## Common Patterns
@@ -454,13 +511,17 @@ src/
 │   └── assets/                  # Shared styles
 └── controls/
     ├── focal-point-control.jsx
-    └── FocalPointControlView.jsx
+    ├── FocalPointControlView.jsx
+    ├── focal-point-control.scss
+    ├── saved-setups-control.jsx    # Save/Load/Delete presets
+    └── saved-setups-control.scss
 
 widgets/                          # PHP
 └── products-layout.php
 
 controls/                         # PHP
-└── focal-point.php
+├── focal-point.php
+└── saved-setups.php               # Saved Setups control class
 
 assets/                           # Built (Vite output)
 ├── js/main-frontend.js
@@ -468,7 +529,8 @@ assets/                           # Built (Vite output)
 └── admin/
     ├── js/
     │   ├── main-editor.js
-    │   └── focal-point-control.js
+    │   ├── focal-point-control.js
+    │   └── saved-setups-control.js
     └── css/
 ```
 
@@ -500,6 +562,21 @@ console.log(window.MosaicLayoutsReact.models);
 
 // Trigger events manually
 elementor.channels.editor.trigger('mosaic:resetLayout');
+elementor.channels.editor.trigger('mosaic:addItem');
+elementor.channels.editor.trigger('mosaic:applySetup', { widgetId: '12345', settings: {} });
+```
+
+**Saved Setups Issues:**
+```javascript
+// Check saved setups in database (browser console or WP CLI)
+wp.apiFetch({ path: '/wp/v2/settings' }).then(s => console.log(s.mpl4e_products_layout_setups));
+
+// Check current model settings (preview iframe console)
+const model = window.MosaicLayoutsReact.models['products-layout-WIDGET_ID'];
+console.log(model.get('settings').attributes);
+
+// Verify WP option directly (WP CLI)
+// wp option get mpl4e_products_layout_setups --format=json
 ```
 
 **Build Issues:**

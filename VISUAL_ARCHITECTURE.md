@@ -12,6 +12,7 @@
 5. [Widget Lifecycle](#widget-lifecycle)
 6. [File Structure](#file-structure)
 7. [WooCommerce Integration](#woocommerce-integration)
+8. [Saved Setups Feature](#saved-setups-feature)
 
 ---
 
@@ -35,6 +36,13 @@
 │Widget │  │Control │  │ Script  │  │ Frontend │ │ Editor │ │ WooCommerce │
 │Classes│  │Classes │  │Enqueuing│  │  Bundle  │ │ Bundle │ │  Store API  │
 └───────┘  └────────┘  └─────────┘  └──────────┘ └────────┘ └─────────────┘
+                    │
+                ┌───▼────────────────────────────────────────┐
+                │ Custom Controls (Panel)               │
+                ├─────────────────┬──────────────────────┤
+                │  Focal Point     │  Saved Setups       │
+                │  (image picker)  │  (presets manager)   │
+                └─────────────────┴──────────────────────┘
 ```
 
 ---
@@ -276,6 +284,13 @@
            │
            ▼
 ┌─────────────────────────────┐
+│ view.renderUI()             │
+│ Regenerates CSS (selectors) │
+│ No DOM destruction          │
+└──────────┬──────────────────┘
+           │
+           ▼
+┌─────────────────────────────┐
 │ Component Re-renders        │
 │ (No DOM Remount)            │
 └─────────────────────────────┘
@@ -394,18 +409,18 @@
 └────────────┬───────────────────┘
              │
              ▼
-    ┌────────────────────────┐
-    │ Is changed key in      │
-    │ widget-owned keys?*    │
-    └───┬─────────────┬──────┘
-        │             │
-    YES │             │ NO
+    ┌───────────────┐ ┌────────────────┐
+    │ Is changed key │ │ If changed key  │
+    │ widget-owned?  │ │ IS widget-owned:│
+    └───┬───────────┬─┘ │ renderUI() for  │
+        │             │   │ CSS only        │
+    YES │             │ NO└────────────────┘
         │             │
         ▼             ▼
 ┌───────────────┐ ┌──────────────────┐
-│ Return false  │ │ Call original    │
-│ (React handles│ │ renderOnChange() │
-│  update)      │ │ (Allow remount)  │
+│ view.renderUI()│ │ Call original    │
+│ (CSS only,    │ │ renderOnChange() │
+│  React stays) │ │ (Allow remount)  │
 └───────────────┘ └──────────────────┘
 
 * Widget-owned keys include:
@@ -787,6 +802,54 @@ External Dependencies (Not Bundled)
 └─────────────────────────────────────────────────────────────┘
 ```
 
+### Saved Setups Control Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                       Elementor Panel                        │
+└────────────────────────────┬────────────────────────────────┘
+                            │  "Saved Setups" Section
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────────┐
+│ PHP: controls/saved-setups.php                              │
+│ class Saved_Setups extends Base_Data_Control {              │
+│   get_type() { return 'mpl4e_saved_setups'; }               │
+│   content_template() { /* hidden input + React mount div */ }│
+│   enqueue() { /* loads saved-setups-control.js */ }          │
+│ }                                                            │
+└───────────────────────────┬─────────────────────────────────┘
+                            │  Enqueue Script
+                            ▼
+┌─────────────────────────────────────────────────────────────┐
+│ saved-setups-control.js (IIFE, deps: wp-api-fetch, wp-i18n) │
+└───────────────────────────┬─────────────────────────────────┘
+                            │  initSavedSetupsControl()
+                            ▼
+┌─────────────────────────────────────────────────────────────┐
+│ React: src/controls/saved-setups-control.jsx                │
+│ • SavedSetupsUI component (select, input, save/delete btns) │
+│ • captureSettingsFromModel() → reads all widget settings     │
+│ • applySettingsToModel() → triggers mosaic:applySetup event  │
+│ • wp.apiFetch → /wp/v2/settings (read/write mpl4e_...setups) │
+└───────────────────────────┬─────────────────────────────────┘
+                            │  On load setup:
+                            │  elementor.channels.editor
+                            │  .trigger('mosaic:applySetup')
+                            ▼
+┌─────────────────────────────────────────────────────────────┐
+│ editor-hooks.js (preview iframe context)                    │
+│ 1. Disable renderOnChange                                   │
+│ 2. Disable change:mpl4e_layout listener                     │
+│ 3. settingsModel.set(setupSettings) ← atomic batch           │
+│ 4. Restore renderOnChange                                   │
+│ 5. Restore layout listener                                  │
+│ 6. widgetManager.updateInstance() → React setState           │
+│ 7. view.renderUI() → CSS regeneration                       │
+│ 8. saver.setFlagEditorChange(true)                           │
+└─────────────────────────────────────────────────────────────┘
+```
+
 ---
 
 ## Development Workflow Diagram
@@ -897,9 +960,14 @@ window
    ├─ hooks.addAction()                Register actions
    ├─ channels.editor                  Event bus
    │  ├─ on()                          Listen to events
-   │  └─ trigger()                     Emit events
+   │  ├─ trigger()                     Emit events
+   │  └─ Custom Events:
+   │     ├─ mosaic:resetLayout         Reset to predefined
+   │     ├─ mosaic:addItem             Add new grid item
+   │     └─ mosaic:applySetup          Batch-apply saved setup
    ├─ saver
    │  └─ setFlagEditorChange()         Mark as changed
+   ├─ addControlView()                 Register custom control views
    └─ getPanelView()                   Active panel
 ```
 
@@ -917,23 +985,36 @@ widgetManager.init → Render Display Component
 ### Path 2: Editor Live Sync
 ```
 Change Panel → model.set → model.on('change') → settingsMapper → 
-updateInstance → setState → Re-render (No Remount)
+updateInstance → setState → view.renderUI() (CSS) → Re-render (No Remount)
 ```
 
 ### Path 3: Custom Layout Save
 ```
-Drag Item → onLayoutChange → updateElementorSetting → 
-updateModelSetting → model.setSetting → setFlagEditorChange → 
+Drag Item → onLayoutChange → updateElementorSetting →
+updateModelSetting → model.setSetting → setFlagEditorChange →
 Enable Update Button
 ```
 
 ### Path 4: WooCommerce Products
 ```
-Component Mount → useEffect → fetch Store API → Parse Response → 
+Component Mount → useEffect → fetch Store API → Parse Response →
 setState(products) → Map to Grid → Render
 ```
 
----
+### Path 5: Saved Setup Load
+```
+Select Setup → apiFetch(/wp/v2/settings) → get setup.settings →
+trigger('mosaic:applySetup') → disable renderOnChange →
+settingsModel.set(batch) → restore handlers →
+updateInstance (React) + renderUI (CSS) → saver.setFlagEditorChange
+```
+
+### Path 6: Saved Setup Save
+```
+Type Name + Click Save → captureSettingsFromModel(model) →
+capture layout/style/CSS/group-control keys →
+apiFetch POST /wp/v2/settings → persist to wp_options →
+show toast notification
 
 **End of Visual Architecture Diagrams**
 
