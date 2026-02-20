@@ -37,6 +37,15 @@ const WIDGET_KEYS = {
 		addItemEvent: 'mosaic:catAddItem',
 		gridColumns: { desktop: 48, tablet: 24, mobile: 12 },
 	},
+	'single-product-layout': {
+		layoutKey: 'mpl4e_sp_layout',
+		customLayoutKey: 'mpl4e_sp_custom_layout',
+		savedSetupKey: 'mpl4e_sp_saved_setup',
+		resetEvent: 'mosaic:spResetLayout',
+		applySetupEvent: 'mosaic:spApplySetup',
+		addItemEvent: 'mosaic:spAddItem',
+		gridColumns: { desktop: 56, tablet: 48, mobile: 36 },
+	},
 };
 
 /**
@@ -138,11 +147,14 @@ export const registerEditorHooks = () => {
 					view.renderOnChange = (settings) => {
 						const changed = settings.changedAttributes();
 						const changedKeys = Object.keys(changed || {});
-						const hasNonWidgetChange = changedKeys.some(k => !widgetKeysArray.includes(k));
+						// Ignore Elementor internal keys (e.g. __globals__, __dynamic__)
+						// that fire alongside widget-owned changes like SELECT2 values.
+						const relevantKeys = changedKeys.filter(k => !k.startsWith('__'));
+						const hasNonWidgetChange = relevantKeys.some(k => !widgetKeysArray.includes(k));
 						if (hasNonWidgetChange) {
 							// Call original to handle core/advanced changes
 							originalRenderOnChange(settings);
-						} else if (changedKeys.length) {
+						} else if (relevantKeys.length) {
 							// Widget-owned changes: refresh CSS (selectors) without
 							// full DOM re-render so the React root stays intact.
 							try { view.renderUI(); } catch (_) { /* swallow */ }
@@ -194,7 +206,7 @@ export const registerEditorHooks = () => {
 				model.get('settings').on(`change:${wKeys.layoutKey}`, (settingsModel, newLayoutId) => {
 					const customLayout = model.getSetting(wKeys.customLayoutKey);
 					if (customLayout) {
-			// Clear custom layout so new predefined layout takes effect
+						// Clear custom layout so new predefined layout takes effect
 						model.setSetting(wKeys.customLayoutKey, '');
 					}
 				});

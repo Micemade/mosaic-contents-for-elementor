@@ -121,6 +121,65 @@ const WIDGET_CONFIGS = {
 			'mpl4e_cat_box_shadow',
 		],
 	},
+	'single-product-layout': {
+		optionKey: 'mpl4e_single_product_layout_setups',
+		applySetupEvent: 'mosaic:spApplySetup',
+		layoutKeys: [
+			'mpl4e_sp_layout',
+			'mpl4e_sp_custom_layout',
+			'mpl4e_sp_items_margin',
+			'mpl4e_sp_row_height',
+			'mpl4e_sp_allow_overlap',
+			'mpl4e_sp_compaction_type',
+		],
+		styleKeys: [
+			'mpl4e_sp_featured_image_size',
+			'mpl4e_sp_excerpt_truncate',
+			'mpl4e_sp_image_fit',
+		],
+		responsiveKeys: [
+			// Global
+			'mpl4e_sp_global_h_align',
+			'mpl4e_sp_global_v_align',
+			'mpl4e_sp_global_padding',
+			'mpl4e_sp_global_border_radius',
+			// Per-element text sizes, alignment, padding, border-radius
+			...['title', 'price', 'excerpt', 'addtocart', 'sale_badge', 'rating', 'categories', 'brands'].flatMap((el) => [
+				`mpl4e_sp_${el}_text_size`,
+				`mpl4e_sp_${el}_h_align`,
+				`mpl4e_sp_${el}_v_align`,
+				`mpl4e_sp_${el}_padding`,
+				`mpl4e_sp_${el}_border_radius`,
+			]),
+			// Image
+			'mpl4e_sp_image_border_radius',
+		],
+		selectorStyleKeys: [
+			// Per-element text colors
+			...['title', 'price', 'excerpt', 'addtocart', 'sale_badge', 'rating', 'categories', 'brands'].map(
+				(el) => `mpl4e_sp_${el}_text_color`
+			),
+			// Excerpt truncation
+			'mpl4e_sp_excerpt_truncate_lines',
+			// Image focal point
+			'mpl4e_sp_image_position',
+		],
+		groupControlPrefixes: [
+			// Global
+			'mpl4e_sp_global_background',
+			'mpl4e_sp_global_border',
+			'mpl4e_sp_global_box_shadow',
+			// Per-element
+			...['title', 'price', 'excerpt', 'addtocart', 'sale_badge', 'rating', 'categories', 'brands'].flatMap((el) => [
+				`mpl4e_sp_${el}_background`,
+				`mpl4e_sp_${el}_border`,
+				`mpl4e_sp_${el}_box_shadow`,
+			]),
+			// Image
+			'mpl4e_sp_image_border',
+			'mpl4e_sp_image_box_shadow',
+		],
+	},
 };
 
 /**

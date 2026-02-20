@@ -8,6 +8,7 @@ use Elementor\Group_Control_Background;
 use Elementor\Group_Control_Typography;
 use Elementor\Group_Control_Border;
 use Elementor\Group_Control_Box_Shadow;
+use Micemade\MosaicProductLayoutsElementor\WidgetHelpers;
 
 /**
  * Products Layout Widget for Elementor.
@@ -17,11 +18,7 @@ use Elementor\Group_Control_Box_Shadow;
  */
 class ProductsLayout extends Widget_Base {
 
-	/**
-	 * Cached settings definitions from JSON
-	 * @var array|null
-	 */
-	private static $settings_definitions = null;
+	use WidgetHelpers;
 
 	public function __construct( $data = array(), $args = null ) {
 		parent::__construct( $data, $args );
@@ -51,159 +48,7 @@ class ProductsLayout extends Widget_Base {
 		return array( 'micemade-widgets' );
 	}
 
-	private static function get_range() {
-		return array(
-			'px' => array(
-				'min'  => 0,
-				'max'  => 100,
-				'step' => 1,
-			),
-			'em' => array(
-				'min'  => 0,
-				'max'  => 10,
-				'step' => 0.1,
-			),
-			'rem' => array(
-				'min'  => 0,
-				'max'  => 10,
-				'step' => 0.1,
-			),
-			'vw' => array(
-				'min'  => 0,
-				'max'  => 10,
-				'step' => 0.1,
-			),
-			'vh' => array(
-				'min'  => 0,
-				'max'  => 10,
-				'step' => 0.1,
-			),
-			'%' => array(
-				'min'  => 0,
-				'max'  => 100,
-				'step' => 1,
-			),
-		);
-	}
 
-	/**
-	 * Get active Elementor breakpoints.
-	 *
-	 * @return array Array of breakpoint names (e.g., ['desktop', 'tablet', 'mobile']).
-	 */
-	private static function get_active_breakpoints() {
-		if ( class_exists( '\Elementor\Plugin' ) ) {
-			$breakpoints_manager = \Elementor\Plugin::$instance->breakpoints;
-			if ( $breakpoints_manager ) {
-				$active_breakpoints = $breakpoints_manager->get_active_breakpoints();
-				$breakpoint_keys = array_keys( $active_breakpoints );
-				// Elementor breakpoints are in reverse order (mobile first), we need desktop first
-				$breakpoint_keys = array_reverse( $breakpoint_keys );
-				// Always include 'desktop' as the base (not in active_breakpoints array)
-				array_unshift( $breakpoint_keys, 'desktop' );
-				return $breakpoint_keys;
-			}
-		}
-		// Fallback to default breakpoints if Elementor is not available
-		return array( 'desktop', 'tablet', 'mobile' );
-	}
-
-	/**
-	 * Get settings definitions from JSON file.
-	 *
-	 * @return array Settings definitions with defaults and types.
-	 */
-	private static function get_settings_definitions() {
-		if ( self::$settings_definitions === null ) {
-			$json_file = plugin_dir_path( __DIR__ ) . 'src/widgets/products-layout/utils/products-layout-settings.json';
-			if ( file_exists( $json_file ) ) {
-				$json_content = file_get_contents( $json_file );
-				self::$settings_definitions = json_decode( $json_content, true );
-			} else {
-				self::$settings_definitions = array();
-			}
-		}
-		return self::$settings_definitions;
-	}
-
-	/**
-	 * Get all settings with defaults applied.
-	 *
-	 * @return array Settings array ready for JSON encoding.
-	 */
-	private function get_widget_settings() {
-		$definitions = self::get_settings_definitions();
-		$result = array();
-		
-		foreach ( $definitions as $key => $definition ) {
-			$default = $definition['default'];
-			$type = $definition['type'];
-			
-			// Get value from Elementor settings with default fallback
-			$raw_value = $this->sanitize_setting( $key, $default );
-			
-			// Convert based on type
-			if ( $type === 'boolean' ) {
-				// Convert 'yes'/'no' to boolean
-				$result[ $key ] = 'yes' === $raw_value;
-			} elseif ( $type === 'number' ) {
-				$result[ $key ] = $raw_value;
-			} elseif ( $type === 'responsive' ) {
-				// Responsive settings: build object with breakpoint keys
-				$breakpoints = self::get_active_breakpoints();
-				$responsive_value = array();
-				
-				foreach ( $breakpoints as $index => $breakpoint ) {
-					// Get breakpoint-specific default
-					$breakpoint_default_key = $breakpoint . '_default';
-					$breakpoint_default = isset( $definition[ $breakpoint_default_key ] ) 
-						? $definition[ $breakpoint_default_key ] 
-						: $definition['default'];
-					
-					if ( $index === 0 ) {
-						// Desktop (base value, no suffix)
-						$value = $this->sanitize_setting( $key, $breakpoint_default );
-						$responsive_value[ $breakpoint ] = $value;
-					} else {
-						// Tablet/Mobile (with suffix)
-						$value = $this->sanitize_setting( $key . '_' . $breakpoint, $breakpoint_default );
-						$responsive_value[ $breakpoint ] = $value;
-					}
-				}
-				
-				$result[ $key ] = $responsive_value;
-			} else {
-				// string type
-				$result[ $key ] = $raw_value;
-			}
-		}
-		
-		return $result;
-	}
-
-	/**
-	 * Get registered image sizes for select control.
-	 *
-	 * @return array Associative array of size_name => label.
-	 */
-	private function get_image_sizes() {
-		$sizes = array(
-			'automatic' => __( 'Automatic (from Store API)', 'mosaic-product-layouts-for-elementor' ),
-		);
-
-		// Get all registered image sizes.
-		$registered_sizes = wp_get_registered_image_subsizes();
-
-		if ( ! empty( $registered_sizes ) ) {
-			foreach ( $registered_sizes as $name => $size ) {
-				$label = ucwords( str_replace( array( '-', '_' ), ' ', $name ) );
-				$dimensions = $size['width'] . 'x' . $size['height'];
-				$sizes[ $name ] = sprintf( '%s (%s)', $label, $dimensions );
-			}
-		}
-
-		return $sizes;
-	}
 
 	/**
 	 * Get product categories for select control.
@@ -944,10 +789,7 @@ class ProductsLayout extends Widget_Base {
 			array(
 				'label'     => esc_html__( 'Rating stars size', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::SLIDER,
-				'default'   => array(
-					'size' => 100,
-					'unit' => '',
-				),
+				'default'   => array('size' => 100, 'unit' => ''),
 				'range'       => array(
 					'em' => array(
 						'min'  => 1,
@@ -965,98 +807,5 @@ class ProductsLayout extends Widget_Base {
 		$this->end_controls_tabs();// Additional Tabs end.
 
 		$this->end_controls_section();
-	}
-
-	private function sanitize_setting( $setting, $default ) {
-		$settings = $this->get_settings_for_display();
-		if ( isset( $settings[$setting] ) ) {
-			return $settings[$setting];
-		}
-		return $default;
-	}
-
-	/**
-	 * Render widget on frontend.
-	 * Outputs wrapper with settings JSON for React to hydrate.
-	 */
-	protected function render() {
-		$query_settings = $this->get_widget_settings();
-		$json_data = wp_json_encode( $query_settings );
-		$widget_id = $this->get_id();
-		?>
-<div class="products-layout-wrapper" data-widget-id="<?php echo esc_attr( $widget_id ); ?>">
-	<input type="hidden" class="elementor-settings-data" value="<?php echo esc_attr( $json_data ); ?>" />
-	<div class="products-layout-react-root"></div>
-</div>
-<?php
-	}
-
-	/**
-	 * Editor template - Dynamic wrapper for React with widget ID and settings.
-	 * Ensures proper widget isolation when duplicating sections or widgets.
-	 */
-	protected function content_template() {
-		// Generate JavaScript object initialization from settings definitions
-		$definitions = self::get_settings_definitions();
-		$js_settings = array();
-		
-		foreach ( $definitions as $key => $definition ) {
-			$default = $definition['default'];
-			$type = $definition['type'];
-			
-			if ( $type === 'boolean' ) {
-				// Boolean: settings.key === 'yes'
-				$js_settings[] = "\t{$key}: settings.{$key} === 'yes'";
-			} elseif ( $type === 'number' ) {
-				// Number: settings.key || default
-				$js_settings[] = "\t{$key}: settings.{$key} || {$default}";
-			} elseif ( $type === 'object' ) {
-				// Object (e.g., focal point with x/y): settings.key || { default }
-				$default_json = wp_json_encode( $default );
-				$js_settings[] = "\t{$key}: settings.{$key} || {$default_json}";
-			} elseif ( $type === 'responsive' ) {
-				// Responsive: { desktop: ..., tablet: ..., mobile: ... }
-				// Get active breakpoints from Elementor
-				$breakpoints = self::get_active_breakpoints();
-				$responsive_values = array();
-				foreach ( $breakpoints as $index => $breakpoint ) {
-					// Get breakpoint-specific default (e.g., tablet_default) or fallback to main default
-					$breakpoint_default_key = $breakpoint . '_default';
-					$breakpoint_default = isset( $definition[ $breakpoint_default_key ] ) 
-						? $definition[ $breakpoint_default_key ] 
-						: $definition['default'];
-					$default_json = is_array( $breakpoint_default ) ? wp_json_encode( $breakpoint_default ) : "'{$breakpoint_default}'";
-					
-					if ( $index === 0 ) {
-						// Desktop (base value, no suffix)
-						$responsive_values[] = "{$breakpoint}: settings.{$key} || {$default_json}";
-					} else {
-						// Tablet/Mobile (with suffix, inherit from previous if not set)
-						$prev_breakpoint = $breakpoints[$index - 1];
-						$responsive_values[] = "{$breakpoint}: settings.{$key}_{$breakpoint} || {$default_json}";
-					}
-				}
-				$js_settings[] = "\t{$key}: { " . implode( ', ', $responsive_values ) . ' }';
-			} elseif ( $type === 'array' ) {
-				// Array: settings.key || []
-				$default_json = wp_json_encode( $default );
-				$js_settings[] = "\t{$key}: settings.{$key} || {$default_json}";
-			} else {
-				// String: settings.key || 'default'
-				$default_escaped = addslashes( $definition['default'] );
-				$js_settings[] = "\t{$key}: settings.{$key} || '{$default_escaped}'";
-			}
-		}
-		
-		$js_settings_code = implode( ",\n", $js_settings );
-		?>
-<# const widgetId=view.model.id; const data={
-	<?php echo $js_settings_code; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> }; const
-	jsonData=JSON.stringify(data); #>
-	<div class="products-layout-wrapper" data-widget-id="{{ widgetId }}">
-		<input type="hidden" class="elementor-settings-data" value="{{ jsonData }}" />
-		<div class="products-layout-react-root"></div>
-	</div>
-	<?php
 	}
 }

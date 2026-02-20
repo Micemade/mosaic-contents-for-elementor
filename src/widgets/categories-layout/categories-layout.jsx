@@ -469,7 +469,7 @@ const CategoriesLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'disp
 						type="button"
 						className="mpl4e-toolbar-btn mpl4e-add-item-btn"
 						onClick={handleAddItem}
-						title="Add Grid Item"
+						title="Add Item"
 					>
 						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
 							<line x1="12" y1="5" x2="12" y2="19"></line>

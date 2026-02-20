@@ -5,6 +5,7 @@
 - **Widget Development**: https://developers.elementor.com/docs/widgets/
 - **Controls Reference**: https://developers.elementor.com/docs/controls/
 - **Hooks Reference**: https://developers.elementor.com/docs/hooks/
+- **DeepWiki Documentation**: https://deepwiki.com/elementor/elementor-developers-docs
 
 ## Elementor GitHub Repository
 

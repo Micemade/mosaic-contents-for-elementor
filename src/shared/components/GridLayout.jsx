@@ -66,6 +66,7 @@ function GridLayout(props) {
 		isDraggable = isEditorMode(),
 		isResizable = isEditorMode(),
 		onLayoutChange, // Callback when layout changes
+		draggableCancel = '', // CSS selector for non-draggable child elements
 		size,
 		children,
 		selectWidget,
@@ -200,6 +201,7 @@ function GridLayout(props) {
 			compactType={compactionType}
 			allowOverlap={allowOverlap}
 			rowHeight={rowHeight}
+			{...(draggableCancel && { draggableCancel })}
 		>
 			{children}
 		</RGL>

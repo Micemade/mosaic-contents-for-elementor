@@ -82,24 +82,4 @@ export const createSettingsMapper = (settingsDefinition) => (model) => {
 	return result;
 };
 
-/**
- * Extract settings for Single Product Layout widget (placeholder for future use)
- * 
- * @param {Object} model - Elementor widget model
- * @returns {Object} Formatted settings object
- */
-export const mapSingleProductLayoutSettings = (model) => {
-	const settings = model.get('settings');
-	return {
-		// Product ID
-		product_id: settings.get('product_id'),
-		
-		// Layout settings
-		layout: settings.get('layout'),
-		custom_layout: settings.get('custom_layout'),
-		
-		// Display options
-		show_gallery: settings.get('show_gallery') === 'yes',
-		show_meta: settings.get('show_meta') === 'yes',
-	};
-};
+

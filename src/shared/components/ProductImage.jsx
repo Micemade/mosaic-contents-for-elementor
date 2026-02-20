@@ -5,7 +5,7 @@ import { __ } from '@wordpress/i18n';
 import { memo } from '@wordpress/element';
 import PropTypes from 'prop-types';
 
-import placeholderImgForBuild from '../../../shared/woocommerce-placeholder-300x300.png';
+import placeholderImgForBuild from '../woocommerce-placeholder-300x300.png';
 
 // Get placeholder image URL from localized script data
 const placeholderImg = window.MPL4E?.placeholderImg || '';
@@ -13,7 +13,7 @@ const placeholderImg = window.MPL4E?.placeholderImg || '';
 /**
  * Internal dependencies.
  */
-import { getFeaturedImage } from '../../../shared/utils/productUtils';
+import { getFeaturedImage } from '../utils/productUtils';
 
 const getImageProperties = (images) => {
 

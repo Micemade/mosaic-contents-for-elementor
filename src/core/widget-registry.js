@@ -9,8 +9,10 @@ import { createSettingsMapper } from '../widgets/settings-mappers';
 
 import ProductsLayoutWidget from '../widgets/products-layout/products-layout';
 import CategoriesLayoutWidget from '../widgets/categories-layout/categories-layout';
+import SingleProductLayoutWidget from '../widgets/single-product-layout/single-product-layout';
 import productsSettingsDef from '../widgets/products-layout/utils/products-layout-settings.json';
 import categoriesSettingsDef from '../widgets/categories-layout/utils/categories-layout-settings.json';
+import singleProductSettingsDef from '../widgets/single-product-layout/utils/single-product-layout-settings.json';
 
 // Registry mapping widget types to their configurations
 export const WIDGET_REGISTRY = {
@@ -22,10 +24,10 @@ export const WIDGET_REGISTRY = {
 		component: CategoriesLayoutWidget,
 		settingsMapper: createSettingsMapper(categoriesSettingsDef)
 	},
-	// 'single-product-layout': {
-	//     component: SingleProductLayoutWidget,
-	//     settingsMapper: mapSingleProductLayoutSettings
-	// }
+	'single-product-layout': {
+		component: SingleProductLayoutWidget,
+		settingsMapper: createSettingsMapper(singleProductSettingsDef)
+	}
 };
 
 // Get list of all registered widget types

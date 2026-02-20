@@ -209,3 +209,49 @@ export const injectBreakpointStylesheet = () => {
 
 	return true;
 };
+
+/**
+ * Open and scroll to a specific Elementor panel section.
+ *
+ * Switches to the given tab (default: 'style') if not already active,
+ * then expands the section accordion and scrolls it into view.
+ *
+ * @param {string} sectionId - Elementor section control ID (e.g. 'sp_title_style_section')
+ * @param {string} [tab='style'] - Tab name: 'content' | 'style' | 'advanced'
+ */
+export const openPanelSection = (sectionId, tab = 'style') => {
+	if (typeof elementor === 'undefined') return;
+	try {
+		// The panel lives in the parent frame; use its jQuery to query the DOM.
+		const $parent = window.parent?.jQuery;
+		if (!$parent) return;
+
+		const expandSection = () => {
+			const $section = $parent(`#elementor-panel .elementor-control-${sectionId}`);
+			if (!$section.length) return;
+
+			// Elementor toggles sections by clicking .elementor-section-toggle.
+			if (!$section.hasClass('elementor-open')) {
+				$section.find('.elementor-section-toggle').trigger('click');
+			}
+
+			// Scroll after accordion animation starts.
+			setTimeout(() => {
+				$section[0]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			}, 80);
+		};
+
+		const $navTab = $parent(`#elementor-panel .elementor-panel-navigation [data-tab="${tab}"]`);
+		const isActive = $navTab.hasClass('elementor-active');
+
+		if (!isActive && $navTab.length) {
+			$navTab.trigger('click');
+			// Wait for Elementor to re-render the tab controls before expanding.
+			setTimeout(expandSection, 200);
+		} else {
+			expandSection();
+		}
+	} catch (e) {
+		console.warn('Could not open panel section:', e);
+	}
+};

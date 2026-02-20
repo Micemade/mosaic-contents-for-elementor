@@ -97,6 +97,21 @@
 			}
 		}
 
+		// Override for single product layout.
+		&.single {
+			top: 0;
+			left: 0;
+			transform: none;
+			position: relative;
+			padding: 0.6ch 1.4ch;
+			
+			.sale-badge {
+				background: transparent;
+				color: inherit;
+				padding: 0;
+			}
+		}
+
 		.square {
 			aspect-ratio: 1;
 		}

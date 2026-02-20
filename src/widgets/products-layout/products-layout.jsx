@@ -19,9 +19,9 @@ import DOMPurify from 'dompurify';
  */
 // Components.
 import GridLayout from '../../shared/components/GridLayout.jsx';
-import ProductImage from './components/ProductImage.jsx';
-import RatingStars from './components/RatingStars.jsx';
-import AddToCartButton from './components/AddToCartButton.jsx';
+import ProductImage from '../../shared/components/ProductImage.jsx';
+import RatingStars from '../../shared/components/RatingStars.jsx';
+import AddToCartButton from '../../shared/components/AddToCartButton.jsx';
 
 // Utilities and data.
 import { decode } from '../../shared/utils/generalUtils.js';
@@ -503,7 +503,7 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 						type="button"
 						className="mpl4e-toolbar-btn mpl4e-add-item-btn"
 						onClick={handleAddItem}
-						title="Add Grid Item"
+						title="Add Item"
 					>
 						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
 							<line x1="12" y1="5" x2="12" y2="19"></line>
