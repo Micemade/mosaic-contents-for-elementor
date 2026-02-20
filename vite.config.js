@@ -43,6 +43,11 @@ const entries = {
 		input: path.resolve(__dirname, 'src/controls/saved-setups-control.jsx'),
 		outDir: 'assets/admin',
 	},
+	// Product select control (editor panel only)
+	'product-select-control': {
+		input: path.resolve(__dirname, 'src/controls/product-select-control.jsx'),
+		outDir: 'assets/admin',
+	},
 };
 
 const currentEntry = entries[entry];

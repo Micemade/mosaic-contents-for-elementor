@@ -247,11 +247,10 @@ class SingleProductLayout extends Widget_Base {
 			'mpl4e_sp_product_id',
 			array(
 				'label'       => __( 'Product', 'mosaic-product-layouts-for-elementor' ),
-				'type'        => Controls_Manager::SELECT2,
+				'type'        => 'mpl4e_product_select',
 				'default'     => '',
-				'options'     => $this->get_products_list(),
 				'label_block' => true,
-				'description' => __( 'Select a product to display.', 'mosaic-product-layouts-for-elementor' ),
+				'description' => __( 'Select a product to display. Type to search.', 'mosaic-product-layouts-for-elementor' ),
 			)
 		);
 

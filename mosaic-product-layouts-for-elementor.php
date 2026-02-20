@@ -43,6 +43,9 @@ final class MosaicProductLayoutsElementor {
 		// Register plugin settings for saved setups (wp_options via REST API).
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'rest_api_init', array( $this, 'register_settings' ) );
+
+		// Initialize custom REST API endpoints.
+		$this->init_rest_api();
 	}
 
 	public function i18n() {
@@ -87,6 +90,10 @@ final class MosaicProductLayoutsElementor {
 		// Require and register the saved setups control.
 		require_once __DIR__ . '/controls/saved-setups.php';
 		$controls_manager->register( new \Micemade\MosaicProductLayoutsElementor\Controls\Saved_Setups() );
+
+		// Require and register the product select control.
+		require_once __DIR__ . '/controls/product-select.php';
+		$controls_manager->register( new \Micemade\MosaicProductLayoutsElementor\Controls\Product_Select() );
 	}
 
 	/**
@@ -264,6 +271,17 @@ final class MosaicProductLayoutsElementor {
 		register_setting( 'options', 'mpl4e_products_layout_setups', $setting_args );
 		register_setting( 'options', 'mpl4e_categories_layout_setups', $setting_args );
 		register_setting( 'options', 'mpl4e_single_product_layout_setups', $setting_args );
+	}
+
+	/**
+	 * Initialize custom REST API endpoints.
+	 *
+	 * @return void
+	 */
+	private function init_rest_api() {
+		require_once __DIR__ . '/includes/class-rest-api.php';
+		$rest_api = new RestAPI();
+		$rest_api->init();
 	}
 
 	public function admin_notice_missing_elementor() {
