@@ -12,6 +12,7 @@
 // Import shared mixins and variables for consistent styling across widgets.
 @use '../../shared/assets/gridLayout' as *;
 @use '../../shared/assets/productElements' as *;
+@use '../../shared/assets/zindexControls' as *;
 
 // Apply grid layout styles
 .mosaic-grid-layout {
@@ -415,9 +416,6 @@
  */
 
 .mpl4e-remove-item-btn {
-	position: absolute;
-	top: 15px;
-	right: 15px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -429,10 +427,8 @@
 	background: var(--e-a-btn-bg-danger, #dc2626);
 	color: var(--e-a-color-txt-invert, #fff);
 	cursor: pointer;
-	opacity: 0;
-	transition: opacity 0.2s ease, background-color 0.2s ease, transform 0.15s ease;
+	transition: background-color 0.2s ease, transform 0.15s ease;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-	z-index: 10;
 	font-size: 10px;
 
 	svg {
@@ -450,9 +446,4 @@
 		background: var(--e-a-btn-bg-danger-active, #23262a);
 		transform: scale(0.95);
 	}
-}
-
-// Show remove button on grid item hover
-.react-grid-item:hover .mpl4e-remove-item-btn {
-	opacity: 1;
 }

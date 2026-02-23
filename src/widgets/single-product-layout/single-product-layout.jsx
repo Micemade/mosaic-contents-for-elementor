@@ -23,6 +23,7 @@ import GridLayout from '../../shared/components/GridLayout.jsx';
 import ProductImage from '../../shared/components/ProductImage.jsx';
 import RatingStars from '../../shared/components/RatingStars.jsx';
 import AddToCartButton from '../../shared/components/AddToCartButton.jsx';
+import ZIndexControls from '../../shared/components/ZIndexControls.jsx';
 
 import { decode } from '../../shared/utils/generalUtils.js';
 import { updateElementorSetting, openPanelSection } from '../../core/elementor-utils';
@@ -342,7 +343,7 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 				isResizable={isEditMode}
 				onLayoutChange={isEditMode ? handleLayoutChange : undefined}
 				selectWidget={selectWidget}
-				draggableCancel=".sp-edit-element-btn"
+				draggableCancel=".mpl4e-item-controls"
 			>
 				{mobileLayout.map((layoutItem) => {
 					const elementDef = ELEMENT_MAP[layoutItem.i];
@@ -362,18 +363,31 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 								imagePosition,
 								imageFit,
 							})}
-							{isEditMode && ELEMENT_SECTION_MAP[elementDef.id] && (
-								<button
-									className="sp-edit-element-btn"
-									title={`Edit ${elementDef.name} style`}
-									onMouseDownCapture={(e) => {
-										e.stopPropagation();
-										e.preventDefault();
-										openPanelSection(ELEMENT_SECTION_MAP[elementDef.id]);
-									}}
-								>
-									<i className="eicon-edit" />
-								</button>
+							{isEditMode && (
+								<div className="mpl4e-item-controls">
+									<ZIndexControls
+										itemId={layoutItem.i}
+										layoutData={layoutData}
+										customLayoutData={customLayoutData}
+										widgetType="single-product-layout"
+										widgetId={widgetId}
+										settingKey="mpl4e_sp_custom_layout"
+										updateFn={updateElementorSetting}
+									/>
+									{ELEMENT_SECTION_MAP[elementDef.id] && (
+										<button
+											className="sp-edit-element-btn"
+											title={`Edit ${elementDef.name} style`}
+											onMouseDownCapture={(e) => {
+												e.stopPropagation();
+												e.preventDefault();
+												openPanelSection(ELEMENT_SECTION_MAP[elementDef.id]);
+											}}
+										>
+											<i className="eicon-edit" />
+										</button>
+									)}
+								</div>
 							)}
 						</div>
 					);

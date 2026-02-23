@@ -19,6 +19,7 @@ import DOMPurify from 'dompurify';
  */
 // Components.
 import GridLayout from '../../shared/components/GridLayout.jsx';
+import ZIndexControls from '../../shared/components/ZIndexControls.jsx';
 
 // Utilities and data.
 import { decode } from '../../shared/utils/generalUtils.js';
@@ -372,6 +373,7 @@ const CategoriesLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'disp
 				isResizable={isEditMode}
 				onLayoutChange={isEditMode ? handleLayoutChange : undefined}
 				selectWidget={selectWidget}
+				draggableCancel=".mpl4e-item-controls"
 			>
 				{layoutData.mobile.map((layoutItem) => {
 					const matchedCategory = categoriesData.find((c) => c.i === layoutItem.i);
@@ -383,18 +385,32 @@ const CategoriesLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'disp
 								key={layoutItem.i}
 								className="category-item category-item--empty"
 							>
-								{isEditMode && layoutData.mobile.length > 1 && (
-									<button
-										type="button"
-										className="mpl4e-remove-item-btn"
-										onMouseDownCapture={(e) => {
-											e.stopPropagation();
-											handleRemoveItem(layoutItem.i);
-										}}
-										title="Remove Layout Item"
-									>
-										<i className="eicon-close" aria-hidden="true" />
-									</button>
+								{/* Editor-only item controls */}
+								{isEditMode && (
+									<div className="mpl4e-item-controls">
+										<ZIndexControls
+											itemId={layoutItem.i}
+											layoutData={layoutData}
+											customLayoutData={customLayoutData}
+											widgetType="categories-layout"
+											widgetId={widgetId}
+											settingKey="mpl4e_cat_custom_layout"
+											updateFn={updateElementorSetting}
+										/>
+										{layoutData.mobile.length > 1 && (
+											<button
+												type="button"
+												className="mpl4e-remove-item-btn"
+												onMouseDownCapture={(e) => {
+													e.stopPropagation();
+													handleRemoveItem(layoutItem.i);
+												}}
+												title="Remove Layout Item"
+											>
+												<i className="eicon-close" aria-hidden="true" />
+											</button>
+										)}
+									</div>
 								)}
 								<div className="category-wrapper empty">
 									<p>No category</p>
@@ -409,18 +425,32 @@ const CategoriesLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'disp
 							className="category-item"
 							style={{ zIndex }}
 						>
-							{isEditMode && layoutData.mobile.length > 1 && (
-								<button
-									type="button"
-									className="mpl4e-remove-item-btn"
-									onMouseDownCapture={(e) => {
-										e.stopPropagation();
-										handleRemoveItem(layoutItem.i);
-									}}
-									title="Remove Layout Item"
-								>
-									<i className="eicon-close" aria-hidden="true" />
-								</button>
+							{/* Editor-only item controls */}
+							{isEditMode && (
+								<div className="mpl4e-item-controls">
+									<ZIndexControls
+										itemId={layoutItem.i}
+										layoutData={layoutData}
+										customLayoutData={customLayoutData}
+										widgetType="categories-layout"
+										widgetId={widgetId}
+										settingKey="mpl4e_cat_custom_layout"
+										updateFn={updateElementorSetting}
+									/>
+									{layoutData.mobile.length > 1 && (
+										<button
+											type="button"
+											className="mpl4e-remove-item-btn"
+											onMouseDownCapture={(e) => {
+												e.stopPropagation();
+												handleRemoveItem(layoutItem.i);
+											}}
+											title="Remove Layout Item"
+										>
+											<i className="eicon-close" aria-hidden="true" />
+										</button>
+									)}
+								</div>
 							)}
 
 							<div className={`category-wrapper ${cardLayout}`}>
