@@ -9,15 +9,20 @@
 // Groups the z-index controls with other item buttons (delete, edit).
 .mpl4e-item-controls {
 	position: absolute;
-	top: 10px;
-	right: 10px;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%,-50%);
 	display: flex;
 	align-items: center;
 	gap: 4px;
 	z-index: 20;
 	opacity: 0;
 	visibility: hidden;
-	transition: opacity 0.2s ease, visibility 0.2s ease;
+	transition: opacity .2s ease,visibility .2s ease;
+	background: #fff;
+	padding: 6px;
+	border-radius: 3px;
+	box-shadow: 0 0 1px #000;
 }
 
 // Show controls on grid item hover.
