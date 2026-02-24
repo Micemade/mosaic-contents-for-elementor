@@ -30,6 +30,7 @@ const WIDGET_CONFIGS = {
 			'mpl4e_row_height',
 			'mpl4e_allow_overlap',
 			'mpl4e_compaction_type',
+			'mpl4e_element_ordering',
 		],
 		// Style settings (React-mapped)
 		styleKeys: [
@@ -86,6 +87,7 @@ const WIDGET_CONFIGS = {
 			'mpl4e_cat_row_height',
 			'mpl4e_cat_allow_overlap',
 			'mpl4e_cat_compaction_type',
+			'mpl4e_cat_element_ordering',
 		],
 		styleKeys: [
 			'mpl4e_cat_card_layout',

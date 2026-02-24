@@ -23,6 +23,7 @@ import ZIndexControls from '../../shared/components/ZIndexControls.jsx';
 
 // Utilities and data.
 import { decode } from '../../shared/utils/generalUtils.js';
+import { parseElementOrdering } from '../../shared/utils/elementOrdering.js';
 import { updateElementorSetting } from '../../core/elementor-utils';
 import { addItemToLayout, removeItemFromLayout } from '../../shared/utils/addItem.js';
 import { getLayout } from '../../shared/utils/layoutUtils.js';
@@ -175,6 +176,16 @@ const CategoriesLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'disp
 	const showDescription = widgetData?.mpl4e_cat_show_description ?? false;
 	const imageFit = widgetData?.mpl4e_cat_image_fit || 'cover';
 	const imagePosition = widgetData?.mpl4e_cat_image_position || { x: 50, y: 50 };
+
+	// Element ordering from repeater control
+	const elementOrdering = useMemo(
+		() => parseElementOrdering(widgetData?.mpl4e_cat_element_ordering, [
+			{ element_label: 'Title', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
+			{ element_label: 'Count', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
+			{ element_label: 'Description', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
+		]),
+		[widgetData?.mpl4e_cat_element_ordering]
+	);
 
 	// Grid settings
 	const gridSettings = useGridSettings(widgetData, 'mpl4e_cat_items_margin', 'mpl4e_cat_row_height');
@@ -467,24 +478,37 @@ const CategoriesLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'disp
 
 								<div className="flex-wrapper">
 									<div className="category-info category-elements">
-										<h3 className="name">
-											<a href={matchedCategory.permalink}>
-												{decode(matchedCategory.name)}
-											</a>
-										</h3>
 
-										{showCount && matchedCategory.count !== undefined && (
-											<span className="cat-count">
-												{matchedCategory.count} {matchedCategory.count === 1 ? 'product' : 'products'}
-											</span>
-										)}
+										{elementOrdering.map((el) => {
+											const elClasses = el.hideClasses ? ` ${el.hideClasses}` : '';
+											switch (el.key) {
+												case 'title':
+													return (
+														<h3 key={el.key} className={`name${elClasses}`}>
+															<a href={matchedCategory.permalink}>
+																{decode(matchedCategory.name)}
+															</a>
+														</h3>
+													);
+												case 'count':
+													return showCount && matchedCategory.count !== undefined ? (
+														<span key={el.key} className={`cat-count${elClasses}`}>
+															{matchedCategory.count} {matchedCategory.count === 1 ? 'product' : 'products'}
+														</span>
+													) : null;
+												case 'description':
+													return showDescription && matchedCategory.description ? (
+														<div
+															key={el.key}
+															className={`cat-description${elClasses}`}
+															dangerouslySetInnerHTML={{ __html: Sanitizer(matchedCategory.description) }}
+														/>
+													) : null;
+												default:
+													return null;
+											}
+										})}
 
-										{showDescription && matchedCategory.description && (
-											<div
-												className="cat-description"
-												dangerouslySetInnerHTML={{ __html: Sanitizer(matchedCategory.description) }}
-											/>
-										)}
 									</div>
 								</div>
 							</div>

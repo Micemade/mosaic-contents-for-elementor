@@ -26,6 +26,7 @@ import ZIndexControls from '../../shared/components/ZIndexControls.jsx';
 
 // Utilities and data.
 import { decode } from '../../shared/utils/generalUtils.js';
+import { parseElementOrdering } from '../../shared/utils/elementOrdering.js';
 import { updateElementorSetting } from '../../core/elementor-utils';
 import { addItemToLayout, removeItemFromLayout } from '../../shared/utils/addItem.js';
 import { getLayout } from '../../shared/utils/layoutUtils.js';
@@ -152,6 +153,17 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 	const featuredImageSize = widgetData?.mpl4e_featured_image_size || 'automatic';
 	const featuredImagePosition = widgetData?.mpl4e_featured_image_position || { x: 50, y: 50 };
 	const featuredImageFit = widgetData?.mpl4e_image_fit || 'cover';
+
+	// Element ordering from repeater control
+	const elementOrdering = useMemo(
+		() => parseElementOrdering(widgetData?.mpl4e_element_ordering, [
+			{ element_label: 'Title', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
+			{ element_label: 'Price', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
+			{ element_label: 'Rating', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
+			{ element_label: 'Add to Cart', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
+		]),
+		[widgetData?.mpl4e_element_ordering]
+	);
 
 	// Grid settings from Elementor controls
 	const gridSettings = useGridSettings(widgetData, 'mpl4e_items_margin', 'mpl4e_row_height');
@@ -483,37 +495,48 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 								<div className='flex-wrapper'>
 									<div className="product-info product-elements">
 
-										<h3 className="name">
-											<a href={matchedProduct.permalink}>{decode(matchedProduct.name)}</a>
-										</h3>
-
-										{matchedProduct.priceHtml && (
-											<div
-												className="price"
-												dangerouslySetInnerHTML={{ __html: Sanitizer(matchedProduct.priceHtml) }}
-											/>
-										)}
-										{matchedProduct.averageRating && matchedProduct.averageRating !== '0' && (
-
-											<div className={`rating-wrapper`}>
-												<RatingStars rating={Number(matchedProduct.averageRating)} reviewCount={matchedProduct.reviewCount} />
-											</div>
-
-										)}
-
-										{/* Add to Cart Button using WooCommerce Interactivity API */}
-										<div className="add-to-cart-wrapper">
-											<AddToCartButton
-												product={{
-													id: matchedProduct.id,
-													name: matchedProduct.name,
-													type: matchedProduct.type || 'simple',
-													sku: matchedProduct.sku || '',
-													permalink: matchedProduct.permalink,
-													addToCart: matchedProduct.addToCart,
-												}}
-											/>
-										</div>
+										{elementOrdering.map((el) => {
+											const elClasses = el.hideClasses ? ` ${el.hideClasses}` : '';
+											switch (el.key) {
+												case 'title':
+													return (
+														<h3 key={el.key} className={`name${elClasses}`}>
+															<a href={matchedProduct.permalink}>{decode(matchedProduct.name)}</a>
+														</h3>
+													);
+												case 'price':
+													return matchedProduct.priceHtml ? (
+														<div
+															key={el.key}
+															className={`price${elClasses}`}
+															dangerouslySetInnerHTML={{ __html: Sanitizer(matchedProduct.priceHtml) }}
+														/>
+													) : null;
+												case 'rating':
+													return matchedProduct.averageRating && matchedProduct.averageRating !== '0' ? (
+														<div key={el.key} className={`rating-wrapper${elClasses}`}>
+															<RatingStars rating={Number(matchedProduct.averageRating)} reviewCount={matchedProduct.reviewCount} />
+														</div>
+													) : null;
+												case 'add_to_cart':
+													return (
+														<div key={el.key} className={`add-to-cart-wrapper${elClasses}`}>
+															<AddToCartButton
+																product={{
+																	id: matchedProduct.id,
+																	name: matchedProduct.name,
+																	type: matchedProduct.type || 'simple',
+																	sku: matchedProduct.sku || '',
+																	permalink: matchedProduct.permalink,
+																	addToCart: matchedProduct.addToCart,
+																}}
+															/>
+														</div>
+													);
+												default:
+													return null;
+											}
+										})}
 
 									</div>
 								</div>

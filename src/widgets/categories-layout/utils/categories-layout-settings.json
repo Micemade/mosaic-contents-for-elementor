@@ -128,5 +128,13 @@
 			"x": 50,
 			"y": 50
 		}
+	},
+	"mpl4e_cat_element_ordering": {
+		"type": "array",
+		"default": [
+			{ "element_label": "Title", "visible_desktop": "yes", "visible_tablet": "yes", "visible_mobile": "yes" },
+			{ "element_label": "Count", "visible_desktop": "yes", "visible_tablet": "yes", "visible_mobile": "yes" },
+			{ "element_label": "Description", "visible_desktop": "yes", "visible_tablet": "yes", "visible_mobile": "yes" }
+		]
 	}
 }

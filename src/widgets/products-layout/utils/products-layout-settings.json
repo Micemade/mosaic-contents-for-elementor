@@ -122,5 +122,14 @@
 	"mpl4e_image_fit": {
 		"type": "string",
 		"default": "cover"
+	},
+	"mpl4e_element_ordering": {
+		"type": "array",
+		"default": [
+			{ "element_label": "Title", "visible_desktop": "yes", "visible_tablet": "yes", "visible_mobile": "yes" },
+			{ "element_label": "Price", "visible_desktop": "yes", "visible_tablet": "yes", "visible_mobile": "yes" },
+			{ "element_label": "Rating", "visible_desktop": "yes", "visible_tablet": "yes", "visible_mobile": "yes" },
+			{ "element_label": "Add to Cart", "visible_desktop": "yes", "visible_tablet": "yes", "visible_mobile": "yes" }
+		]
 	}
 }

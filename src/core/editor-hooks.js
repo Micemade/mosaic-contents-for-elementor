@@ -27,6 +27,7 @@ const WIDGET_KEYS = {
 		applySetupEvent: 'mosaic:applySetup',
 		addItemEvent: 'mosaic:addItem',
 		gridColumns: { desktop: 48, tablet: 24, mobile: 12 },
+		repeaterKeys: ['mpl4e_element_ordering'],
 	},
 	'categories-layout': {
 		layoutKey: 'mpl4e_cat_layout',
@@ -36,6 +37,7 @@ const WIDGET_KEYS = {
 		applySetupEvent: 'mosaic:catApplySetup',
 		addItemEvent: 'mosaic:catAddItem',
 		gridColumns: { desktop: 48, tablet: 24, mobile: 12 },
+		repeaterKeys: ['mpl4e_cat_element_ordering'],
 	},
 	'single-product-layout': {
 		layoutKey: 'mpl4e_sp_layout',
@@ -192,16 +194,62 @@ export const registerEditorHooks = () => {
 					widgetId,
 					getSettingsFromModel()
 				);
-
 				// Regenerate selector-based CSS without DOM destruction.
 				if (view && typeof view.renderUI === 'function') {
 					try { view.renderUI(); } catch (_) { /* swallow */ }
 				}
 			});
 
+
+			// Listen for repeater collection mutations.
+			//
+			// Elementor's repeater sort command (`document/repeater/move`)
+			// uses `collection.remove()` + `collection.add()` with
+			// `{silent: true}`, so standard Backbone events (`sort`,
+			// `change`, `reset`) never fire on the Collection.
+			//
+			// To reliably detect ALL mutations (reorder, visibility
+			// switcher toggles, etc.) we intercept the Collection's
+			// mutator methods directly.  A short debounce coalesces
+			// the remove+add pair that constitutes a single drag-sort.
+			const wKeys = WIDGET_KEYS[widgetType];
+			if (wKeys?.repeaterKeys) {
+				const settingsModel = model.get('settings');
+				let repeaterTimer = null;
+				const scheduleRepeaterUpdate = () => {
+					clearTimeout(repeaterTimer);
+					repeaterTimer = setTimeout(() => {
+						widgetManager.updateInstance(
+							widgetType,
+							widgetId,
+							getSettingsFromModel()
+						);
+					}, 80);
+				};
+
+				wKeys.repeaterKeys.forEach(repeaterKey => {
+					const collection = settingsModel.get(repeaterKey);
+					if (!collection || typeof collection.add !== 'function') return;
+
+					// Patch mutator methods to catch silent operations.
+					['add', 'remove', 'reset', 'sort'].forEach(method => {
+						const original = collection[method];
+						if (typeof original !== 'function') return;
+						collection[method] = function (...args) {
+							const result = original.apply(this, args);
+							scheduleRepeaterUpdate();
+							return result;
+						};
+					});
+
+					// Also listen for `change` events bubbled from item
+					// models (e.g. visibility switcher toggles).
+					collection.on('change', scheduleRepeaterUpdate);
+				});
+			}
+
 			// Clear custom layout when predefined layout changes
 			// This ensures switching predefined layouts applies immediately
-			const wKeys = WIDGET_KEYS[widgetType];
 			if (wKeys) {
 				model.get('settings').on(`change:${wKeys.layoutKey}`, (settingsModel, newLayoutId) => {
 					const customLayout = model.getSetting(wKeys.customLayoutKey);

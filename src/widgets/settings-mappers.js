@@ -74,6 +74,17 @@ export const createSettingsMapper = (settingsDefinition) => (model) => {
 			result[key] = value === 'yes';
 		} else if (definition.type === 'number') {
 			result[key] = value !== undefined ? value : definition.default;
+		} else if (definition.type === 'array') {
+			// Repeater controls return a Backbone Collection whose reference
+			// never changes on reorder.  Serialize to a plain array so React
+			// can detect changes by reference comparison.
+			if (value && typeof value.toJSON === 'function') {
+				result[key] = value.toJSON();
+			} else if (Array.isArray(value)) {
+				result[key] = value;
+			} else {
+				result[key] = definition.default;
+			}
 		} else {
 			result[key] = value !== undefined ? value : definition.default;
 		}

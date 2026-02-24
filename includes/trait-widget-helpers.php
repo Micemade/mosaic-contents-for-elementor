@@ -88,6 +88,81 @@ trait WidgetHelpers {
 	}
 
 	/**
+	 * Register element ordering repeater controls.
+	 *
+	 * Creates a repeater-based control for sorting widget elements (title, price, etc.)
+	 * with per-breakpoint visibility switchers. Elements can be reordered via drag-and-drop,
+	 * but cannot be added, removed, or duplicated.
+	 *
+	 * @param string $control_key   Setting key for the repeater (e.g. 'mpl4e_element_ordering').
+	 * @param string $section_label Section label in the panel.
+	 * @param array  $elements      Default element list, each with 'element_label' key.
+	 */
+	protected function register_element_ordering_controls( $control_key, $section_label, $elements ) {
+		$this->start_controls_section(
+			$control_key . '_section',
+			array(
+				'label' => $section_label,
+				'tab'   => Controls_Manager::TAB_CONTENT,
+			)
+		);
+
+		$repeater    = new \Elementor\Repeater();
+		$breakpoints = self::get_active_breakpoints();
+
+		// The read-only label control (element name).
+		// render_type 'none' prevents Elementor from triggering a full
+		// widget re-render — React handles UI updates via JS listeners.
+		$repeater->add_control(
+			'element_label',
+			array(
+				'type'        => 'mpl4e_sorter_label',
+				'render_type' => 'none',
+			)
+		);
+
+		// Per-breakpoint visibility switchers.
+		foreach ( $breakpoints as $bp ) {
+			$bp_label = ucfirst( $bp );
+			$repeater->add_control(
+				'visible_' . $bp,
+				array(
+					'label'        => sprintf(
+						/* translators: %s: breakpoint name (Desktop, Tablet, Mobile) */
+						__( '%s', 'mosaic-product-layouts-for-elementor' ),
+						$bp_label
+					),
+					'type'         => Controls_Manager::SWITCHER,
+					'label_on'     => __( 'Show', 'mosaic-product-layouts-for-elementor' ),
+					'label_off'    => __( 'Hide', 'mosaic-product-layouts-for-elementor' ),
+					'return_value' => 'yes',
+					'default'      => 'yes',
+					'render_type'  => 'none',
+				)
+			);
+		}
+
+		$this->add_control(
+			$control_key,
+			array(
+				'label'        => __( 'Element Order', 'mosaic-product-layouts-for-elementor' ),
+				'type'         => Controls_Manager::REPEATER,
+				'fields'       => $repeater->get_controls(),
+				'render_type'  => 'none',
+				'item_actions' => array(
+					'duplicate' => false,
+					'add'       => false,
+					'remove'    => false,
+				),
+				'default'      => $elements,
+				'title_field'  => '{{{ element_label }}}',
+			)
+		);
+
+		$this->end_controls_section();
+	}
+
+	/**
 	 * Get settings definitions from JSON file.
 	 *
 	 * @param string $widget_name Widget name (e.g. 'products-layout').

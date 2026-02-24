@@ -360,6 +360,32 @@ class CategoriesLayout extends Widget_Base {
 
 		$this->end_controls_section();
 
+		// Element Ordering Section.
+		$this->register_element_ordering_controls(
+			'mpl4e_cat_element_ordering',
+			__( 'Element Order & Visibility', 'mosaic-product-layouts-for-elementor' ),
+			array(
+				array(
+					'element_label'   => __( 'Title', 'mosaic-product-layouts-for-elementor' ),
+					'visible_desktop' => 'yes',
+					'visible_tablet'  => 'yes',
+					'visible_mobile'  => 'yes',
+				),
+				array(
+					'element_label'   => __( 'Count', 'mosaic-product-layouts-for-elementor' ),
+					'visible_desktop' => 'yes',
+					'visible_tablet'  => 'yes',
+					'visible_mobile'  => 'yes',
+				),
+				array(
+					'element_label'   => __( 'Description', 'mosaic-product-layouts-for-elementor' ),
+					'visible_desktop' => 'yes',
+					'visible_tablet'  => 'yes',
+					'visible_mobile'  => 'yes',
+				),
+			)
+		);
+
 		// ── Style Section ─────────────────────────────────────────────────
 		$this->start_controls_section(
 			'category_style_section',
@@ -669,21 +695,6 @@ class CategoriesLayout extends Widget_Base {
 				'default'   => '#333333',
 				'selectors' => array(
 					'{{WRAPPER}} .category-elements .cat-count, {{WRAPPER}} .category-elements .cat-description' => 'color: {{VALUE}};',
-				),
-			)
-		);
-
-		$this->add_control(
-			'mpl4e_cat_description_color',
-			array(
-				'label'     => esc_html__( 'Description color', 'mosaic-product-layouts-for-elementor' ),
-				'type'      => Controls_Manager::COLOR,
-				'default'   => '#555555',
-				'selectors' => array(
-					'{{WRAPPER}} .category-elements .cat-description' => 'color: {{VALUE}};',
-				),
-				'condition' => array(
-					'mpl4e_cat_show_description' => 'yes',
 				),
 			)
 		);

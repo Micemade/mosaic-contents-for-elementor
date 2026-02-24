@@ -328,6 +328,38 @@ class ProductsLayout extends Widget_Base {
 
 		$this->end_controls_section();
 
+		// Element Ordering Section.
+		$this->register_element_ordering_controls(
+			'mpl4e_element_ordering',
+			__( 'Element Order & Visibility', 'mosaic-product-layouts-for-elementor' ),
+			array(
+				array(
+					'element_label'   => __( 'Title', 'mosaic-product-layouts-for-elementor' ),
+					'visible_desktop' => 'yes',
+					'visible_tablet'  => 'yes',
+					'visible_mobile'  => 'yes',
+				),
+				array(
+					'element_label'   => __( 'Price', 'mosaic-product-layouts-for-elementor' ),
+					'visible_desktop' => 'yes',
+					'visible_tablet'  => 'yes',
+					'visible_mobile'  => 'yes',
+				),
+				array(
+					'element_label'   => __( 'Rating', 'mosaic-product-layouts-for-elementor' ),
+					'visible_desktop' => 'yes',
+					'visible_tablet'  => 'yes',
+					'visible_mobile'  => 'yes',
+				),
+				array(
+					'element_label'   => __( 'Add to Cart', 'mosaic-product-layouts-for-elementor' ),
+					'visible_desktop' => 'yes',
+					'visible_tablet'  => 'yes',
+					'visible_mobile'  => 'yes',
+				),
+			)
+		);
+
 		// Style Section.
 		$this->start_controls_section(
 			'product_style_settings_section',
