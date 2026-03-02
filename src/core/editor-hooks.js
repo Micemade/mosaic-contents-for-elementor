@@ -100,12 +100,15 @@ export const registerEditorHooks = () => {
 			const widgetConfig = getWidgetConfig(widgetType);
 			const getSettingsFromModel = () => widgetConfig.settingsMapper(model);
 
+			console.log(getSettingsFromModel());
+
+
 			// Register the editor view with the widget manager so the
 			// manager can consult it when deciding whether to remount
 			// (for example: core/advanced settings should allow remount).
 			if (view) {
 				try {
-					// Derive widget-owned setting keys from the mapper result
+					// Derive React scoped setting keys from the mapper result
 					const mapped = getSettingsFromModel() || {};
 					const widgetKeys = Object.keys(mapped);
 
@@ -142,7 +145,7 @@ export const registerEditorHooks = () => {
 					const widgetKeysArray = Array.from(expandedWidgetKeys);
 
 					// Override view.renderOnChange to be conditional:
-					// - For widget-owned changes: renderUI() only (regenerates
+					// - For React scoped changes: renderUI() only (regenerates
 					//   CSS for controls with `selectors` without DOM destruction)
 					// - For core/advanced changes: call the original renderOnChange
 					const originalRenderOnChange = view.renderOnChange.bind(view);
@@ -150,14 +153,14 @@ export const registerEditorHooks = () => {
 						const changed = settings.changedAttributes();
 						const changedKeys = Object.keys(changed || {});
 						// Ignore Elementor internal keys (e.g. __globals__, __dynamic__)
-						// that fire alongside widget-owned changes like SELECT2 values.
+						// that fire alongside React scoped changes like SELECT2 values.
 						const relevantKeys = changedKeys.filter(k => !k.startsWith('__'));
 						const hasNonWidgetChange = relevantKeys.some(k => !widgetKeysArray.includes(k));
 						if (hasNonWidgetChange) {
 							// Call original to handle core/advanced changes
 							originalRenderOnChange(settings);
 						} else if (relevantKeys.length) {
-							// Widget-owned changes: refresh CSS (selectors) without
+							// React scoped changes: refresh CSS (selectors) without
 							// full DOM re-render so the React root stays intact.
 							try { view.renderUI(); } catch (_) { /* swallow */ }
 						}

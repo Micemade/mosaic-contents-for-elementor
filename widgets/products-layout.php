@@ -408,6 +408,7 @@ class ProductsLayout extends Widget_Base {
 			array(
 				'label'     => esc_html__( 'Title size', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::SLIDER,
+				'size_units' => array( 'px', 'em', 'rem', 'vw', 'vh' ),
 				'default'   => array(
 					'size' => 24,
 					'unit' => 'px',
@@ -421,6 +422,9 @@ class ProductsLayout extends Widget_Base {
 					'unit' => 'px',
 				],
 				'range'     => self::get_range(),
+				'selectors' => array(
+					'{{WRAPPER}} .product-elements .name' => 'font-size:{{SIZE}}{{UNIT}};',
+				),
 			)
 		);
 
@@ -429,6 +433,7 @@ class ProductsLayout extends Widget_Base {
 			array(
 				'label'     => esc_html__( 'Price size', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::SLIDER,
+				'size_units' => array( 'px', 'em', 'rem', 'vw', 'vh' ),
 				'default'   => array(
 					'size' => 20,
 					'unit' => 'px',
@@ -442,6 +447,9 @@ class ProductsLayout extends Widget_Base {
 					'unit' => 'px',
 				],
 				'range'     => self::get_range(),
+				'selectors' => array(
+					'{{WRAPPER}} .product-elements .price' => 'font-size:{{SIZE}}{{UNIT}};',
+				),
 			)
 		);
 
@@ -450,7 +458,23 @@ class ProductsLayout extends Widget_Base {
 			array(
 				'label'     => esc_html__( 'Button text size', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::SLIDER,
+				'size_units' => array( 'px', 'em', 'rem', 'vw', 'vh' ),
+				'default'   => array(
+					'size' => 16,
+					'unit' => 'px',
+				),
+				'tablet_default' => [
+					'size' => 14,
+					'unit' => 'px',
+				],
+				'mobile_default' => [
+					'size' => 12,
+					'unit' => 'px',
+				],
 				'range'     => self::get_range(),
+				'selectors' => array(
+					'{{WRAPPER}} .product-elements .add_to_cart_button' => 'font-size:{{SIZE}}{{UNIT}};',
+				),
 			)
 		);
 		$this->end_controls_tab();
@@ -490,7 +514,7 @@ class ProductsLayout extends Widget_Base {
 				'label'        => esc_html__( 'Align', 'mosaic-product-layouts-for-elementor' ),
 				'type'         => Controls_Manager::CHOOSE,
 				'options'      => array(
-					'left'   => array(
+					'flex-start'   => array(
 						'title' => __( 'Left', 'mosaic-product-layouts-for-elementor' ),
 						'icon'  => 'eicon-h-align-left',
 					),
@@ -498,13 +522,17 @@ class ProductsLayout extends Widget_Base {
 						'title' => __( 'Center', 'mosaic-product-layouts-for-elementor' ),
 						'icon'  => 'eicon-h-align-center',
 					),
-					'right'  => array(
+					'flex-end'  => array(
 						'title' => __( 'Right', 'mosaic-product-layouts-for-elementor' ),
 						'icon'  => 'eicon-h-align-right',
 					),
 
 				),
 				'default'      => '',
+				'selectors'     => array(
+					'{{WRAPPER}} .item-wrapper .flex-wrapper .product-elements' => 'justify-content: {{VALUE}};',
+					'{{WRAPPER}} .item-wrapper .flex-wrapper .product-elements > *' => 'justify-content: {{VALUE}};',
+				),
 			)
 		);
 
@@ -528,6 +556,9 @@ class ProductsLayout extends Widget_Base {
 					),
 				),
 				'default'   => '',
+				'selectors' => array(
+					'{{WRAPPER}} .item-wrapper .flex-wrapper' => 'align-items: {{VALUE}};',
+				),
 			)
 		);
 
@@ -563,7 +594,7 @@ class ProductsLayout extends Widget_Base {
 				'type'       => Controls_Manager::DIMENSIONS,
 				'size_units' => array( 'px', '%', 'em', 'rem', 'vw', 'vh' ),
 				'selectors' => array(
-					'{{WRAPPER}} .product-wrapper .flex-wrapper' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+					'{{WRAPPER}} .item-wrapper .flex-wrapper' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
 				),
 			)
 		);
@@ -595,8 +626,8 @@ class ProductsLayout extends Widget_Base {
 					),
 				),
 				'selectors' => array(
-					'{{WRAPPER}} .product-wrapper .product-image' => 'flex-basis: {{size}}%;',
-					'{{WRAPPER}} .product-wrapper .flex-wrapper' => 'flex-basis: calc(100% - {{size}}%);',
+					'{{WRAPPER}} .item-wrapper .product-image' => 'flex-basis: {{size}}%;',
+					'{{WRAPPER}} .item-wrapper .flex-wrapper' => 'flex-basis: calc(100% - {{size}}%);',
 				),
 				'condition'   => array(
 					'mpl4e_product_layout!' => 'image-background',
@@ -682,7 +713,7 @@ class ProductsLayout extends Widget_Base {
 				'name'      => 'mpl4e_background_color',
 				'label'     => esc_html__( 'Background', 'mosaic-product-layouts-for-elementor' ),
 				'types'     => array( 'classic', 'gradient' ),
-				'selector' => '{{WRAPPER}} .product-wrapper .flex-wrapper',
+				'selector' => '{{WRAPPER}} .item-wrapper .flex-wrapper',
 				'default'   => '#ffffff',
 			)
 		);
@@ -703,7 +734,7 @@ class ProductsLayout extends Widget_Base {
 			array(
 				'name'      => 'mpl4e_product_border',
 				'label'     => __( 'Products border', 'mosaic-product-layouts-for-elementor' ),
-				'selector'  => '{{WRAPPER}} .product-wrapper',
+				'selector'  => '{{WRAPPER}} .item-wrapper',
 			)
 		);
 
@@ -715,7 +746,7 @@ class ProductsLayout extends Widget_Base {
 				'type'       => Controls_Manager::DIMENSIONS,
 				'size_units' => array( 'px', '%' ),
 				'selectors' => array(
-					'{{WRAPPER}} .product-wrapper' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+					'{{WRAPPER}} .item-wrapper' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
 				),
 			)
 		);
@@ -724,7 +755,7 @@ class ProductsLayout extends Widget_Base {
 			Group_Control_Box_Shadow::get_type(),
 			array(
 				'name'      => 'mpl4e_box_shadow',
-				'selector'  => '{{WRAPPER}} .product-wrapper',
+				'selector'  => '{{WRAPPER}} .item-wrapper',
 			)
 		);
 		
@@ -753,7 +784,7 @@ class ProductsLayout extends Widget_Base {
 		);
 
 		$this->add_responsive_control(
-			'mpl4e_badge_sale_size',
+			'mpl4e_sale_badge_size',
 			array(
 				'label'      => esc_html__( 'Sale badge text size', 'mosaic-product-layouts-for-elementor' ),
 				'type'       => Controls_Manager::SLIDER,

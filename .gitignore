@@ -1,1 +1,8 @@
 /node_modules
+.agents
+.claude
+.cline
+.continue
+.cursor
+.github
+.windsurf

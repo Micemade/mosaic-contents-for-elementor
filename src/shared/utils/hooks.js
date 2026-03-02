@@ -27,6 +27,7 @@ export const useCssVariables = (widgetData) => {
 			const settingValue = widgetData[settingKey];
 
 			if (settingValue && typeof settingValue === 'object' && !Array.isArray(settingValue)) {
+
 				const hasBreakpoints = breakpoints.some(bp => settingValue.hasOwnProperty(bp));
 
 				if (hasBreakpoints) {

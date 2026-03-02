@@ -411,6 +411,7 @@ class CategoriesLayout extends Widget_Base {
 			array(
 				'label'     => esc_html__( 'Title size', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::SLIDER,
+				'size_units' => array( 'px', 'em', 'rem', 'vw', 'vh' ),
 				'default'   => array(
 					'size' => 24,
 					'unit' => 'px',
@@ -424,6 +425,9 @@ class CategoriesLayout extends Widget_Base {
 					'unit' => 'px',
 				),
 				'range' => self::get_range(),
+				'selectors' => array(
+					'{{WRAPPER}} .item-wrapper .name' => 'font-size: {{SIZE}}{{UNIT}};',
+				),
 			)
 		);
 
@@ -432,6 +436,7 @@ class CategoriesLayout extends Widget_Base {
 			array(
 				'label'     => esc_html__( 'Count text size', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::SLIDER,
+				'size_units' => array( 'px', 'em', 'rem', 'vw', 'vh' ),
 				'default'   => array(
 					'size' => 16,
 					'unit' => 'px',
@@ -445,6 +450,9 @@ class CategoriesLayout extends Widget_Base {
 					'unit' => 'px',
 				),
 				'range' => self::get_range(),
+				'selectors' => array(
+					'{{WRAPPER}} .item-wrapper .cat-count' => 'font-size: {{SIZE}}{{UNIT}};',
+				),
 			)
 		);
 
@@ -453,6 +461,7 @@ class CategoriesLayout extends Widget_Base {
 			array(
 				'label'     => esc_html__( 'Description text size', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::SLIDER,
+				'size_units' => array( 'px', 'em', 'rem', 'vw', 'vh' ),
 				'default'   => array(
 					'size' => 14,
 					'unit' => 'px',
@@ -466,33 +475,9 @@ class CategoriesLayout extends Widget_Base {
 					'unit' => 'px',
 				),
 				'range'     => self::get_range(),
-				'condition' => array(
-					'mpl4e_cat_show_description' => 'yes',
+				'selectors' => array(
+					'{{WRAPPER}} .item-wrapper .cat-description' => 'font-size: {{SIZE}}{{UNIT}};',
 				),
-			)
-		);
-
-		$this->add_control(
-			'mpl4e_cat_show_count',
-			array(
-				'label'        => __( 'Show Product Count', 'mosaic-product-layouts-for-elementor' ),
-				'type'         => Controls_Manager::SWITCHER,
-				'label_on'     => __( 'Yes', 'mosaic-product-layouts-for-elementor' ),
-				'label_off'    => __( 'No', 'mosaic-product-layouts-for-elementor' ),
-				'return_value' => 'yes',
-				'default'      => 'yes',
-			)
-		);
-
-		$this->add_control(
-			'mpl4e_cat_show_description',
-			array(
-				'label'        => __( 'Show Description', 'mosaic-product-layouts-for-elementor' ),
-				'type'         => Controls_Manager::SWITCHER,
-				'label_on'     => __( 'Yes', 'mosaic-product-layouts-for-elementor' ),
-				'label_off'    => __( 'No', 'mosaic-product-layouts-for-elementor' ),
-				'return_value' => 'yes',
-				'default'      => '',
 			)
 		);
 
@@ -530,10 +515,10 @@ class CategoriesLayout extends Widget_Base {
 		$this->add_responsive_control(
 			'mpl4e_cat_align',
 			array(
-				'label'   => esc_html__( 'Align', 'mosaic-product-layouts-for-elementor' ),
-				'type'    => Controls_Manager::CHOOSE,
-				'options' => array(
-					'left'   => array(
+				'label'     => esc_html__( 'Align', 'mosaic-product-layouts-for-elementor' ),
+				'type'      => Controls_Manager::CHOOSE,
+				'options'   => array(
+					'flex-start'   => array(
 						'title' => __( 'Left', 'mosaic-product-layouts-for-elementor' ),
 						'icon'  => 'eicon-h-align-left',
 					),
@@ -541,12 +526,16 @@ class CategoriesLayout extends Widget_Base {
 						'title' => __( 'Center', 'mosaic-product-layouts-for-elementor' ),
 						'icon'  => 'eicon-h-align-center',
 					),
-					'right'  => array(
+					'flex-end'  => array(
 						'title' => __( 'Right', 'mosaic-product-layouts-for-elementor' ),
 						'icon'  => 'eicon-h-align-right',
 					),
 				),
-				'default' => '',
+				'default'   => '',
+				'selectors' => array(
+					'{{WRAPPER}} .item-wrapper .category-elements, {{WRAPPER}} .item-wrapper .category-elements *' => 'justify-content: {{VALUE}}; text-align: {{VALUE}};',
+					'{{WRAPPER}} .item-wrapper .flex-wrapper .name' => 'justify-content: {{VALUE}};',
+				),
 			)
 		);
 
@@ -570,6 +559,9 @@ class CategoriesLayout extends Widget_Base {
 					),
 				),
 				'default' => '',
+				'selectors' => array(
+					'{{WRAPPER}} .item-wrapper .flex-wrapper' => 'align-items: {{VALUE}};',
+				),
 			)
 		);
 
@@ -607,7 +599,7 @@ class CategoriesLayout extends Widget_Base {
 				'type'       => Controls_Manager::DIMENSIONS,
 				'size_units' => array( 'px', '%', 'em', 'rem', 'vw', 'vh' ),
 				'selectors'  => array(
-					'{{WRAPPER}} .category-wrapper .flex-wrapper' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+					'{{WRAPPER}} .item-wrapper .flex-wrapper' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
 				),
 			)
 		);
@@ -639,8 +631,8 @@ class CategoriesLayout extends Widget_Base {
 					),
 				),
 				'selectors' => array(
-					'{{WRAPPER}} .category-wrapper .category-image' => 'flex-basis: {{size}}%;',
-					'{{WRAPPER}} .category-wrapper .flex-wrapper' => 'flex-basis: calc(100% - {{size}}%);',
+					'{{WRAPPER}} .item-wrapper .category-image' => 'flex-basis: {{size}}%;',
+					'{{WRAPPER}} .item-wrapper .flex-wrapper' => 'flex-basis: calc(100% - {{size}}%);',
 				),
 				'condition' => array(
 					'mpl4e_cat_card_layout!' => 'image-background',
@@ -717,7 +709,7 @@ class CategoriesLayout extends Widget_Base {
 				'name'     => 'mpl4e_cat_background_color',
 				'label'    => esc_html__( 'Background', 'mosaic-product-layouts-for-elementor' ),
 				'types'    => array( 'classic', 'gradient' ),
-				'selector' => '{{WRAPPER}} .category-wrapper .flex-wrapper',
+				'selector' => '{{WRAPPER}} .item-wrapper .flex-wrapper',
 				'default'  => '#ffffff',
 			)
 		);
@@ -737,7 +729,7 @@ class CategoriesLayout extends Widget_Base {
 			array(
 				'name'     => 'mpl4e_cat_border',
 				'label'    => __( 'Category border', 'mosaic-product-layouts-for-elementor' ),
-				'selector' => '{{WRAPPER}} .category-wrapper',
+				'selector' => '{{WRAPPER}} .item-wrapper',
 			)
 		);
 
@@ -749,7 +741,7 @@ class CategoriesLayout extends Widget_Base {
 				'type'       => Controls_Manager::DIMENSIONS,
 				'size_units' => array( 'px', '%' ),
 				'selectors'  => array(
-					'{{WRAPPER}} .category-wrapper' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+					'{{WRAPPER}} .item-wrapper' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
 				),
 			)
 		);
@@ -758,7 +750,7 @@ class CategoriesLayout extends Widget_Base {
 			Group_Control_Box_Shadow::get_type(),
 			array(
 				'name'     => 'mpl4e_cat_box_shadow',
-				'selector' => '{{WRAPPER}} .category-wrapper',
+				'selector' => '{{WRAPPER}} .item-wrapper',
 			)
 		);
 

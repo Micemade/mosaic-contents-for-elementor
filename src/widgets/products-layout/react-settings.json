@@ -51,56 +51,9 @@
 		"type": "string",
 		"default": "vertical"
 	},
-	"mpl4e_title_size": {
-		"type": "responsive",
-		"default": {
-			"size": 24,
-			"unit": "px"
-		},
-		"tablet_default": {
-			"size": 22,
-			"unit": "px"
-		},
-		"mobile_default": {
-			"size": 20,
-			"unit": "px"
-		},
-		"breakpoints": ["desktop", "tablet", "mobile"]
-	},
-	"mpl4e_price_size": {
-		"type": "responsive",
-		"default": {
-			"size": 20,
-			"unit": "px"
-		},
-		"tablet_default": {
-			"size": 18,
-			"unit": "px"
-		},
-		"mobile_default": {
-			"size": 18,
-			"unit": "px"
-		},
-		"breakpoints": ["desktop", "tablet", "mobile"]
-	},
-	"mpl4e_button_size": {
-		"type": "responsive",
-		"default": {
-			"size": 20,
-			"unit": "px"
-		},
-		"breakpoints": ["desktop", "tablet", "mobile"]
-	},
-	"mpl4e_product_align":{
-		"default": "center",
-		"type": "responsive",
-		"breakpoints": ["desktop", "tablet", "mobile"]
-	},
-	"mpl4e_product_vertical_align":{
-		"default": "center",
-		"type": "responsive",
-		"breakpoints": ["desktop", "tablet", "mobile"]
-	},
+	
+
+	
 	"mpl4e_sale_badge_position": {
 		"type": "object",
 		"default": {

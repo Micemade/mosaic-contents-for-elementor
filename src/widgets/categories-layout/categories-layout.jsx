@@ -172,8 +172,6 @@ const CategoriesLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'disp
 	const layoutId = widgetData?.mpl4e_cat_layout || 'layout-1';
 	const customLayoutData = widgetData?.mpl4e_cat_custom_layout || '';
 	const cardLayout = widgetData?.mpl4e_cat_card_layout || 'vertical';
-	const showCount = widgetData?.mpl4e_cat_show_count ?? true;
-	const showDescription = widgetData?.mpl4e_cat_show_description ?? false;
 	const imageFit = widgetData?.mpl4e_cat_image_fit || 'cover';
 	const imagePosition = widgetData?.mpl4e_cat_image_position || { x: 50, y: 50 };
 
@@ -342,7 +340,7 @@ const CategoriesLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'disp
 	if (isLoading) {
 		return (
 			<div className="categories-layout">
-				<p className="categories-layout-loading">Loading categories...</p>
+				<p className="layout-loading">Loading categories...</p>
 			</div>
 		);
 	}
@@ -365,12 +363,12 @@ const CategoriesLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'disp
 
 	return (
 		<div
-			className="categories-layout mosaic-categories-layout micemade-widgets"
+			className="categories-layout mosaic-product-layouts-widgets micemade-widgets"
 			data-widget-id={widgetId}
 			style={cssVariables}
 		>
 			{isFetching && (
-				<p className="categories-layout-loading">Fetching categories...</p>
+				<p className="layout-loading">Fetching categories...</p>
 			)}
 			<GridLayout
 				layouts={layoutData}
@@ -423,7 +421,7 @@ const CategoriesLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'disp
 										)}
 									</div>
 								)}
-								<div className="category-wrapper empty">
+								<div className="item-wrapper empty">
 									<p>No category</p>
 								</div>
 							</div>
@@ -464,7 +462,7 @@ const CategoriesLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'disp
 								</div>
 							)}
 
-							<div className={`category-wrapper ${cardLayout}`}>
+							<div className={`item-wrapper ${cardLayout}`}>
 								<figure className="category-image gradient-preloader">
 									<CategoryImage
 										name={matchedCategory.name}
@@ -491,13 +489,13 @@ const CategoriesLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'disp
 														</h3>
 													);
 												case 'count':
-													return showCount && matchedCategory.count !== undefined ? (
+													return matchedCategory.count !== undefined ? (
 														<span key={el.key} className={`cat-count${elClasses}`}>
 															{matchedCategory.count} {matchedCategory.count === 1 ? 'product' : 'products'}
 														</span>
 													) : null;
 												case 'description':
-													return showDescription && matchedCategory.description ? (
+													return matchedCategory.description ? (
 														<div
 															key={el.key}
 															className={`cat-description${elClasses}`}

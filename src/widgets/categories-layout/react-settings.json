@@ -51,73 +51,7 @@
 		"type": "string",
 		"default": "vertical"
 	},
-	"mpl4e_cat_show_count": {
-		"type": "boolean",
-		"default": true
-	},
-	"mpl4e_cat_show_description": {
-		"type": "boolean",
-		"default": false
-	},
-
-	"mpl4e_cat_title_size": {
-		"type": "responsive",
-		"default": {
-			"size": 24,
-			"unit": "px"
-		},
-		"tablet_default": {
-			"size": 22,
-			"unit": "px"
-		},
-		"mobile_default": {
-			"size": 20,
-			"unit": "px"
-		},
-		"breakpoints": ["desktop", "tablet", "mobile"]
-	},
-	"mpl4e_cat_count_size": {
-		"type": "responsive",
-		"default": {
-			"size": 16,
-			"unit": "px"
-		},
-		"tablet_default": {
-			"size": 14,
-			"unit": "px"
-		},
-		"mobile_default": {
-			"size": 14,
-			"unit": "px"
-		},
-		"breakpoints": ["desktop", "tablet", "mobile"]
-	},
-	"mpl4e_cat_description_size": {
-		"type": "responsive",
-		"default": {
-			"size": 14,
-			"unit": "px"
-		},
-		"tablet_default": {
-			"size": 13,
-			"unit": "px"
-		},
-		"mobile_default": {
-			"size": 12,
-			"unit": "px"
-		},
-		"breakpoints": ["desktop", "tablet", "mobile"]
-	},
-	"mpl4e_cat_align": {
-		"default": "center",
-		"type": "responsive",
-		"breakpoints": ["desktop", "tablet", "mobile"]
-	},
-	"mpl4e_cat_vertical_align": {
-		"default": "center",
-		"type": "responsive",
-		"breakpoints": ["desktop", "tablet", "mobile"]
-	},
+	
 	"mpl4e_cat_image_fit": {
 		"type": "string",
 		"default": "cover"

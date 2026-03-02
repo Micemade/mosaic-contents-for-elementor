@@ -93,8 +93,7 @@ const WIDGET_CONFIGS = {
 			'mpl4e_cat_card_layout',
 			'mpl4e_cat_title_size',
 			'mpl4e_cat_count_size',
-			'mpl4e_cat_show_count',
-			'mpl4e_cat_show_description',
+			'mpl4e_cat_description_size',
 			'mpl4e_cat_align',
 			'mpl4e_cat_vertical_align',
 			'mpl4e_cat_image_fit',
@@ -103,6 +102,7 @@ const WIDGET_CONFIGS = {
 		responsiveKeys: [
 			'mpl4e_cat_title_size',
 			'mpl4e_cat_count_size',
+			'mpl4e_cat_description_size',
 			'mpl4e_cat_align',
 			'mpl4e_cat_vertical_align',
 			'mpl4e_cat_elements_gap',

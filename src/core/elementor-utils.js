@@ -65,143 +65,99 @@ export const isElementorEditor = () => {
  * @returns {boolean} Success status
  */
 export const injectBreakpointStylesheet = () => {
-	// Check if already injected
+	// Avoid reinjecting
 	if (document.getElementById('mosaic-elementor-breakpoints')) {
 		return true;
 	}
 
-	// Get breakpoint configuration from Elementor
+	// bail out early if Elementor config is not present
 	if (typeof elementorFrontend === 'undefined' || !elementorFrontend.config?.responsive?.activeBreakpoints) {
 		console.warn('Elementor breakpoint config not available');
 		return false;
 	}
 
-	const breakpoints = elementorFrontend.config.responsive.activeBreakpoints;
+	// compute media queries from Elementor config.  Support both
+	// "max" breakpoints (finite ranges) and explicit "min"
+	// breakpoints (e.g. widescreen).  Max ranges are generated
+	// sequentially and a desktop fallback added; min entries are
+	// appended afterward so they can override earlier rules.
+	const computeQueries = () => {
+		const active = elementorFrontend.config.responsive.activeBreakpoints;
+		const maxItems = [];
+		const minItems = [];
 
-	// Generate CSS with actual breakpoint values
+		Object.entries(active).forEach(([name, cfg]) => {
+			if (cfg.value == null) {
+				return;
+			}
+			if (cfg.direction === 'max') {
+				maxItems.push({ name, max: cfg.value });
+			} else if (cfg.direction === 'min') {
+				minItems.push({ name, min: cfg.value });
+			}
+		});
+
+		// build ordered ranges from max breakpoints
+		maxItems.sort((a, b) => a.max - b.max);
+		const queries = [];
+		let prevMax = -1;
+		maxItems.forEach(entry => {
+			if (prevMax < 0) {
+				queries.push({ name: entry.name, mq: `@media (max-width: ${entry.max}px)` });
+			} else {
+				const min = prevMax + 1;
+				queries.push({ name: entry.name, mq: `@media (min-width: ${min}px) and (max-width: ${entry.max}px)` });
+			}
+			prevMax = entry.max;
+		});
+
+		if (prevMax >= 0) {
+			// desktop starts where the last "max" range ends.  We used to
+			// add +1 to avoid overlapping, but Elementor's preview width
+			// often equals that value (e.g. 1366px).  Allow overlap so that
+			// selecting "desktop" in the editor immediately triggers the
+			// desktop rule and overrides any laptop settings.
+			queries.push({ name: 'desktop', mq: `@media (min-width: ${prevMax}px)` });
+		}
+
+		// now append explicit min-width breakpoints
+		minItems.sort((a, b) => a.min - b.min);
+		minItems.forEach(entry => {
+			queries.push({ name: entry.name, mq: `@media (min-width: ${entry.min}px)` });
+		});
+
+		return queries;
+	};
+
+	const queries = computeQueries();
+	if (!queries.length) {
+		console.warn('Elementor breakpoint config not available');
+		return false;
+	}
+
 	let css = '/* Elementor Dynamic Breakpoints */\n';
-
-	// Sort breakpoints by value (largest to smallest for desktop-first approach)
-	const sortedBreakpoints = Object.entries(breakpoints)
-		.filter(([, config]) => config.direction === 'max') // Only max-width breakpoints
-		.sort((a, b) => b[1].value - a[1].value);
-
-	// Add desktop styles (no media query needed, it's the default)
-	css += `
-.products-layout .flex-wrapper {
-	align-items: var(--mpl4e-product-vertical-align-desktop, center);
-}
-.products-layout .flex-wrapper .product-elements {
-	justify-content: var(--mpl4e-product-align-desktop, center);
-}
-.products-layout .flex-wrapper .product-elements .name {
-	font-size: var(--mpl4e-title-size-desktop, 26px);
-	justify-content: var(--mpl4e-product-align-desktop, center);
-	text-align: var(--mpl4e-product-align-desktop, center);
-}
-.products-layout .flex-wrapper .product-elements .price {
-	font-size: var(--mpl4e-price-size-desktop, 16px);
-	justify-content: var(--mpl4e-product-align-desktop, center);
-	text-align: var(--mpl4e-product-align-desktop, center);
-}
-.products-layout .flex-wrapper .product-elements .add-to-cart-wrapper {
-	font-size: var(--mpl4e-button-size-desktop, 16px);
-	justify-content: var(--mpl4e-product-align-desktop, center);
-	text-align: var(--mpl4e-product-align-desktop, center);
-}
-.products-layout .flex-wrapper .product-elements .rating-wrapper {
-	justify-content: var(--mpl4e-product-align-desktop, center);
-}
-.mosaic-hide-desktop {
-	display: none !important;
-}
-
-/* Categories Layout - Desktop */
-.categories-layout .flex-wrapper {
-	align-items: var(--mpl4e-cat-vertical-align-desktop, center);
-}
-.categories-layout .flex-wrapper .category-elements {
-	justify-content: var(--mpl4e-cat-align-desktop, center);
-}
-.categories-layout .flex-wrapper .category-elements .name {
-	font-size: var(--mpl4e-cat-title-size-desktop, 24px);
-	justify-content: var(--mpl4e-cat-align-desktop, center);
-	text-align: var(--mpl4e-cat-align-desktop, center);
-}
-.categories-layout .flex-wrapper .category-elements .cat-count {
-	font-size: var(--mpl4e-cat-count-size-desktop, 16px);
-	justify-content: var(--mpl4e-cat-align-desktop, center);
-	text-align: var(--mpl4e-cat-align-desktop, center);
-}
-.categories-layout .flex-wrapper .category-elements .cat-description {
-	font-size: var(--mpl4e-cat-description-size-desktop, 14px);
-	justify-content: var(--mpl4e-cat-align-desktop, center);
-	text-align: var(--mpl4e-cat-align-desktop, center);
-}
-`;
-	// Generate responsive styles for products-layout widget
-	sortedBreakpoints.forEach(([name, config]) => {
-		const { value } = config;
-
-
+	queries.forEach(({ name, mq }) => {
 
 		css += `
-@media (max-width: ${value}px) {
-	.products-layout .flex-wrapper {
-		align-items: var(--mpl4e-product-vertical-align-${name}, center);
-	}
-	.products-layout .flex-wrapper .product-elements {
-		justify-content: var(--mpl4e-product-align-${name}, center);
-	}
-	.products-layout .flex-wrapper .product-elements .name {
-		font-size: var(--mpl4e-title-size-${name}, 20px);
-		justify-content: var(--mpl4e-product-align-${name}, center);
-		text-align: var(--mpl4e-product-align-${name}, center);
-	}
-	.products-layout .flex-wrapper .product-elements .price {
-		font-size: var(--mpl4e-price-size-${name}, 16px);
-		justify-content: var(--mpl4e-product-align-${name}, center);
-		text-align: var(--mpl4e-product-align-${name}, center);
-	}
-	.products-layout .flex-wrapper .product-elements .add-to-cart-wrapper {
-		font-size: var(--mpl4e-button-size-${name}, 16px);
-		justify-content: var(--mpl4e-product-align-${name}, center);
-		text-align: var(--mpl4e-product-align-${name}, center);
-	}
-	.products-layout .flex-wrapper .product-elements .rating-wrapper {
-		justify-content: var(--mpl4e-product-align-${name}, center);
-	}
+${mq} {
+
 	.mosaic-hide-${name} {
 		display: none !important;
 	}
 
+	/* Products Layout - ${name} */
+	.products-layout .flex-wrapper {
+		text-align: var(--mpl4e-product-align-${name}, center);
+	}
+
 	/* Categories Layout - ${name} */
 	.categories-layout .flex-wrapper {
-		align-items: var(--mpl4e-cat-vertical-align-${name}, center);
-	}
-	.categories-layout .flex-wrapper .category-elements {
-		justify-content: var(--mpl4e-cat-align-${name}, center);
-	}
-	.categories-layout .flex-wrapper .category-elements .name {
-		font-size: var(--mpl4e-cat-title-size-${name}, 20px);
-		justify-content: var(--mpl4e-cat-align-${name}, center);
 		text-align: var(--mpl4e-cat-align-${name}, center);
 	}
-	.categories-layout .flex-wrapper .category-elements .cat-count {
-		font-size: var(--mpl4e-cat-count-size-${name}, 14px);
-		justify-content: var(--mpl4e-cat-align-${name}, center);
-		text-align: var(--mpl4e-cat-align-${name}, center);
-	}
-	.categories-layout .flex-wrapper .category-elements .cat-description {
-		font-size: var(--mpl4e-cat-description-size-${name}, 12px);
-		justify-content: var(--mpl4e-cat-align-${name}, center);
-		text-align: var(--mpl4e-cat-align-${name}, center);
-	}
-}`;
+}
+`;
 	});
 
-
-	// Create and inject style element
 	const styleElement = document.createElement('style');
 	styleElement.id = 'mosaic-elementor-breakpoints';
 	styleElement.textContent = css;

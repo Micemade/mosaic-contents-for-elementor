@@ -341,7 +341,7 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 	if (isLoading) {
 		return (
 			<div className="products-layout">
-				<p className="products-layout-loading">Loading products...</p>
+				<p className="layout-loading">Loading products...</p>
 			</div>
 		);
 	}
@@ -364,12 +364,12 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 
 	return (
 		<div
-			className="products-layout mosaic-products-layout micemade-widgets"
+			className="products-layout mosaic-product-layouts-widgets micemade-widgets"
 			data-widget-id={widgetId}
 			style={cssVariables}
 		>
 			{isFetching && (
-				<p className="products-layout-loading">Fetching products...</p>
+				<p className="layout-loading">Fetching products...</p>
 			)}
 			<GridLayout
 				layouts={layoutData}
@@ -424,7 +424,7 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 										)}
 									</div>
 								)}
-								<div className="product-wrapper empty">
+								<div className="item-wrapper empty">
 									<p>No product</p>
 								</div>
 							</div>
@@ -476,7 +476,7 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 								</div>
 							)}
 
-							<div className={`product-wrapper ${productLayout}`}>
+							<div className={`item-wrapper ${productLayout}`}>
 
 								<figure className="product-image product-featured-image gradient-preloader">
 									<ProductImage
