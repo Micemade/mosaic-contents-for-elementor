@@ -2,209 +2,223 @@
 
 ## Overview
 
-Widget settings are now defined in a **single JSON file** that serves as the source of truth for all three locations where settings are used:
+Each widget's settings are defined in a **single `react-settings.json` file** that acts as the source of truth for all three places where settings are consumed:
 
-1. **PHP `render()`** - Frontend rendering
-2. **PHP `content_template()`** - Elementor editor template  
-3. **JavaScript `settings-mappers.js`** - React component settings
+1. **PHP `render()`** — Frontend HTML, serializes settings into a hidden input for React hydration
+2. **PHP `content_template()`** — Elementor editor Backbone template, generates the JS settings object inline
+3. **JavaScript `settings-mappers.js`** — Reads Elementor model → produces the `widgetData` prop passed to React
 
-## Settings Definition File
+All three consumers are driven generically from the same JSON; adding or modifying a setting in one place keeps all consumers in sync automatically.
 
-**Location**: [`src/shared/products-layout-settings.json`](src/shared/products-layout-settings.json)
+---
 
-**Structure**:
+## Settings Schema Files
+
+**Location:** `src/widgets/{widget-name}/react-settings.json`
+
+| Widget | Schema File |
+|--------|-------------|
+| Products Layout | `src/widgets/products-layout/react-settings.json` |
+| Categories Layout | `src/widgets/categories-layout/react-settings.json` |
+| Single Product Layout | `src/widgets/single-product-layout/react-settings.json` |
+
+**Structure:**
 ```json
 {
-  "setting_name": {
-    "default": <default_value>,
-    "type": "string|number|boolean"
+  "setting_key": {
+    "type": "string|number|boolean|responsive|object|array",
+    "default": "<default_value>"
   }
 }
 ```
 
-**Example**:
+Responsive settings support per-breakpoint defaults:
 ```json
 {
-  "per_page": {
-    "default": 10,
-    "type": "number"
-  },
-  "on_sale": {
-    "default": false,
-    "type": "boolean"
-  },
-  "layout": {
-    "default": "grid",
-    "type": "string"
+  "mpl4e_title_size": {
+    "type": "responsive",
+    "default": { "size": 24, "unit": "px" },
+    "tablet_default": { "size": 22, "unit": "px" },
+    "mobile_default": { "size": 20, "unit": "px" }
   }
 }
 ```
 
-## How It Works
+---
 
-### PHP Usage
+## Type System
 
-**In [`widgets/products-layout.php`](widgets/products-layout.php)**:
+| JSON `type` | Elementor storage | Produced value |
+|-------------|-------------------|----------------|
+| `string` | String | String (or default) |
+| `number` | Number/Slider | Number (or default) |
+| `boolean` | `'yes'` / `''` | `true` / `false` |
+| `responsive` | Base key + `_tablet`, `_mobile` | `{ desktop: val, tablet: val, mobile: val }` |
+| `object` | Object (e.g. focal point `{x,y}`) | Object (or default) |
+| `array` | Repeater collection | Plain JS array (or default) |
+
+---
+
+## PHP Layer — `includes/trait-widget-helpers.php`
+
+A shared trait used by all three widget classes. The static method `get_settings_definitions()` loads and caches the JSON for the calling widget, keyed by `get_name()`:
 
 ```php
-// Static property caches the JSON data
-private static $settings_definitions = null;
-
-// Loads JSON file once and caches it
-private static function get_settings_definitions() {
-    if (self::$settings_definitions === null) {
-        $json_file = plugin_dir_path(__DIR__) . 'src/shared/products-layout-settings.json';
-        if (file_exists($json_file)) {
-            $json_content = file_get_contents($json_file);
-            self::$settings_definitions = json_decode($json_content, true);
-        }
-    }
-    return self::$settings_definitions;
-}
-
-// Extracts and formats all settings
-private function get_widget_settings() {
-    $definitions = self::get_settings_definitions();
-    $result = array();
-    
-    foreach ($definitions as $key => $definition) {
-        $default = $definition['default'];
-        $type = $definition['type'];
-        $raw_value = $this->sanitize_setting($key, $default);
-        
-        // Type conversion based on JSON definition
-        if ($type === 'boolean') {
-            $result[$key] = 'yes' === $raw_value;
-        } elseif ($type === 'number') {
-            $result[$key] = $raw_value;
+// Loads src/widgets/{widget-name}/react-settings.json
+protected static function get_settings_definitions( $widget_name ) {
+    if ( ! isset( self::$settings_cache[ $widget_name ] ) ) {
+        $json_file = plugin_dir_path( __DIR__ ) . "src/widgets/{$widget_name}/react-settings.json";
+        if ( file_exists( $json_file ) ) {
+            self::$settings_cache[ $widget_name ] = json_decode( file_get_contents( $json_file ), true );
         } else {
-            $result[$key] = $raw_value;
+            self::$settings_cache[ $widget_name ] = [];
         }
     }
-    
-    return $result;
+    return self::$settings_cache[ $widget_name ];
 }
 ```
 
-### JavaScript Usage
+### `render()` (Frontend)
 
-**In [`src/widgets/settings-mappers.js`](src/widgets/settings-mappers.js)**:
+Iterates all definitions, resolves each value (with type conversion and responsive unpacking), JSON-encodes the result, and writes it to a hidden input for React to hydrate:
+
+```php
+protected function render() {
+    $query_settings = $this->get_widget_settings();
+    $json_data      = wp_json_encode( $query_settings );
+    $widget_name    = $this->get_name();
+    $widget_id      = $this->get_id();
+    ?>
+<div class="<?php echo esc_attr( $widget_name ); ?>-wrapper"
+     data-widget-id="<?php echo esc_attr( $widget_id ); ?>">
+    <input type="hidden" class="elementor-settings-data"
+           value="<?php echo esc_attr( $json_data ); ?>" />
+    <div class="<?php echo esc_attr( $widget_name ); ?>-react-root"></div>
+</div>
+    <?php
+}
+```
+
+### `content_template()` (Editor)
+
+Dynamically generates a Backbone/Underscore template (PHP string → rendered in-browser) that reads live `settings` attributes and produces the same JSON object:
+
+```php
+protected function content_template() {
+    $widget_name = $this->get_name();
+    $definitions = self::get_settings_definitions( $widget_name );
+    $js_settings = [];
+
+    foreach ( $definitions as $key => $definition ) {
+        // Per-type JS code generation:
+        // boolean    → key: settings.key === 'yes'
+        // number     → key: settings.key || default
+        // object     → key: settings.key || {default_json}
+        // array      → key: settings.key || [default_json]
+        // responsive → key: { desktop: settings.key || 'd', tablet: settings.key_tablet || 't', ... }
+        // string     → key: settings.key || 'default'
+    }
+
+    // Outputs a Backbone template:
+    // <# const data = { ...generated_keys... }; const jsonData = JSON.stringify(data); #>
+    // <div class="{widget}-wrapper" data-widget-id="{{ widgetId }}">
+    //   <input type="hidden" class="elementor-settings-data" value="{{ jsonData }}" />
+    //   <div class="{widget}-react-root"></div>
+    // </div>
+}
+```
+
+---
+
+## JavaScript Layer — `src/widgets/settings-mappers.js`
+
+Uses the `createSettingsMapper(settingsDef)` **factory function**, driven entirely by the same JSON schema:
 
 ```javascript
-import productsLayoutSettingsDefinition from '../shared/products-layout-settings.json';
+import { createSettingsMapper } from './settings-mappers';
 
-export const mapProductsLayoutSettings = (model) => {
+import productsSettingsDef       from './products-layout/react-settings.json';
+import categoriesSettingsDef     from './categories-layout/react-settings.json';
+import singleProductSettingsDef  from './single-product-layout/react-settings.json';
+
+// Each widget gets a mapper built from its own JSON schema
+export const WIDGET_REGISTRY = {
+    'products-layout':       { ..., settingsMapper: createSettingsMapper(productsSettingsDef) },
+    'categories-layout':     { ..., settingsMapper: createSettingsMapper(categoriesSettingsDef) },
+    'single-product-layout': { ..., settingsMapper: createSettingsMapper(singleProductSettingsDef) },
+};
+```
+
+The factory handles all types and responsive variants automatically:
+
+```javascript
+export const createSettingsMapper = (settingsDefinition) => (model) => {
     const settings = model.get('settings');
     const result = {};
-    
-    // Iterate through all settings defined in JSON
-    Object.keys(productsLayoutSettingsDefinition).forEach(key => {
-        const definition = productsLayoutSettingsDefinition[key];
+
+    Object.keys(settingsDefinition).forEach(key => {
+        const definition = settingsDefinition[key];
         const value = settings.get(key);
-        
-        // Apply type-specific conversion
-        if (definition.type === 'boolean') {
+
+        if (definition.type === 'responsive') {
+            result[key] = getResponsiveValue(settings, key, getActiveBreakpoints(), definition);
+            // → { desktop: val, tablet: val_tablet, mobile: val_mobile }
+        } else if (definition.type === 'boolean') {
             result[key] = value === 'yes';
         } else if (definition.type === 'number') {
             result[key] = value !== undefined ? value : definition.default;
+        } else if (definition.type === 'array') {
+            result[key] = value?.toJSON ? value.toJSON()
+                        : (Array.isArray(value) ? value : definition.default);
         } else {
             result[key] = value !== undefined ? value : definition.default;
         }
     });
-    
+
     return result;
 };
 ```
 
-### Editor Template Generation
-
-**In `content_template()`**:
-
-```php
-protected function content_template() {
-    // Dynamically generate JavaScript code from JSON definitions
-    $definitions = self::get_settings_definitions();
-    $js_settings = array();
-    
-    foreach ($definitions as $key => $definition) {
-        $default = $definition['default'];
-        $type = $definition['type'];
-        
-        if ($type === 'boolean') {
-            $js_settings[] = "\t{$key}: settings.{$key} === 'yes'";
-        } elseif ($type === 'number') {
-            $js_settings[] = "\t{$key}: settings.{$key} || {$default}";
-        } else {
-            $default_escaped = addslashes($definition['default']);
-            $js_settings[] = "\t{$key}: settings.{$key} || '{$default_escaped}'";
-        }
-    }
-    
-    $js_settings_code = implode(",\n", $js_settings);
-    ?>
-<#
-const widgetId = view.model.id;
-const data = {
-<?php echo $js_settings_code; ?>
-};
-const jsonData = JSON.stringify(data);
-#>
-<!-- Rest of template -->
-<?php
-}
-```
-
-## Benefits
-
-✅ **Single Source of Truth** - Settings defined once in JSON  
-✅ **DRY Principle** - No duplication across PHP/JavaScript  
-✅ **Type Safety** - Consistent type conversion everywhere  
-✅ **Easy Maintenance** - Add/modify settings in one place  
-✅ **Automatic Sync** - All three locations stay synchronized  
+---
 
 ## Adding a New Setting
 
-1. **Add to JSON** ([`src/shared/products-layout-settings.json`](src/shared/products-layout-settings.json)):
+1. **Add to the widget's `react-settings.json`:**
    ```json
    {
-     "new_setting": {
-       "default": "value",
-       "type": "string"
+     "mpl4e_new_setting": {
+       "type": "string",
+       "default": "auto"
      }
    }
    ```
 
-2. **Add Elementor Control** (in `register_controls()` method):
+2. **Add the Elementor control** in the widget's `register_controls()` method:
    ```php
-   $this->add_control('new_setting', [
-       'label' => __('New Setting', 'mosaic-product-layouts-for-elementor'),
-       'type' => Controls_Manager::TEXT,
-       'default' => 'value', // Must match JSON default
-   ]);
+   $this->add_control( 'mpl4e_new_setting', [
+       'label'   => __( 'New Setting', 'mosaic-product-layouts-for-elementor' ),
+       'type'    => Controls_Manager::SELECT,
+       'default' => 'auto',
+       'options' => [ 'auto' => 'Auto', 'manual' => 'Manual' ],
+   ] );
    ```
 
-3. **Rebuild**:
+3. **Rebuild:**
    ```bash
    npm run build
    ```
 
-That's it! The setting will automatically be available in:
-- Frontend rendering (`render()`)
-- Editor template (`content_template()`)
-- React components (via `widgetData` prop)
+The setting is now automatically available in `render()`, `content_template()`, and as `widgetData.mpl4e_new_setting` inside the React component.
 
-## Type Mappings
+---
 
-| JSON Type | Elementor Value | Output Value |
-|-----------|-----------------|--------------|
-| `boolean` | `'yes'` / `'no'` (string) | `true` / `false` |
-| `number` | `10` (number) | `10` |
-| `string` | `'value'` (string) | `'value'` |
+## Benefits
 
-## Future Enhancements
-
-For future widgets, create similar JSON files:
-- `src/shared/categories-layout-settings.json`
-- `src/shared/single-product-layout-settings.json`
-
-Follow the same pattern to maintain consistency across all widgets.
+| Concern | How it's addressed |
+|---------|-------------------|
+| Single source of truth | One JSON file per widget drives all three layers |
+| DRY | No duplicated defaults or type logic across PHP/JS |
+| Type safety | Consistent `boolean`/`responsive`/`number` conversions everywhere |
+| Easy maintenance | Add or rename a setting in one file only |
+| Multi-widget support | Each widget has its own schema; factory pattern removes per-widget boilerplate |
+| Bug prevention | **Mismatched paths cause empty settings** — PHP and JS both resolve to the same `react-settings.json` |

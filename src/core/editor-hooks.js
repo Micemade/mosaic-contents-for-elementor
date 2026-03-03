@@ -8,7 +8,7 @@
 import { getRegisteredWidgets, getWidgetConfig } from './widget-registry';
 import { createWidgetInitializer } from './widget-initializer';
 import widgetManager from './widget-manager';
-import { getActiveBreakpoints } from './elementor-utils';
+import { getActiveBreakpointNames } from './elementor-utils';
 import { addItemToLayout } from '../shared/utils/addItem';
 import { getComputedLayout } from '../shared/utils/layoutUtils';
 
@@ -126,7 +126,7 @@ export const registerEditorHooks = () => {
 						const value = mapped[key];
 						// Check if this is a responsive setting (object with breakpoint keys)
 						if (value && typeof value === 'object' && !Array.isArray(value)) {
-							const activeBreakpoints = getActiveBreakpoints();
+							const activeBreakpoints = getActiveBreakpointNames();
 							const hasBreakpoints = activeBreakpoints.some(bp => value.hasOwnProperty(bp));
 
 							if (hasBreakpoints) {

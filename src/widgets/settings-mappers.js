@@ -6,7 +6,7 @@
  * Not all settings are mapped; only those needed for React components.
  */
 
-import { getActiveBreakpoints } from '../core/elementor-utils';
+import { getActiveBreakpointNames } from '../core/elementor-utils';
 
 /**
  * Extract responsive setting value from Elementor model
@@ -67,7 +67,7 @@ export const createSettingsMapper = (settingsDefinition) => (model) => {
 			result[key] = getResponsiveValue(
 				settings,
 				key,
-				getActiveBreakpoints(),
+				getActiveBreakpointNames(),
 				definition
 			);
 		} else if (definition.type === 'boolean') {

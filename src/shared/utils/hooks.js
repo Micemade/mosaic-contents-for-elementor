@@ -6,7 +6,7 @@
  */
 
 import { useMemo } from 'react';
-import { getActiveBreakpoints } from '../../core/elementor-utils';
+import { getActiveBreakpointNames } from '../../core/elementor-utils';
 
 /**
  * Generate CSS custom properties from responsive Elementor settings.
@@ -21,7 +21,7 @@ import { getActiveBreakpoints } from '../../core/elementor-utils';
 export const useCssVariables = (widgetData) => {
 	return useMemo(() => {
 		const vars = {};
-		const breakpoints = getActiveBreakpoints();
+		const breakpoints = getActiveBreakpointNames();
 
 		Object.keys(widgetData).forEach(settingKey => {
 			const settingValue = widgetData[settingKey];

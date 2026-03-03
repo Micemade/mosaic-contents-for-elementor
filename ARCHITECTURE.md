@@ -52,12 +52,13 @@ Central registry mapping widget names to their React components and settings map
 **To add a new widget:**
 ```javascript
 import NewWidget from '../widgets/new-widget/new-widget';
-import { mapNewWidgetSettings } from '../widgets/settings-mappers';
+import newWidgetSettings from '../widgets/new-widget/react-settings.json';
+import { createSettingsMapper } from '../widgets/settings-mappers';
 
 export const WIDGET_REGISTRY = {
     'new-widget': {
         component: NewWidget,
-        settingsMapper: mapNewWidgetSettings
+        settingsMapper: createSettingsMapper(newWidgetSettings)
     }
 };
 ```
@@ -205,45 +206,69 @@ src/
 │   ├── widget-initializer.js        # Widget init factory
 │   ├── frontend-hooks.js            # Frontend-only hooks (minimal)
 │   ├── editor-hooks.js              # Editor hooks (full functionality + channel events)
-│   └── elementor-utils.js           # Helper utilities for components
+│   └── elementor-utils.js           # Shared utilities: breakpoints, CSS injection, panel helpers
 ├── widgets/
-│   ├── settings-mappers.js          # Settings extractors for all widgets
-│   └── products-layout/
-│       ├── products-layout.jsx      # Products widget component
-│       ├── products-layout.scss     # Widget-specific styles
-│       ├── components/              # Widget-specific React components
-│       │   ├── ProductImage.jsx
-│       │   ├── AddToCartButton.jsx
-│       │   └── RatingStars.jsx
+│   ├── settings-mappers.js          # createSettingsMapper() factory for all widgets
+│   ├── products-layout/
+│   │   ├── products-layout.jsx      # Products widget component
+│   │   ├── products-layout.scss     # Widget-specific styles
+│   │   └── react-settings.json     # Settings schema (source of truth)
+│   ├── categories-layout/
+│   │   ├── categories-layout.jsx
+│   │   ├── categories-layout.scss
+│   │   └── react-settings.json
+│   └── single-product-layout/
+│       ├── single-product-layout.jsx
+│       ├── single-product-layout.scss
+│       ├── react-settings.json
 │       └── utils/
-│           └── products-layout-settings.json  # Settings schema definition
+│           └── single-product-layouts.json  # Predefined SP layouts
 ├── shared/
-│   ├── layouts.json                 # Predefined grid layouts
+│   ├── layouts.json                 # Predefined grid layouts (products/categories)
 │   ├── components/
-│   │   ├── GridLayout.jsx           # Shared grid component (react-grid-layout wrapper)
+│   │   ├── GridLayout.jsx           # react-grid-layout wrapper
+│   │   ├── ProductImage.jsx         # Image with focal-point support
+│   │   ├── RatingStars.jsx          # WooCommerce star ratings
+│   │   ├── AddToCartButton.jsx      # Store API cart integration
+│   │   ├── ZIndexControls.jsx       # Per-item z-index editor controls
 │   │   └── utils/
-│   │       └── events.js            # Custom event utilities
+│   │       └── events.js            # Custom DOM event helpers
 │   ├── utils/
+│   │   ├── hooks.js                # useCssVariables(), useGridSettings()
 │   │   ├── addItem.js              # Grid item add/remove logic
 │   │   ├── layoutUtils.js          # Layout computation utilities
-│   │   ├── productUtils.js         # WooCommerce product utilities
+│   │   ├── elementOrdering.js      # Element order/visibility parser
+│   │   ├── LRUCache.js             # LRU cache (editor) / plain object (frontend)
+│   │   ├── productUtils.js         # WooCommerce product helpers
 │   │   └── generalUtils.js         # General helper functions
 │   └── assets/
 │       ├── _gridLayout.scss        # Shared grid styles
-│       └── _productElements.scss   # Shared product element styles
+│       ├── _productElements.scss   # Shared product element styles
+│       └── _zindexControls.scss    # Z-index control overlay styles
 └── controls/
     ├── focal-point-control.jsx      # Focal point picker React component
-    ├── FocalPointControlView.jsx    # Focal point control view
-    ├── focal-point-control.scss     # Focal point control styles
+    ├── FocalPointControlView.jsx    # Elementor BaseData view extension
+    ├── focal-point-control.scss
+    ├── product-select-control.jsx   # Product selector React component
+    ├── ProductSelectView.jsx        # Elementor BaseData view extension
+    ├── product-select-control.scss
     ├── saved-setups-control.jsx     # Saved setups React component + control view
-    └── saved-setups-control.scss    # Saved setups control styles
+    └── saved-setups-control.scss
 
-widgets/                              # PHP widget definitions
-└── products-layout.php              # PHP widget class with Elementor controls
+widgets/                              # PHP widget classes (all use WidgetHelpers trait)
+├── products-layout.php
+├── categories-layout.php
+└── single-product-layout.php
 
-controls/                             # PHP custom control definitions
-├── focal-point.php                  # Focal point custom control class
-└── saved-setups.php                 # Saved setups custom control class
+controls/                             # PHP custom control classes
+├── focal-point.php
+├── product-select.php
+├── element-sorting.php
+└── saved-setups.php
+
+includes/
+├── trait-widget-helpers.php         # Shared render(), content_template(), get_widget_settings()
+└── class-rest-api.php               # REST API handler
 
 assets/                               # Built output (generated by Vite)
 ├── js/
@@ -253,12 +278,14 @@ assets/                               # Built output (generated by Vite)
 └── admin/
     ├── js/
     │   ├── main-editor.js           # Compiled editor bundle
-    │   ├── focal-point-control.js   # Compiled focal point control
-    │   └── saved-setups-control.js  # Compiled saved setups control
+    │   ├── focal-point-control.js
+    │   ├── product-select-control.js
+    │   └── saved-setups-control.js
     └── css/
-        ├── main-editor.css          # Compiled editor styles
-        ├── focal-point-control.css  # Compiled focal point control styles
-        └── saved-setups-control.css # Compiled saved setups control styles
+        ├── main-editor.css
+        ├── focal-point-control.css
+        ├── product-select-control.css
+        └── saved-setups-control.css
 ```
 
 ## Key Features Preserved
@@ -291,45 +318,35 @@ assets/                               # Built output (generated by Vite)
 
 ## Adding a New Widget
 
-1. **Create settings schema** (`src/widgets/new-widget/utils/new-widget-settings.json`)
+1. **Create settings schema** (`src/widgets/new-widget/react-settings.json`)
    - Define all widget settings with types, defaults, and responsive config
+   - This file is read by both PHP (`trait-widget-helpers.php`) and JS (`widget-registry.js`)
 
 2. **Create React component** (`src/widgets/new-widget/new-widget.jsx`)
-   - Use `widgetData` prop for settings
-   - Use `widgetId` prop for unique identification
-   - Use `mode` prop to detect 'edit' vs 'display'
+   - Accept `widgetData`, `widgetId`, and `mode` props
+   - Use `useCssVariables(widgetData)` from `src/shared/utils/hooks.js` for responsive CSS vars
 
-3. **Create settings mapper** (add to `src/widgets/settings-mappers.js`)
-   ```javascript
-   import newWidgetSettings from './new-widget/utils/new-widget-settings.json';
-   
-   export const mapNewWidgetSettings = (model) => {
-       // Extract and format settings from Elementor model
-       // Handle responsive settings with getResponsiveValue()
-   };
-   ```
-
-4. **Register in registry** (add to `src/core/widget-registry.js`)
+3. **Register in registry** (add to `src/core/widget-registry.js`)
    ```javascript
    import NewWidget from '../widgets/new-widget/new-widget';
-   import { mapNewWidgetSettings } from '../widgets/settings-mappers';
+   import newWidgetSettings from '../widgets/new-widget/react-settings.json';
+   import { createSettingsMapper } from '../widgets/settings-mappers';
    
    export const WIDGET_REGISTRY = {
        'new-widget': {
            component: NewWidget,
-           settingsMapper: mapNewWidgetSettings
+           settingsMapper: createSettingsMapper(newWidgetSettings)
        }
    };
    ```
 
-5. **Create PHP widget** (`widgets/new-widget.php`)
-   - Extend `\Elementor\Widget_Base`
-   - `get_name()` must return 'new-widget' (matches registry key)
+4. **Create PHP widget** (`widgets/new-widget.php`)
+   - Extend `\Elementor\Widget_Base` and use the `WidgetHelpers` trait
+   - `get_name()` must return `'new-widget'` (must match the registry key exactly)
    - Define controls using `register_controls()`
-   - Output wrapper + React root in `content_template()`
-   - Include `data-widget-id="{{ view.model.id }}"`
+   - The trait provides `render()`, `content_template()`, and `get_widget_settings()`
 
-6. **Register in main plugin** (`mosaic-product-layouts-for-elementor.php`)
+5. **Register in main plugin** (`mosaic-product-layouts-for-elementor.php`)
    ```php
    public function init_widgets( $widgets_manager ) {
        require_once __DIR__ . '/widgets/new-widget.php';
@@ -422,6 +439,8 @@ Custom controls follow a PHP + React pattern: a PHP class provides the Elementor
 | Control | PHP Class | Type Slug | Purpose |
 |---------|-----------|-----------|----------|
 | Focal Point | `Focal_Point` | `mpl4e_focal_point` | Image focal-point picker |
+| Product Select | `Product_Select` | `mpl4e_product_select` | Single-product selector with search |
+| Element Sorting | `Element_Sorting` | `mpl4e_element_sorting` | Drag-to-reorder element visibility list |
 | Saved Setups | `Saved_Setups` | `mpl4e_saved_setups` | Save/load/delete layout+style presets |
 
 ### React Control Components (`src/controls/*.jsx`)
@@ -465,6 +484,12 @@ public function init_controls( $controls_manager ) {
     require_once __DIR__ . '/controls/focal-point.php';
     $controls_manager->register( new Focal_Point() );
 
+    require_once __DIR__ . '/controls/product-select.php';
+    $controls_manager->register( new Product_Select() );
+
+    require_once __DIR__ . '/controls/element-sorting.php';
+    $controls_manager->register( new Element_Sorting() );
+
     require_once __DIR__ . '/controls/saved-setups.php';
     $controls_manager->register( new Saved_Setups() );
 }
@@ -472,7 +497,9 @@ public function init_controls( $controls_manager ) {
 
 ## Settings Definition System
 
-### JSON Schema (`widgets/[widget]/utils/[widget]-settings.json`)
+### JSON Schema (`src/widgets/{widget}/react-settings.json`)
+Each widget has its own settings schema co-located with the component. This file is the single source of truth loaded by both PHP and JS.
+
 Defines all widget settings with metadata for automatic mapping:
 
 ```json
@@ -494,12 +521,24 @@ Defines all widget settings with metadata for automatic mapping:
 }
 ```
 
-### Settings Mapper (`widgets/settings-mappers.js`)
-Uses schema to extract and convert settings:
-- **Responsive settings**: Extracts base + breakpoint variants (`key`, `key_tablet`, `key_mobile`)
-- **Boolean conversion**: 'yes'/'no' → true/false
-- **Type enforcement**: Ensures numbers, strings, etc.
+### Settings Mapper (`src/widgets/settings-mappers.js`)
+`createSettingsMapper(settingsDef)` is a factory that returns a `(model) => widgetData` function for any widget. No per-widget mapper functions are needed.
+
+- **Responsive settings**: Merges `key` + `key_tablet` + `key_mobile` into `{ desktop, tablet, mobile }` object
+- **Boolean conversion**: `'yes'`/`'no'` → `true`/`false`
+- **Array settings**: Calls `.toJSON()` on Backbone collections (Elementor repeaters)
+- **Type enforcement**: Ensures numbers, strings, objects
 - **Default values**: Falls back to schema defaults
+
+### Shared Hooks (`src/shared/utils/hooks.js`)
+
+`useCssVariables(widgetData)` — converts responsive settings into scoped CSS custom properties:
+- Input: `widgetData.title_size = { desktop: '24px', tablet: '20px', mobile: '18px' }`
+- Output: `{ '--mpl4e-title-size-desktop': '24px', '--mpl4e-title-size-tablet': '20px', '--mpl4e-title-size-mobile': '18px' }`
+
+`useGridSettings(widgetData, marginKey, rowHeightKey)` — derives grid column count, margin, and row height from widget data.
+
+These are consumed by all three widget components. Responsive breakpoint CSS is injected via `injectBreakpointStylesheet()` in `elementor-utils.js`, which generates media queries using these CSS variables.
 
 ## Important Notes
 

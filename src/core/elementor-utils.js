@@ -31,7 +31,7 @@ export const updateElementorSetting = (widgetType, widgetId, settingName, value)
  * 
  * @returns {Array} Array of breakpoint names (e.g., ['desktop', 'tablet', 'mobile'])
  */
-export const getActiveBreakpoints = () => {
+export const getActiveBreakpointNames = () => {
 
 	if (typeof elementorFrontend !== 'undefined' && elementorFrontend.config?.responsive?.activeBreakpoints) {
 		const activeBreakpoints = elementorFrontend.config.responsive.activeBreakpoints;
@@ -53,7 +53,7 @@ export const getActiveBreakpoints = () => {
  * @returns {boolean} True if in editor mode
  */
 export const isElementorEditor = () => {
-	return typeof elementor !== 'undefined' || 
+	return typeof elementor !== 'undefined' ||
 		(typeof window.elementorFrontend !== 'undefined' && window.elementorFrontend.isEditMode());
 };
 

@@ -1,114 +1,151 @@
-# Multi-Widget Architecture Implementation - Summary
+# Implementation Summary
 
 ## ✅ Completed
 
-The codebase has been successfully refactored to support multiple widget types with a clean, modular architecture.
+All three widgets are fully implemented and the architecture is production-ready.
 
-## 📁 New Files Created
+## 📁 Source File Structure
 
-### Core Modules (`src/core/`)
-1. **widget-registry.js** - Central registry for all widget types
-2. **widget-manager.jsx** - Generic instance manager (singleton)
-3. **widget-initializer.js** - Widget initialization factory
-4. **elementor-hooks.js** - Elementor integration and hooks
-5. **elementor-utils.js** - Helper utilities for components
+```
+src/
+├── main-frontend.jsx            # Lightweight frontend entry point
+├── main-editor.jsx              # Full-featured editor entry point
+├── globalStyles.scss            # Global styles for all widgets
+├── core/
+│   ├── widget-registry.js       # Central registry (all widget types + settings mappers)
+│   ├── widget-manager.jsx       # Singleton — mounts/updates/unmounts React instances
+│   ├── widget-initializer.js    # Factory — creates per-widget init functions
+│   ├── frontend-hooks.js        # Frontend-only hooks (display mode)
+│   ├── editor-hooks.js          # Editor hooks (live sync, channel events, MutationObserver)
+│   └── elementor-utils.js       # Shared utilities: breakpoints, CSS injection, panel helpers
+├── widgets/
+│   ├── settings-mappers.js      # createSettingsMapper() factory — drives all widgets
+│   ├── products-layout/
+│   │   ├── products-layout.jsx
+│   │   ├── products-layout.scss
+│   │   └── react-settings.json  # ← settings source of truth
+│   ├── categories-layout/
+│   │   ├── categories-layout.jsx
+│   │   ├── categories-layout.scss
+│   │   └── react-settings.json
+│   └── single-product-layout/
+│       ├── single-product-layout.jsx
+│       ├── single-product-layout.scss
+│       ├── react-settings.json
+│       └── utils/
+│           └── single-product-layouts.json  # Predefined SP layouts
+├── shared/
+│   ├── layouts.json             # Predefined grid layouts (products/categories)
+│   ├── components/
+│   │   ├── GridLayout.jsx       # react-grid-layout wrapper
+│   │   ├── ProductImage.jsx     # Image with focal-point support
+│   │   ├── RatingStars.jsx      # WooCommerce star ratings
+│   │   ├── AddToCartButton.jsx  # Store API cart integration
+│   │   ├── ZIndexControls.jsx   # Per-item z-index editor controls
+│   │   └── utils/events.js      # Custom DOM event helpers
+│   ├── utils/
+│   │   ├── hooks.js             # useCssVariables(), useGridSettings()
+│   │   ├── addItem.js           # Grid item add/remove logic
+│   │   ├── layoutUtils.js       # Layout computation helpers
+│   │   ├── elementOrdering.js   # Element order/visibility parser
+│   │   ├── LRUCache.js          # LRU cache (editor) / plain object (frontend)
+│   │   ├── productUtils.js      # WooCommerce data helpers
+│   │   └── generalUtils.js      # General helpers (decode, etc.)
+│   └── assets/
+│       ├── _gridLayout.scss
+│       ├── _productElements.scss
+│       └── _zindexControls.scss
+└── controls/
+    ├── focal-point-control.jsx      # Image focal-point picker React component
+    ├── FocalPointControlView.jsx    # Elementor BaseData view extension
+    ├── focal-point-control.scss
+    ├── product-select-control.jsx   # Product selector React component
+    ├── ProductSelectView.jsx        # Elementor BaseData view extension
+    ├── product-select-control.scss
+    ├── saved-setups-control.jsx     # Save/load/delete presets React component
+    └── saved-setups-control.scss
 
-### Widget Support (`src/widgets/`)
-6. **settings-mappers.js** - Settings extraction functions
+widgets/                         # PHP widget classes (all use WidgetHelpers trait)
+├── products-layout.php
+├── categories-layout.php
+└── single-product-layout.php
 
-### Documentation
-7. **ARCHITECTURE.md** - Detailed architecture documentation
-8. **MIGRATION.md** - Migration guide from old system
-9. **QUICK_REFERENCE.md** - Quick reference for common tasks
+controls/                        # PHP custom control classes
+├── focal-point.php
+├── product-select.php
+├── element-sorting.php
+└── saved-setups.php
 
-## 🔄 Modified Files
-
-1. **src/main.jsx** - Simplified to orchestration only
-2. **src/widgets/products-layout/products-layout.jsx** - Updated to use new utilities
-
-## ✅ Functionality Verified
-
-### Custom Layout Saving ✓
-- Drag and resize grid items
-- `updateElementorSetting()` saves to Elementor model
-- Widget manager handles two-way communication
-- Auto-save triggered correctly
-
-### Layout Reset ✓
-- Reset button triggers event
-- Elementor hooks clear custom_layout
-- Component re-renders with predefined layout
-
-### Live Settings Sync ✓
-- Elementor panel changes update React instantly
-- No DOM remount (renderOnChange = false)
-- Settings merge correctly
-
-### Multiple Widget Support ✓
-- Instance keys use compound format: `${widgetType}_${widgetId}`
-- Registry supports multiple widget types
-- All hooks dynamically registered
-- Easy to add new widgets
-
-## 🎯 Key Benefits
-
-1. **DRY Principle** - Single codebase for all widget types
-2. **Easy Extension** - Add new widgets by registering in one place
-3. **Type Safety** - Each widget has dedicated settings mapper
-4. **Maintainable** - Core logic separated into focused modules
-5. **Well Documented** - Architecture, migration, and quick reference guides
-
-## 🚀 Adding New Widgets
-
-To add `categories-layout` or `single-product-layout`:
-
-1. Create component: `src/widgets/{widget-name}/{widget-name}.jsx`
-2. Add mapper: `map{WidgetName}Settings()` in `settings-mappers.js`
-3. Register in `widget-registry.js`
-4. Create PHP widget: `widgets/{widget-name}.php`
-5. Register in plugin: Add to `init_widgets()` method
-
-**That's it!** All initialization and lifecycle management is automatic.
-
-## 🔍 Testing Recommendations
-
-### Manual Testing
-- [ ] Load products-layout in Elementor editor
-- [ ] Drag grid items → verify custom layout saves
-- [ ] Resize grid items → verify custom layout saves
-- [ ] Change settings in panel → verify live update
-- [ ] Reset layout → verify returns to predefined
-- [ ] Save page → reload → verify custom layout persists
-- [ ] Test on frontend (non-editor mode)
-- [ ] Test multiple widget instances on same page
-
-### Future Testing
-When adding new widgets, test the same flow to ensure the architecture handles them correctly.
-
-## 📊 Build Status
-
-✅ **Build successful** - No errors, all modules compile correctly
-
-```bash
-npm run build
-# ✓ built in 646ms
-# assets/css/style.css   17.41 kB │ gzip:  2.89 kB
-# assets/js/main.js      156.94 kB │ gzip: 45.66 kB
+includes/
+├── trait-widget-helpers.php     # Shared render(), content_template(), get_widget_settings()
+└── class-rest-api.php           # REST API handler
 ```
 
-## 📚 Documentation
+## 🔄 Settings Architecture (Centralized)
 
-- **ARCHITECTURE.md** - Read this first for complete understanding
-- **MIGRATION.md** - For developers migrating from old system
-- **QUICK_REFERENCE.md** - Quick lookup for common patterns
+Each widget has a `react-settings.json` that is the single source of truth for:
+- PHP `render()` — serializes settings into a hidden input for React hydration
+- PHP `content_template()` — generates the JS object in the Backbone/Underscore template
+- JS `createSettingsMapper()` factory — extracts and type-converts values from Elementor models
 
-## 🎉 Ready for Production
+**Path:** `src/widgets/{widget-name}/react-settings.json`  
+**PHP loads via:** `includes/trait-widget-helpers.php → get_settings_definitions($widget_name)`  
+**JS loads via:** direct ESM import in `widget-registry.js`
 
-The architecture is:
-- ✅ Build tested
-- ✅ Functionality preserved
-- ✅ Well documented
-- ✅ Extensible for future widgets
-- ✅ Maintainable and modular
+> **Critical:** Both PHP and JS must resolve to the same `react-settings.json` path. A mismatch results in empty settings on all renders (widgets appear with defaults only, and editor settings don't apply until the widget is selected).
 
-You can now confidently add `categories-layout` and `single-product-layout` widgets following the patterns established.
+## ✅ Functionality
+
+### Custom Layout Saving ✓
+Drag/resize → `onLayoutChange` → `updateElementorSetting()` → `widgetManager.updateModelSetting()` → `model.setSetting()` → auto-save
+
+### Layout Reset ✓
+Reset button → `mosaic:resetLayout` channel event → `editor-hooks.js` clears `custom_layout` → React re-renders with predefined layout
+
+### Live Settings Sync ✓
+Panel change → `model.on('change')` → `settingsMapper(model)` → `updateInstance()` → React `setState` (no DOM remount) + `view.renderUI()` for CSS selectors
+
+### Responsive CSS Variables ✓
+`useCssVariables(widgetData)` in `src/shared/utils/hooks.js` converts responsive settings into scoped CSS custom properties: `--mpl4e-title-size-desktop`, `--mpl4e-title-size-tablet`, etc.
+
+`injectBreakpointStylesheet()` in `elementor-utils.js` injects media queries using those variables, including `.product-elements { text-align: var(--mpl4e-product-align-text-{bp}) }` derived from the `mpl4e_product_align` flex-to-text-align mapping.
+
+### Saved Setups ✓
+Custom panel control saves/loads/deletes full layout+style presets via `wp.apiFetch → /wp/v2/settings`. Batch apply uses `mosaic:applySetup` channel event with atomic `settingsModel.set()`.
+
+### Multiple Widget Instances ✓
+Compound instance keys `${widgetType}_${widgetId}` prevent collisions throughout the widget manager.
+
+### MutationObserver (Editor) ✓
+Detects widgets added by drag & drop into the editor canvas and auto-initializes React.
+
+## 🎯 Key Architecture Decisions
+
+| Decision | Rationale |
+|----------|-----------|
+| Two separate bundles | Frontend skips drag/resize libs (~50% smaller) |
+| Trait for PHP widget helpers | `render()` and `content_template()` identical across widgets |
+| `createSettingsMapper` factory | Zero boilerplate when adding new widgets |
+| `react-settings.json` per widget | Keeps schema co-located with the component |
+| Conditional `renderOnChange` override | CSS regenerates without DOM destruction on widget-owned changes |
+| `injectBreakpointStylesheet` | Runtime CSS that matches Elementor's actual breakpoint px values |
+
+## 📊 Build Output
+
+```
+assets/js/main-frontend.js          # ~172 KB  (frontend display only)
+assets/admin/js/main-editor.js      # ~175 KB  (full editor)
+assets/admin/js/focal-point-control.js
+assets/admin/js/product-select-control.js
+assets/admin/js/saved-setups-control.js
+```
+
+## 🚀 Adding a New Widget (Checklist)
+
+1. Create `src/widgets/{name}/react-settings.json` with all settings definitions
+2. Create `src/widgets/{name}/{name}.jsx` using `widgetData`, `widgetId`, `mode` props
+3. Import schema into `src/core/widget-registry.js` and add registry entry
+4. Create `widgets/{name}.php` using the `WidgetHelpers` trait; `get_name()` must match the registry key
+5. Register in `mosaic-product-layouts-for-elementor.php → init_widgets()`
+6. Run `npm run build`
+

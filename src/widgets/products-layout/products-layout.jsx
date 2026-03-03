@@ -27,7 +27,7 @@ import ZIndexControls from '../../shared/components/ZIndexControls.jsx';
 // Utilities and data.
 import { decode } from '../../shared/utils/generalUtils.js';
 import { parseElementOrdering } from '../../shared/utils/elementOrdering.js';
-import { updateElementorSetting, getActiveBreakpoints } from '../../core/elementor-utils';
+import { updateElementorSetting, getActiveBreakpointNames } from '../../core/elementor-utils';
 import { addItemToLayout, removeItemFromLayout } from '../../shared/utils/addItem.js';
 import { getLayout } from '../../shared/utils/layoutUtils.js';
 import { LRUCache, createCache } from '../../shared/utils/LRUCache.js';
@@ -152,7 +152,7 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 		const alignSetting = widgetData?.mpl4e_product_align;
 		if (alignSetting && typeof alignSetting === 'object') {
 			const flexToTextAlign = { 'flex-start': 'left', 'flex-end': 'right', 'center': 'center' };
-			getActiveBreakpoints().forEach(bp => {
+			getActiveBreakpointNames().forEach(bp => {
 				const mapped = flexToTextAlign[alignSetting[bp]];
 				if (mapped) {
 					vars[`--mpl4e-product-align-text-${bp}`] = mapped;

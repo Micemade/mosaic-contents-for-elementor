@@ -132,7 +132,7 @@ triggerLayoutReset() in component
   ↓
 elementor.channels.editor.trigger('mosaic:resetLayout')
   ↓
-Elementor hook listener in elementor-hooks.js
+Elementor hook listener in editor-hooks.js
   ↓
 Check if current widget in panel
   ↓
@@ -385,7 +385,7 @@ const MyWidget = ({ widgetData, widgetId, mode }) => {
 
 ### Adding New Widget
 ```javascript
-// 1. Settings schema (src/widgets/new-widget/utils/new-widget-settings.json)
+// 1. Settings schema (src/widgets/new-widget/react-settings.json)
 {
     "title_size": {
         "type": "responsive",
@@ -419,64 +419,32 @@ const NewWidget = ({ widgetData, widgetId, mode }) => {
 };
 export default NewWidget;
 
-// 3. Settings mapper (src/widgets/settings-mappers.js)
-import newWidgetSettings from './new-widget/utils/new-widget-settings.json';
-import { getActiveBreakpoints } from '../core/elementor-utils';
-
-export const mapNewWidgetSettings = (model) => {
-    const settings = model.get('settings');
-    const result = {};
-    
-    Object.keys(newWidgetSettings).forEach(key => {
-        const definition = newWidgetSettings[key];
-        const value = settings.get(key);
-        
-        if (definition.type === 'responsive') {
-            result[key] = getResponsiveValue(settings, key, getActiveBreakpoints(), definition);
-        } else if (definition.type === 'boolean') {
-            result[key] = value === 'yes';
-        } else {
-            result[key] = value !== undefined ? value : definition.default;
-        }
-    });
-    
-    return result;
-};
-
-// 4. Registry (src/core/widget-registry.js)
+// 3. Register in widget-registry.js (no separate mapper function needed)
 import NewWidget from '../widgets/new-widget/new-widget';
-import { mapNewWidgetSettings } from '../widgets/settings-mappers';
+import newWidgetSettings from '../widgets/new-widget/react-settings.json';
+import { createSettingsMapper } from '../widgets/settings-mappers';
 
 export const WIDGET_REGISTRY = {
     'products-layout': { /* existing */ },
     'new-widget': {
         component: NewWidget,
-        settingsMapper: mapNewWidgetSettings
+        settingsMapper: createSettingsMapper(newWidgetSettings)
     }
 };
 
-// 5. PHP Widget (widgets/new-widget.php)
+// 4. PHP Widget (widgets/new-widget.php) — use WidgetHelpers trait
 class NewWidget extends \Elementor\Widget_Base {
+    use WidgetHelpers;
     public function get_name() {
         return 'new-widget';  // MUST match registry key
     }
-    
-    protected function content_template() {
-        ?>
-        <div class="new-widget-wrapper" data-widget-id="{{ view.model.id }}">
-            <div class="new-widget-react-root"></div>
-            <input type="hidden" class="elementor-settings-data" value="{{ JSON.stringify(settings.attributes) }}">
-        </div>
-        <?php
-    }
+    // register_controls() here...
+    // render() and content_template() provided by trait
 }
 
-// 6. Register in main plugin (mosaic-product-layouts-for-elementor.php)
+// 5. Register in main plugin (mosaic-product-layouts-for-elementor.php)
 public function init_widgets( $widgets_manager ) {
-    require_once __DIR__ . '/widgets/products-layout.php';
     require_once __DIR__ . '/widgets/new-widget.php';
-    
-    $widgets_manager->register( new ProductsLayout() );
     $widgets_manager->register( new NewWidget() );
 }
 ```
@@ -496,32 +464,65 @@ src/
 │   ├── editor-hooks.js           # Full editor
 │   └── elementor-utils.js
 ├── widgets/
-│   ├── settings-mappers.js
-│   └── products-layout/
-│       ├── products-layout.jsx
-│       ├── products-layout.scss
-│       ├── components/           # Widget-specific
-│       └── utils/
-│           └── products-layout-settings.json
+│   ├── settings-mappers.js       # createSettingsMapper() factory
+│   ├── products-layout/
+│   │   ├── products-layout.jsx
+│   │   ├── products-layout.scss
+│   │   └── react-settings.json   # Settings source of truth
+│   ├── categories-layout/
+│   │   ├── categories-layout.jsx
+│   │   ├── categories-layout.scss
+│   │   └── react-settings.json
+│   └── single-product-layout/
+│       ├── single-product-layout.jsx
+│       ├── single-product-layout.scss
+│       ├── react-settings.json
+│       └── utils/single-product-layouts.json
 ├── shared/
 │   ├── layouts.json
 │   ├── components/
-│   │   └── GridLayout.jsx       # Shared grid
-│   ├── utils/                   # Shared utilities
-│   └── assets/                  # Shared styles
+│   │   ├── GridLayout.jsx
+│   │   ├── ProductImage.jsx
+│   │   ├── RatingStars.jsx
+│   │   ├── AddToCartButton.jsx
+│   │   ├── ZIndexControls.jsx
+│   │   └── utils/events.js
+│   ├── utils/
+│   │   ├── hooks.js              # useCssVariables(), useGridSettings()
+│   │   ├── addItem.js
+│   │   ├── layoutUtils.js
+│   │   ├── elementOrdering.js
+│   │   ├── LRUCache.js
+│   │   ├── productUtils.js
+│   │   └── generalUtils.js
+│   └── assets/
+│       ├── _gridLayout.scss
+│       ├── _productElements.scss
+│       └── _zindexControls.scss
 └── controls/
     ├── focal-point-control.jsx
     ├── FocalPointControlView.jsx
     ├── focal-point-control.scss
-    ├── saved-setups-control.jsx    # Save/Load/Delete presets
+    ├── product-select-control.jsx
+    ├── ProductSelectView.jsx
+    ├── product-select-control.scss
+    ├── saved-setups-control.jsx
     └── saved-setups-control.scss
 
-widgets/                          # PHP
-└── products-layout.php
+widgets/                          # PHP widget classes
+├── products-layout.php
+├── categories-layout.php
+└── single-product-layout.php
 
-controls/                         # PHP
+controls/                         # PHP custom controls
 ├── focal-point.php
-└── saved-setups.php               # Saved Setups control class
+├── product-select.php
+├── element-sorting.php
+└── saved-setups.php
+
+includes/
+├── trait-widget-helpers.php      # Shared render(), content_template()
+└── class-rest-api.php
 
 assets/                           # Built (Vite output)
 ├── js/main-frontend.js
@@ -530,6 +531,7 @@ assets/                           # Built (Vite output)
     ├── js/
     │   ├── main-editor.js
     │   ├── focal-point-control.js
+    │   ├── product-select-control.js
     │   └── saved-setups-control.js
     └── css/
 ```

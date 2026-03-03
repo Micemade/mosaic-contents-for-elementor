@@ -5,7 +5,7 @@
  * Adapted from the Gutenberg AddItem component for Elementor's architecture.
  */
 
-import { getActiveBreakpoints } from '../../core/elementor-utils';
+import { getActiveBreakpointNames } from '../../core/elementor-utils';
 
 /**
  * Find the highest existing item number in the layouts
@@ -271,7 +271,7 @@ export const addItemToLayout = (currentLayoutJson, gridColumns = { desktop: 48, 
 	}
 
 	// Get active breakpoints
-	const breakpoints = getActiveBreakpoints();
+	const breakpoints = getActiveBreakpointNames();
 	
 	// Find the highest item number and create new item ID
 	const highestNumber = getHighestItemNumber(layouts, 'item-');
@@ -327,7 +327,7 @@ export const removeItemFromLayout = (currentLayoutJson, itemId) => {
 	}
 
 	// Remove item from all breakpoints
-	const breakpoints = getActiveBreakpoints();
+	const breakpoints = getActiveBreakpointNames();
 	const updatedLayouts = { ...layouts };
 	
 	breakpoints.forEach(device => {

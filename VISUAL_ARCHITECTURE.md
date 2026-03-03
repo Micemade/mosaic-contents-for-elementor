@@ -20,7 +20,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                     Mosaic Product Layouts Plugin                        │
+│                     Mosaic Product Layouts Plugin                       │
 └─────────────────────────────────────────────────────────────────────────┘
                                     │
                 ┌───────────────────┴───────────────────┐
@@ -38,11 +38,11 @@
 └───────┘  └────────┘  └─────────┘  └──────────┘ └────────┘ └─────────────┘
                     │
                 ┌───▼────────────────────────────────────────┐
-                │ Custom Controls (Panel)               │
-                ├─────────────────┬──────────────────────┤
-                │  Focal Point     │  Saved Setups       │
-                │  (image picker)  │  (presets manager)   │
-                └─────────────────┴──────────────────────┘
+                │ Custom Controls (Panel)                    │
+                ├─────────────────┬──────────────────────────┤
+                │  Focal Point    │  Saved Setups            │
+                │  (image picker) │  (presets manager)       │
+                └─────────────────┴──────────────────────────┘
 ```
 
 ---
@@ -52,7 +52,7 @@
 ### Bundle Split Strategy
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
+┌──────────────────────────────────────────────────────────────────────────┐
 │                           Vite Build Process                             │
 └──────────┬──────────────────────────────────┬────────────────────────────┘
            │                                  │
@@ -171,7 +171,7 @@
          │                                        │    (drag/resize)
          │                                        │
          │ 5. Update Model                        │
-         ◀──────────────────────────────────────┤
+         ◀────────────────────────────────────────┤
          │    updateModelSetting()                │
          │                                        │
          │ 6. Trigger Save                        │
@@ -368,11 +368,11 @@
                 └──────┬───────────┘
                        │
                        ▼
-            ┌─────────────────────┐
-            │      MOUNTED        │
-            │  • React root exists│
-            │  • Component rendered│
-            └──────┬──────────────┘
+            ┌────────────────────────┐
+            │      MOUNTED           │
+            │  • React root exists   │
+            │  • Component rendered  │
+            └──────┬─────────────────┘
                    │
          ┌─────────┼─────────┬────────────┐
          │         │         │            │
@@ -409,19 +409,19 @@
 └────────────┬───────────────────┘
              │
              ▼
-    ┌───────────────┐ ┌────────────────┐
-    │ Is changed key │ │ If changed key  │
-    │ widget-owned?  │ │ IS widget-owned:│
+    ┌─────────────────┐ ┌─────────────────┐
+    │ Is changed key  │ │ If changed key  │
+    │ widget-owned?   │ │ IS widget-owned:│
     └───┬───────────┬─┘ │ renderUI() for  │
-        │             │   │ CSS only        │
-    YES │             │ NO└────────────────┘
-        │             │
+        │           │   │ CSS only        │
+    YES │           │ NO└─────────────────┘
+        │           └─┐
         ▼             ▼
-┌───────────────┐ ┌──────────────────┐
+┌────────────────┐ ┌──────────────────┐
 │ view.renderUI()│ │ Call original    │
-│ (CSS only,    │ │ renderOnChange() │
-│  React stays) │ │ (Allow remount)  │
-└───────────────┘ └──────────────────┘
+│ (CSS only,     │ │ renderOnChange() │
+│  React stays)  │ │ (Allow remount)  │
+└────────────────┘ └──────────────────┘
 
 * Widget-owned keys include:
   - All settings from settings schema
@@ -451,51 +451,78 @@ src/
 │  └─ elementor-utils.js               │
 │                                       │
 ├─ widgets/ ◄───────────────────────────┤ Widget Components
-│  ├─ settings-mappers.js              │
-│  └─ products-layout/                 │
-│     ├─ products-layout.jsx           │
-│     ├─ products-layout.scss          │
-│     ├─ components/                   │
-│     │  ├─ ProductImage.jsx           │
-│     │  ├─ AddToCartButton.jsx        │
-│     │  └─ RatingStars.jsx            │
+│  ├─ settings-mappers.js              │ createSettingsMapper() factory
+│  ├─ products-layout/                 │
+│  │  ├─ products-layout.jsx           │
+│  │  ├─ products-layout.scss          │
+│  │  └─ react-settings.json ◄─────────┤ Settings source of truth
+│  ├─ categories-layout/               │
+│  │  ├─ categories-layout.jsx         │
+│  │  ├─ categories-layout.scss        │
+│  │  └─ react-settings.json           │
+│  └─ single-product-layout/           │
+│     ├─ single-product-layout.jsx     │
+│     ├─ single-product-layout.scss    │
+│     ├─ react-settings.json           │
 │     └─ utils/                        │
-│        └─ products-layout-settings.json
+│        └─ single-product-layouts.json│
 │                                       │
 ├─ shared/ ◄────────────────────────────┤ Shared Resources
 │  ├─ layouts.json                     │
 │  ├─ components/                      │
 │  │  ├─ GridLayout.jsx                │
-│  │  └─ utils/                        │
+│  │  ├─ ProductImage.jsx              │
+│  │  ├─ RatingStars.jsx               │
+│  │  ├─ AddToCartButton.jsx           │
+│  │  ├─ ZIndexControls.jsx            │
+│  │  └─ utils/events.js               │
 │  ├─ utils/                           │
+│  │  ├─ hooks.js  ◄───────────────────┤ useCssVariables(), useGridSettings()
 │  │  ├─ addItem.js                    │
 │  │  ├─ layoutUtils.js                │
+│  │  ├─ elementOrdering.js            │
+│  │  ├─ LRUCache.js                   │
 │  │  ├─ productUtils.js               │
 │  │  └─ generalUtils.js               │
 │  └─ assets/                          │
 │     ├─ _gridLayout.scss              │
-│     └─ _productElements.scss         │
+│     ├─ _productElements.scss         │
+│     └─ _zindexControls.scss          │
 │                                       │
 └─ controls/ ◄──────────────────────────┤ Custom Controls
    ├─ focal-point-control.jsx          │
    ├─ FocalPointControlView.jsx        │
-   └─ focal-point-control.scss         │
-                                        │
-                                        │
+   ├─ focal-point-control.scss         │
+   ├─ product-select-control.jsx       │
+   ├─ ProductSelectView.jsx            │
+   ├─ product-select-control.scss      │
+   ├─ saved-setups-control.jsx         │
+   └─ saved-setups-control.scss        │
+
+
 PHP Files (Root Level)                  │
 │                                       │
 ├─ widgets/ ◄───────────────────────────┤ PHP Widgets
-│  └─ products-layout.php              │
+│  ├─ products-layout.php              │
+│  ├─ categories-layout.php            │
+│  └─ single-product-layout.php        │
 │                                       │
 ├─ controls/ ◄──────────────────────────┤ PHP Controls
-│  └─ focal-point.php                  │
+│  ├─ focal-point.php                  │
+│  ├─ product-select.php               │
+│  ├─ element-sorting.php              │
+│  └─ saved-setups.php                 │
+│                                       │
+├─ includes/                            │
+│  ├─ trait-widget-helpers.php         │ Shared render(), content_template()
+│  └─ class-rest-api.php               │
 │                                       │
 └─ mosaic-product-layouts-for-         │
    elementor.php ◄──────────────────────┘ Main Plugin File
 
 
 Build Output (Generated)
-│
+
 assets/
 ├─ js/
 │  └─ main-frontend.js  ◄── Frontend Bundle
@@ -504,10 +531,14 @@ assets/
 └─ admin/
    ├─ js/
    │  ├─ main-editor.js ◄── Editor Bundle
-   │  └─ focal-point-control.js
+   │  ├─ focal-point-control.js
+   │  ├─ product-select-control.js
+   │  └─ saved-setups-control.js
    └─ css/
       ├─ main-editor.css
-      └─ focal-point-control.css
+      ├─ focal-point-control.css
+      ├─ product-select-control.css
+      └─ saved-setups-control.css
 ```
 
 ### Build Pipeline
