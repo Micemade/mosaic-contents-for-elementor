@@ -100,9 +100,6 @@ export const registerEditorHooks = () => {
 			const widgetConfig = getWidgetConfig(widgetType);
 			const getSettingsFromModel = () => widgetConfig.settingsMapper(model);
 
-			console.log(getSettingsFromModel());
-
-
 			// Register the editor view with the widget manager so the
 			// manager can consult it when deciding whether to remount
 			// (for example: core/advanced settings should allow remount).

@@ -51,9 +51,11 @@
 		"type": "string",
 		"default": "vertical"
 	},
-	
+	"mpl4e_product_align": {
+		"type": "responsive",
+		"default": ""
+	},
 
-	
 	"mpl4e_sale_badge_position": {
 		"type": "object",
 		"default": {

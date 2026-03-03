@@ -51,7 +51,10 @@
 		"type": "string",
 		"default": "vertical"
 	},
-	
+	"mpl4e_cat_align": {
+		"type": "responsive",
+		"default": ""
+	},
 	"mpl4e_cat_image_fit": {
 		"type": "string",
 		"default": "cover"

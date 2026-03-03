@@ -170,7 +170,7 @@ trait WidgetHelpers {
 	 */
 	protected static function get_settings_definitions( $widget_name ) {
 		if ( ! isset( self::$settings_cache[ $widget_name ] ) ) {
-			$json_file = plugin_dir_path( __DIR__ ) . "src/widgets/{$widget_name}/utils/{$widget_name}-settings.json";
+			$json_file = plugin_dir_path( __DIR__ ) . "src/widgets/{$widget_name}/react-settings.json";
 			if ( file_exists( $json_file ) ) {
 				$json_content = file_get_contents( $json_file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 				self::$settings_cache[ $widget_name ] = json_decode( $json_content, true );

@@ -150,9 +150,13 @@ ${mq} {
 		text-align: var(--mpl4e-product-align-${name}, center);
 	}
 
+	.products-layout .item-wrapper .flex-wrapper .product-elements {
+		text-align: var(--mpl4e-product-align-text-${name});
+	}
+
 	/* Categories Layout - ${name} */
 	.categories-layout .flex-wrapper {
-		text-align: var(--mpl4e-cat-align-${name}, center);
+		text-align: var(--mpl4e-cat-align-text-${name}, center);
 	}
 }
 `;

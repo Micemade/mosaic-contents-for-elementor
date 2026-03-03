@@ -27,7 +27,7 @@ import ZIndexControls from '../../shared/components/ZIndexControls.jsx';
 // Utilities and data.
 import { decode } from '../../shared/utils/generalUtils.js';
 import { parseElementOrdering } from '../../shared/utils/elementOrdering.js';
-import { updateElementorSetting } from '../../core/elementor-utils';
+import { updateElementorSetting, getActiveBreakpoints } from '../../core/elementor-utils';
 import { addItemToLayout, removeItemFromLayout } from '../../shared/utils/addItem.js';
 import { getLayout } from '../../shared/utils/layoutUtils.js';
 import { LRUCache, createCache } from '../../shared/utils/LRUCache.js';
@@ -144,6 +144,23 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 
 	// Generate CSS custom properties from responsive settings
 	const cssVariables = useCssVariables(widgetData);
+
+	// Map flex justify-content alignment values → text-align equivalents for .product-elements.
+	// flex-start → left, flex-end → right, center → center.
+	const alignTextVars = useMemo(() => {
+		const vars = {};
+		const alignSetting = widgetData?.mpl4e_product_align;
+		if (alignSetting && typeof alignSetting === 'object') {
+			const flexToTextAlign = { 'flex-start': 'left', 'flex-end': 'right', 'center': 'center' };
+			getActiveBreakpoints().forEach(bp => {
+				const mapped = flexToTextAlign[alignSetting[bp]];
+				if (mapped) {
+					vars[`--mpl4e-product-align-text-${bp}`] = mapped;
+				}
+			});
+		}
+		return vars;
+	}, [widgetData?.mpl4e_product_align]);
 
 	// Extract settings with defaults
 	const layoutId = widgetData?.mpl4e_layout || 'layout-1';
@@ -366,7 +383,7 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 		<div
 			className="products-layout mosaic-product-layouts-widgets micemade-widgets"
 			data-widget-id={widgetId}
-			style={cssVariables}
+			style={{ ...cssVariables, ...alignTextVars }}
 		>
 			{isFetching && (
 				<p className="layout-loading">Fetching products...</p>
