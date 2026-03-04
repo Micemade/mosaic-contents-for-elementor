@@ -140,15 +140,15 @@ class SingleProductLayout extends Widget_Base {
 				'options'   => array(
 					'start'  => array(
 						'title' => esc_html__( 'Left', 'mosaic-product-layouts-for-elementor' ),
-						'icon'  => 'eicon-text-align-left',
+						'icon'  => 'eicon-h-align-left',
 					),
 					'center' => array(
 						'title' => esc_html__( 'Center', 'mosaic-product-layouts-for-elementor' ),
-						'icon'  => 'eicon-text-align-center',
+						'icon'  => 'eicon-h-align-center',
 					),
 					'end'    => array(
 						'title' => esc_html__( 'Right', 'mosaic-product-layouts-for-elementor' ),
-						'icon'  => 'eicon-text-align-right',
+						'icon'  => 'eicon-h-align-right',
 					),
 				),
 				'selectors' => array(
@@ -419,15 +419,15 @@ class SingleProductLayout extends Widget_Base {
 				'options'   => array(
 					'start'  => array(
 						'title' => esc_html__( 'Left', 'mosaic-product-layouts-for-elementor' ),
-						'icon'  => 'eicon-text-align-left',
+						'icon'  => 'eicon-h-align-left',
 					),
 					'center' => array(
 						'title' => esc_html__( 'Center', 'mosaic-product-layouts-for-elementor' ),
-						'icon'  => 'eicon-text-align-center',
+						'icon'  => 'eicon-h-align-center',
 					),
 					'end'    => array(
 						'title' => esc_html__( 'Right', 'mosaic-product-layouts-for-elementor' ),
-						'icon'  => 'eicon-text-align-right',
+						'icon'  => 'eicon-h-align-right',
 					),
 				),
 				'selectors' => array(

@@ -22,7 +22,7 @@ import GridLayout from '../../shared/components/GridLayout.jsx';
 import ProductImage from '../../shared/components/ProductImage.jsx';
 import RatingStars from '../../shared/components/RatingStars.jsx';
 import AddToCartButton from '../../shared/components/AddToCartButton.jsx';
-import ZIndexControls from '../../shared/components/ZIndexControls.jsx';
+import ItemControls from '../../shared/components/ItemControls.jsx';
 
 // Utilities and data.
 import { decode } from '../../shared/utils/generalUtils.js';
@@ -76,7 +76,7 @@ async function fetchProducts(querySettings) {
 	// Specify fields to return (optimizes response size)
 	params.append(
 		'_fields',
-		'id,name,short_description,price_html,images,permalink,add_to_cart,type,average_rating,review_count,on_sale'
+		'id,name,short_description,price_html,images,permalink,add_to_cart,type,average_rating,review_count,on_sale,categories,brands'
 	);
 
 	const response = await fetch(`/wp-json/wc/store/v1/products?${params.toString()}`);
@@ -178,6 +178,8 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 			{ element_label: 'Price', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
 			{ element_label: 'Rating', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
 			{ element_label: 'Add to Cart', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
+			{ element_label: 'Categories', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
+			{ element_label: 'Brands', visible_desktop: 'no', visible_tablet: 'no', visible_mobile: 'no' },
 		]),
 		[widgetData?.mpl4e_element_ordering]
 	);
@@ -217,8 +219,10 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 				return getLayout(layoutId, querySettings.mpl4e_per_page);
 			}
 		}
+
 		return getLayout(layoutId, querySettings.mpl4e_per_page);
 	}, [layoutId, customLayoutData, querySettings.mpl4e_per_page]);
+
 
 	// Prepare products data with layout item assignments
 	// Maps products to layout items: { ...product, i: 'item-0' }
@@ -416,30 +420,15 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 							>
 								{/* Editor-only item controls */}
 								{isEditMode && (
-									<div className="mpl4e-item-controls">
-										<ZIndexControls
-											itemId={layoutItem.i}
-											layoutData={layoutData}
-											customLayoutData={customLayoutData}
-											widgetType="products-layout"
-											widgetId={widgetId}
-											settingKey="mpl4e_custom_layout"
-											updateFn={updateElementorSetting}
-										/>
-										{layoutData.mobile.length > 1 && (
-											<button
-												type="button"
-												className="mpl4e-remove-item-btn"
-												onMouseDownCapture={(e) => {
-													e.stopPropagation();
-													handleRemoveItem(layoutItem.i);
-												}}
-												title="Remove Layout Item"
-											>
-												<i className="eicon-close" aria-hidden="true" />
-											</button>
-										)}
-									</div>
+									<ItemControls
+										settingKey={`mpl4e_custom_layout`}
+										itemId={layoutItem.i}
+										layoutData={layoutData}
+										customLayoutData={customLayoutData}
+										widgetId={widgetId}
+										widgetType='products-layout'
+										onRemove={handleRemoveItem}
+									/>
 								)}
 								<div className="item-wrapper empty">
 									<p>No product</p>
@@ -456,30 +445,15 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 						>
 							{/* Editor-only item controls */}
 							{isEditMode && (
-								<div className="mpl4e-item-controls">
-									<ZIndexControls
-										itemId={layoutItem.i}
-										layoutData={layoutData}
-										customLayoutData={customLayoutData}
-										widgetType="products-layout"
-										widgetId={widgetId}
-										settingKey="mpl4e_custom_layout"
-										updateFn={updateElementorSetting}
-									/>
-									{layoutData.mobile.length > 1 && (
-										<button
-											type="button"
-											className="mpl4e-remove-item-btn"
-											onMouseDownCapture={(e) => {
-												e.stopPropagation();
-												handleRemoveItem(layoutItem.i);
-											}}
-											title="Remove Layout Item"
-										>
-											<i className="eicon-close" aria-hidden="true" />
-										</button>
-									)}
-								</div>
+								<ItemControls
+									settingKey={`mpl4e_custom_layout`}
+									itemId={layoutItem.i}
+									layoutData={layoutData}
+									customLayoutData={customLayoutData}
+									widgetId={widgetId}
+									widgetType='products-layout'
+									onRemove={handleRemoveItem}
+								/>
 							)}
 							{matchedProduct.onSale && (
 								<div
@@ -550,6 +524,37 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 															/>
 														</div>
 													);
+												case 'categories':
+													return matchedProduct.categories && matchedProduct.categories.length > 0 ? (
+														<div key={el.key} className={`taxonomy categories${elClasses}`}>
+															{matchedProduct.categories.flatMap((cat, index) => [
+																...(index > 0 ? [', '] : []),
+																<a
+																	key={cat.id}
+																	href={cat.link || '#'}
+																	className="tax-link"
+																>
+																	{decode(cat.name)}
+																</a>
+															])}
+														</div>
+													) : null;
+												case 'brands':
+													return matchedProduct.brands && matchedProduct.brands.length > 0 ? (
+														<div key={el.key} className={`taxonomy brands${elClasses}`}>
+															{matchedProduct.brands.flatMap((brand, index) => [
+																...(index > 0 ? [', '] : []),
+																<a
+																	key={brand.id}
+																	href={brand.link || '#'}
+																	className="tax-link"
+																>
+																	{decode(brand.name)}
+																</a>
+															])}
+
+														</div>
+													) : null;
 												default:
 													return null;
 											}

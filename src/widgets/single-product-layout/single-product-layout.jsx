@@ -72,7 +72,7 @@ const ELEMENT_SECTION_MAP = {
  *
  * @param {string} layoutId - Layout identifier (e.g., 'default', 'layout-2').
  * @param {string} customLayoutData - JSON string of custom layout, if any.
- * @returns {Object} Layout object with Desktop, Tablet, Mobile, zindex keys.
+ * @returns {Object} Layout object with desktop, tablet, mobile, zindex keys.
  */
 const getLayout = (layoutId, customLayoutData) => {
 	if (customLayoutData) {
@@ -252,9 +252,9 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 		}
 
 		const customLayout = {
-			Desktop: newLayouts.desktop || existingCustomLayout.Desktop || layoutData.Desktop,
-			Tablet: newLayouts.tablet || existingCustomLayout.Tablet || layoutData.Tablet,
-			Mobile: newLayouts.mobile || existingCustomLayout.Mobile || layoutData.Mobile,
+			desktop: newLayouts.desktop || existingCustomLayout.desktop || layoutData.desktop,
+			tablet: newLayouts.tablet || existingCustomLayout.tablet || layoutData.tablet,
+			mobile: newLayouts.mobile || existingCustomLayout.mobile || layoutData.mobile,
 			zindex: existingCustomLayout.zindex || layoutData.zindex || {},
 		};
 
@@ -319,7 +319,7 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 
 	// ── Build grid items from layout ─────────────────────────────────
 	// Use Mobile layout as source of truth for item list (same as products widget).
-	const mobileLayout = layoutData.Mobile || [];
+	const mobileLayout = layoutData.mobile || [];
 
 	return (
 		<div
@@ -328,9 +328,9 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 		>
 			<GridLayout
 				layouts={{
-					desktop: layoutData.Desktop,
-					tablet: layoutData.Tablet,
-					mobile: layoutData.Mobile,
+					desktop: layoutData.desktop,
+					tablet: layoutData.tablet,
+					mobile: layoutData.mobile,
 					zindex: layoutData.zindex,
 				}}
 				columns={columns}
@@ -506,16 +506,19 @@ function renderElement(elementId, product, styles) {
 		case 'categories':
 			if (!product.categories?.length) return <div className="elements-wrapper empty-element" />;
 			return (
-				<div className="elements-wrapper categories-wrap default-text-taxonomies">
-					{product.categories.map((cat) => (
-						<a
-							key={cat.id}
-							href={cat.link || '#'}
-							className="sp-category-link"
-						>
-							{decode(cat.name)}
-						</a>
-					))}
+				<div className="elements-wrapper taxonomy categories">
+					<div className="categories links">
+						{product.categories.flatMap((cat, index) => [
+							...(index > 0 ? [', '] : []),
+							<a
+								key={cat.id}
+								href={cat.link || '#'}
+								className="tax-link"
+							>
+								{decode(cat.name)}
+							</a>
+						])}
+					</div>
 				</div>
 			);
 
@@ -523,16 +526,19 @@ function renderElement(elementId, product, styles) {
 			// Brands depend on a "brands" taxonomy being present.
 			if (!product.brands?.length) return <div className="elements-wrapper empty-element" />;
 			return (
-				<div className="elements-wrapper brands-wrap default-text-taxonomies">
-					{product.brands.map((brand) => (
-						<a
-							key={brand.id}
-							href={brand.link || '#'}
-							className="sp-brand-link"
-						>
-							{decode(brand.name)}
-						</a>
-					))}
+				<div className="elements-wrapper taxonomy brands">
+					<div className="brands links">
+						{product.brands.flatMap((brand, index) => [
+							...(index > 0 ? [', '] : []),
+							<a
+								key={brand.id}
+								href={brand.link || '#'}
+								className="tax-link"
+							>
+								{decode(brand.name)}
+							</a>
+						])}
+					</div>
 				</div>
 			);
 

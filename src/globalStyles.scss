@@ -79,6 +79,30 @@
 
 		}
 
+		/* Global taxonomy styles (used in products-layout and single-product-layout) */
+		.taxonomy {
+			display: inline-flex !important;
+
+			.links {
+				display: flex;
+				flex-direction: row;
+				gap: 2px;
+			}
+
+			.tax-link {
+				border-radius: 3px;
+				text-decoration: none;
+				transition: filter 0.2s;
+				color: inherit;
+				line-height: inherit;
+				font-size: 0.85rem;
+
+				&:hover {
+					opacity: 0.8;
+				}
+			}
+		}
+
 	}
 }
 

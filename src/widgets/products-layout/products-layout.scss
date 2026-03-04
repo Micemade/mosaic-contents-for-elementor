@@ -130,7 +130,11 @@
 			align-items: center;
 			box-sizing: content-box;
 			margin: 0; 
-			word-break: break-word;
+			word-wrap: break-word;
+			flex-wrap: wrap;
+		}
+		> * :not(.add-to-cart-wrapper *) {
+			line-height: 1.2;
 		}
 
 		.add_to_cart_button {
@@ -163,30 +167,7 @@
 			}
 		}
 
-		.categories {
-			width: 100%;
-			display: flex;
-			gap: 5px;
-			flex-wrap: wrap;
-
-			.category {
-				background: #e5e5e5;
-				color: inherit;
-				padding: 0px 5px;
-				border-radius: 3px;
-				text-decoration: none;
-				transition: filter 0.2s;
-
-				&.label {
-					background: transparent;
-					color: inherit;
-					padding: 0;
-				}
-			}
-			a:hover {
-					filter: brightness(0.9) invert(1);
-				}
-		}
+		/* TAXONOMY STYLES (categories and brands) ARE IN global-styles.scss .*/
 
 		.excerpt {
 			display: flex;

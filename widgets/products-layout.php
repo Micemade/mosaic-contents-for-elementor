@@ -176,7 +176,7 @@ class ProductsLayout extends Widget_Base {
 			'layout_section',
 			array(
 				'label' => __( 'Layout', 'mosaic-product-layouts-for-elementor' ),
-				'tab'   => Controls_Manager::TAB_CONTENT,
+				'tab'   => Controls_Manager::TAB_LAYOUT,
 			)
 		);
 
@@ -357,6 +357,18 @@ class ProductsLayout extends Widget_Base {
 					'visible_tablet'  => 'yes',
 					'visible_mobile'  => 'yes',
 				),
+				array(
+					'element_label'   => __( 'Categories', 'mosaic-product-layouts-for-elementor' ),
+					'visible_desktop' => 'yes',
+					'visible_tablet'  => 'yes',
+					'visible_mobile'  => 'yes',
+				),
+				array(
+					'element_label'   => __( 'Brands', 'mosaic-product-layouts-for-elementor' ),
+					'visible_desktop' => 'no',
+					'visible_tablet'  => 'no',
+					'visible_mobile'  => 'no',
+				),
 			)
 		);
 
@@ -474,6 +486,31 @@ class ProductsLayout extends Widget_Base {
 				'range'     => self::get_range(),
 				'selectors' => array(
 					'{{WRAPPER}} .product-elements .add_to_cart_button' => 'font-size:{{SIZE}}{{UNIT}};',
+				),
+			)
+		);
+
+		$this->add_responsive_control(
+			'mpl4e_taxonomy_size',
+			array(
+				'label'     => esc_html__( 'Taxonomy text size', 'mosaic-product-layouts-for-elementor' ),
+				'type'      => Controls_Manager::SLIDER,
+				'size_units' => array( 'px', 'em', 'rem', 'vw', 'vh' ),
+				'default'   => array(
+					'size' => 14,
+					'unit' => 'px',
+				),
+				'tablet_default' => [
+					'size' => 14,
+					'unit' => 'px',
+				],
+				'mobile_default' => [
+					'size' => 12,
+					'unit' => 'px',
+				],
+				'range'     => self::get_range(),
+				'selectors' => array(
+					'{{WRAPPER}} .product-elements .taxonomy .tax-link' => 'font-size:{{SIZE}}{{UNIT}};',
 				),
 			)
 		);
@@ -691,7 +728,7 @@ class ProductsLayout extends Widget_Base {
 				'type'      => Controls_Manager::COLOR,
 				'default'   => '#333333',
 				'selectors' => array(
-					'{{WRAPPER}} .product-elements .price, {{WRAPPER}} .product-elements .excerpt' => 'color: {{VALUE}};',
+					'{{WRAPPER}} .product-elements' => 'color: {{VALUE}};',
 				),
 			)
 		);
@@ -703,7 +740,7 @@ class ProductsLayout extends Widget_Base {
 				'type'      => Controls_Manager::COLOR,
 				'default'   => '#333333',
 				'selectors' => array(
-					'{{WRAPPER}} .product-elements .name a' => 'color: {{VALUE}};',
+					'{{WRAPPER}} .product-elements .name a, {{WRAPPER}} .product-elements .taxonomy a' => 'color: {{VALUE}};',
 				),
 			)
 		);

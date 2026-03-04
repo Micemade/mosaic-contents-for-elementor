@@ -26,7 +26,7 @@
 		.excerpt,
 		.add-to-cart-wrapper,
 		.view-cart,
-		.categories-wrap,
+		.taxonomy,
 		.rating-stars,
 		.rating-wrapper {
 			text-align: left;
@@ -36,7 +36,7 @@
 	}
 
 	&.align-center {
-		.name, .price, .excerpt, .add-to-cart-wrapper, .view-cart, .categories-wrap, .rating-stars, .rating-wrapper {
+		.name, .price, .excerpt, .add-to-cart-wrapper, .view-cart, .taxonomy, .rating-stars, .rating-wrapper {
 			text-align: center;
 			transform-origin: center;
 			justify-content: center;
@@ -44,7 +44,7 @@
 	}
 
 	&.align-end {
-		.name, .price, .excerpt, .add-to-cart-wrapper, .view-cart, .categories-wrap, .rating-stars, .rating-wrapper {
+		.name, .price, .excerpt, .add-to-cart-wrapper, .view-cart, .taxonomy, .rating-stars, .rating-wrapper {
 			text-align: right;
 			transform-origin: right center;
 			justify-content: flex-end;
@@ -176,42 +176,7 @@
 	*/
 	@include sale-badge;
 
-	.categories-wrap {
-		display: flex;
-		gap: 5px;
-
-		.sp-category-link {
-			background: #e5e5e5;
-			padding: 0px 5px;
-			border-radius: 3px;
-			text-decoration: none;
-			transition: filter 0.2s;
-			color: inherit;
-
-			&:hover {
-				filter: brightness(0.9) invert(1);
-			}
-		}
-	}
-
-	.brands-wrap {
-		display: flex;
-		gap: 5px;
-		flex-wrap: wrap;
-
-		.sp-brand-link {
-			background: #e5e5e5;
-			padding: 0px 5px;
-			border-radius: 3px;
-			text-decoration: none;
-			transition: filter 0.2s;
-			color: inherit;
-
-			&:hover {
-				filter: brightness(0.9) invert(1);
-			}
-		}
-	}
+	/* TAXONOMY STYLES (categories and brands) ARE IN global-styles.scss .*/
 
 	@include rating-stars;
 
@@ -336,6 +301,7 @@
 			justify-content: center;
 			align-items: flex-start;
 			padding: 0.6em;
+
 			&.sale-badge-wrapper {
 				background: red;
 				color: white;

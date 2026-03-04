@@ -49,28 +49,17 @@ export function updateZIndex(
 		}
 	}
 
-	// Determine correct breakpoint keys based on widget type.
-	// Single product layout uses capitalized keys (Desktop, Tablet, Mobile),
-	// while products and categories layouts use lowercase keys.
-	const isSingleProduct = widgetType === 'single-product-layout';
-	const desktopKey = isSingleProduct ? 'Desktop' : 'desktop';
-	const tabletKey = isSingleProduct ? 'Tablet' : 'tablet';
-	const mobileKey = isSingleProduct ? 'Mobile' : 'mobile';
-
 	const customLayout = {
-		[desktopKey]:
-			existingCustomLayout[desktopKey] ||
-			layoutData[desktopKey] ||
+		desktop:
+			existingCustomLayout.desktop ||
 			layoutData.desktop ||
 			[],
-		[tabletKey]:
-			existingCustomLayout[tabletKey] ||
-			layoutData[tabletKey] ||
+		tablet:
+			existingCustomLayout.tablet ||
 			layoutData.tablet ||
 			[],
-		[mobileKey]:
-			existingCustomLayout[mobileKey] ||
-			layoutData[mobileKey] ||
+		mobile:
+			existingCustomLayout.mobile ||
 			layoutData.mobile ||
 			[],
 		zindex: {
