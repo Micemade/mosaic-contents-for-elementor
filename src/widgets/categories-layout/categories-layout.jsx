@@ -29,6 +29,7 @@ import { addItemToLayout, removeItemFromLayout } from '../../shared/utils/addIte
 import { getLayout } from '../../shared/utils/layoutUtils.js';
 import { LRUCache, createCache } from '../../shared/utils/LRUCache.js';
 import { useCssVariables, useGridSettings } from '../../shared/utils/hooks.js';
+import { getVisibleLayout, mergeVisibleIntoFullLayout } from '../../shared/utils/visibleLayout.js';
 
 import './categories-layout.scss';
 
@@ -240,10 +241,18 @@ const CategoriesLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'disp
 		return getLayout(layoutId, querySettings.mpl4e_cat_per_page);
 	}, [layoutId, customLayoutData, querySettings.mpl4e_cat_per_page]);
 
+	// Visible layout: temporarily hide slots that have no matching category.
+	// The full layoutData is preserved; hidden items are restored automatically
+	// when the query returns more results.
+	const visibleLayoutData = useMemo(
+		() => getVisibleLayout(layoutData, categories.length),
+		[layoutData, categories.length]
+	);
+
 	// Prepare categories data with layout item assignments
 	const categoriesData = useMemo(() => {
-		return prepareCategoriesData(categories, layoutData.mobile);
-	}, [categories, layoutData.mobile]);
+		return prepareCategoriesData(categories, visibleLayoutData.mobile);
+	}, [categories, visibleLayoutData.mobile]);
 
 	// Fetch categories
 	useEffect(() => {
@@ -304,10 +313,13 @@ const CategoriesLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'disp
 			}
 		}
 
+		// react-grid-layout only reports visible items. Merge those changes back
+		// into the full layout so hidden items are not lost.
+		const baseLayout = existingCustomLayout.mobile?.length ? existingCustomLayout : layoutData;
+		const merged = mergeVisibleIntoFullLayout(baseLayout, newLayouts);
+
 		const customLayout = {
-			desktop: newLayouts.desktop || existingCustomLayout.desktop || layoutData.desktop,
-			tablet: newLayouts.tablet || existingCustomLayout.tablet || layoutData.tablet,
-			mobile: newLayouts.mobile || existingCustomLayout.mobile || layoutData.mobile,
+			...merged,
 			zindex: existingCustomLayout.zindex || layoutData.zindex || {}
 		};
 
@@ -390,20 +402,21 @@ const CategoriesLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'disp
 				<p className="layout-loading">Fetching categories...</p>
 			)}
 			<GridLayout
-				layouts={layoutData}
-				columns={gridSettings.columns}
-				itemsMargin={gridSettings.itemsMargin}
-				rowHeight={gridSettings.rowHeight}
-				allowOverlap={widgetData?.mpl4e_cat_allow_overlap || false}
-				compactionType={widgetData?.mpl4e_cat_compaction_type || 'vertical'}
-				context={isEditMode ? 'edit' : 'frontend'}
-				isDraggable={isEditMode}
-				isResizable={isEditMode}
-				onLayoutChange={isEditMode ? handleLayoutChange : undefined}
-				selectWidget={selectWidget}
-				draggableCancel=".mpl4e-item-controls"
-			>
-				{layoutData.mobile.map((layoutItem) => {
+			layouts={visibleLayoutData}
+			columns={gridSettings.columns}
+			itemsMargin={gridSettings.itemsMargin}
+			rowHeight={gridSettings.rowHeight}
+			allowOverlap={widgetData?.mpl4e_cat_allow_overlap || false}
+			compactionType={widgetData?.mpl4e_cat_compaction_type || 'vertical'}
+			context={isEditMode ? 'edit' : 'frontend'}
+			isDraggable={isEditMode}
+			isResizable={isEditMode}
+			onLayoutChange={isEditMode ? handleLayoutChange : undefined}
+			selectWidget={selectWidget}
+			draggableCancel=".mpl4e-item-controls"
+		>
+			{/* Map over visible layout items only — items without a matching category are hidden */}
+			{visibleLayoutData.mobile.map((layoutItem) => {
 					const matchedCategory = categoriesData.find((c) => c.i === layoutItem.i);
 					const zIndex = layoutData.zindex?.[layoutItem.i] || 0;
 

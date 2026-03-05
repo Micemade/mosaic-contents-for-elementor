@@ -32,6 +32,7 @@ import { addItemToLayout, removeItemFromLayout } from '../../shared/utils/addIte
 import { getLayout } from '../../shared/utils/layoutUtils.js';
 import { LRUCache, createCache } from '../../shared/utils/LRUCache.js';
 import { useCssVariables, useGridSettings } from '../../shared/utils/hooks.js';
+import { getVisibleLayout, mergeVisibleIntoFullLayout } from '../../shared/utils/visibleLayout.js';
 
 import './products-layout.scss';
 
@@ -224,11 +225,19 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 	}, [layoutId, customLayoutData, querySettings.mpl4e_per_page]);
 
 
+	// Visible layout: temporarily hide slots that have no matching product.
+	// The full layoutData is preserved and hidden items are restored automatically
+	// when the query returns more results.
+	const visibleLayoutData = useMemo(
+		() => getVisibleLayout(layoutData, products.length),
+		[layoutData, products.length]
+	);
+
 	// Prepare products data with layout item assignments
-	// Maps products to layout items: { ...product, i: 'item-0' }
+	// Maps products to visible layout items: { ...product, i: 'item-0' }
 	const productsData = useMemo(() => {
-		return prepareProductsData(products, layoutData.mobile);
-	}, [products, layoutData.mobile]);
+		return prepareProductsData(products, visibleLayoutData.mobile);
+	}, [products, visibleLayoutData.mobile]);
 
 	useEffect(() => {
 		const loadProducts = async () => {
@@ -295,18 +304,17 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 			}
 		}
 
-		// Merge new layouts with existing, preserving zindex
+		// react-grid-layout only reports visible items. Merge those changes back
+		// into the full layout so hidden items are not lost.
+		const baseLayout = existingCustomLayout.mobile?.length ? existingCustomLayout : layoutData;
+		const merged = mergeVisibleIntoFullLayout(baseLayout, newLayouts);
+
 		const customLayout = {
-			desktop: newLayouts.desktop || existingCustomLayout.desktop || layoutData.desktop,
-			tablet: newLayouts.tablet || existingCustomLayout.tablet || layoutData.tablet,
-			mobile: newLayouts.mobile || existingCustomLayout.mobile || layoutData.mobile,
+			...merged,
 			zindex: existingCustomLayout.zindex || layoutData.zindex || {}
 		};
 
-		// Update Elementor setting using utility function
-		// Widget type is 'products-layout' for this component
 		updateElementorSetting('products-layout', widgetId, 'mpl4e_custom_layout', JSON.stringify(customLayout));
-
 	};
 
 	const selectWidget = () => {
@@ -393,21 +401,21 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 				<p className="layout-loading">Fetching products...</p>
 			)}
 			<GridLayout
-				layouts={layoutData}
-				columns={gridSettings.columns}
-				itemsMargin={gridSettings.itemsMargin}
-				rowHeight={gridSettings.rowHeight}
-				allowOverlap={widgetData?.mpl4e_allow_overlap || false}
-				compactionType={widgetData?.mpl4e_compaction_type || 'vertical'}
-				context={isEditMode ? 'edit' : 'frontend'}
-				isDraggable={isEditMode}
-				isResizable={isEditMode}
-				onLayoutChange={isEditMode ? handleLayoutChange : undefined}
-				selectWidget={selectWidget}
-				draggableCancel=".mpl4e-item-controls"
-			>
-				{/* Map over layout items (Mobile is source of truth), find matching product */}
-				{layoutData.mobile.map((layoutItem) => {
+			layouts={visibleLayoutData}
+			columns={gridSettings.columns}
+			itemsMargin={gridSettings.itemsMargin}
+			rowHeight={gridSettings.rowHeight}
+			allowOverlap={widgetData?.mpl4e_allow_overlap || false}
+			compactionType={widgetData?.mpl4e_compaction_type || 'vertical'}
+			context={isEditMode ? 'edit' : 'frontend'}
+			isDraggable={isEditMode}
+			isResizable={isEditMode}
+			onLayoutChange={isEditMode ? handleLayoutChange : undefined}
+			selectWidget={selectWidget}
+			draggableCancel=".mpl4e-item-controls"
+		>
+			{/* Map over visible layout items only — items without a matching product are hidden */}
+			{visibleLayoutData.mobile.map((layoutItem) => {
 					const matchedProduct = productsData.find((p) => p.i === layoutItem.i);
 					const zIndex = layoutData.zindex?.[layoutItem.i] || 0;
 
