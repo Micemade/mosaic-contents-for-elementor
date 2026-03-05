@@ -261,7 +261,7 @@ class SingleProductLayout extends Widget_Base {
 			'layout_section',
 			array(
 				'label' => __( 'Layout', 'mosaic-product-layouts-for-elementor' ),
-				'tab'   => Controls_Manager::TAB_CONTENT,
+				'tab'   => Controls_Manager::TAB_LAYOUT,
 			)
 		);
 
@@ -363,6 +363,21 @@ class SingleProductLayout extends Widget_Base {
 				'condition' => array(
 					'mpl4e_sp_allow_overlap!' => 'yes',
 				),
+			)
+		);
+
+		$this->add_control(
+			'mpl4e_sp_helper_outline_labels',
+			array(
+				'label'        => __( 'Helper outline and labels', 'mosaic-product-layouts-for-elementor' ),
+				'type'         => Controls_Manager::SELECT,
+				'default'      => 'no-outline',
+				'options'      => array(
+					'no-outline'        => __( 'None', 'mosaic-product-layouts-for-elementor' ),
+					'outline-aid-hover' => __( 'On widget hover', 'mosaic-product-layouts-for-elementor' ),
+					'outline-aid'       => __( 'Always', 'mosaic-product-layouts-for-elementor' ),
+				),
+				'description'  => __( 'Visual aid for element boundaries and labels.', 'mosaic-product-layouts-for-elementor' ),
 			)
 		);
 

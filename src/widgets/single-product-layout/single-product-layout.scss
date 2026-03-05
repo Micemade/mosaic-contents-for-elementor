@@ -17,41 +17,25 @@
 	@include gridLayout;
 }
 
-// ── Alignments ──────────────────────────────────────────────────────────
-%spAlignments {
-
-	&.align-start {
-		.name,
-		.price,
-		.excerpt,
-		.add-to-cart-wrapper,
-		.view-cart,
-		.taxonomy,
-		.rating-stars,
-		.rating-wrapper {
-			text-align: left;
-			transform-origin: left center;
-			justify-content: flex-start;
-		}
-	}
-
-	&.align-center {
-		.name, .price, .excerpt, .add-to-cart-wrapper, .view-cart, .taxonomy, .rating-stars, .rating-wrapper {
-			text-align: center;
-			transform-origin: center;
-			justify-content: center;
-		}
-	}
-
-	&.align-end {
-		.name, .price, .excerpt, .add-to-cart-wrapper, .view-cart, .taxonomy, .rating-stars, .rating-wrapper {
-			text-align: right;
-			transform-origin: right center;
-			justify-content: flex-end;
-		}
-	}
-
+%outline-aid {
+	outline: 1px dashed rgb(0, 100, 255);
+	&:before {
+		content: attr(data-label);
+		position: absolute;
+		z-index: 2;
+		top: 0;
+		right: 0;
+		font-size: 8px;
+		font-family: Arial, Helvetica, sans-serif;
+		background-color: rgb(0, 62, 155);
+		color: #fff;
+		padding: 2px 4px;
+		pointer-events: none;
+		text-transform: uppercase;
+		letter-spacing: 0.05rem;
+	} // &:before
 }
+
 
 // ── Single Product element layout ───────────────────────────────────────
 %spItemLayout {
@@ -223,6 +207,19 @@
 // ── GridLayout integration ──────────────────────────────────────────────
 .mosaic-single-product-layout {
 
+	// Outline aid for edit mode.
+	&.outline-aid {
+		.react-grid-item {
+			@extend %outline-aid;
+		}
+	}// .outline-aid
+
+	&.outline-aid-hover:hover {
+		.react-grid-item {
+			@extend %outline-aid;
+		}
+	}
+	
 	.mosaic-grid-layout {
 
 		.react-grid-item {
@@ -256,7 +253,6 @@
 				flex-direction: column;
 
 				@extend %spItemLayout;
-				@extend %spAlignments;
 
 				// ── Edit element button ────────────────────────────────
 				.sp-edit-element-btn {
@@ -293,10 +289,25 @@
 			}
 		}
 
-		// Default values, overwritable by Elementor settings.
-		.default-text-taxonomies {
-			font-size: 0.85rem;
-		}
+		// Edit mode styles.
+		&.edit {
+			.react-grid-item {
+				&:not(.react-grid-placeholder) {
+					transition: background-image 0.2s ease-in-out;
+					&:hover {
+						outline: 1px solid #00fbff;
+						background-image: linear-gradient(45deg, rgba(0, 250, 255, 0.25) 25%, rgba(255, 255, 255, 0.3) 25%, rgba(255, 255, 255, 0.3) 50%, rgba(0, 250, 255, 0.25)50%, rgba(0, 250, 255, 0.25) 75%, rgba(255, 255, 255, 0.3) 75%, rgba(255, 255, 255, 0.3) 100%);
+						background-size: 20px 20px;
+					}
+				}
+
+				.elements-wrapper * {
+					pointer-events: none;
+				}
+			}
+			
+		}// end .edit
+
 		.elements-wrapper {
 			justify-content: center;
 			align-items: flex-start;
@@ -311,27 +322,6 @@
 		}
 	}
 
-	// ── Responsive element visibility ───────────────────────────────
-	/* Mobile (max-width: 400px) */
-	@media only screen and (max-width: 400px) {
-		.Mobile-hide {
-			display: none !important;
-		}
-	}
-
-	/* Tablet (min-width: 401px and max-width: 780px) */
-	@media only screen and (min-width: 401px) and (max-width: 780px) {
-		.Tablet-hide {
-			display: none !important;
-		}
-	}
-
-	/* Desktop (min-width: 781px) */
-	@media only screen and (min-width: 781px) {
-		.Desktop-hide {
-			display: none !important;
-		}
-	}
 }
 
 // ── Gradient preloader animation ────────────────────────────────────────
@@ -350,5 +340,46 @@
 	}
 	100% {
 		background-position: 0% 50%;
+	}
+}
+
+// ── Elements visibility dropdown toolbar ────────────────────────────────
+.mpl4e-elements-toggle-wrapper {
+	position: relative;
+}
+
+.mpl4e-elements-dropdown {
+	position: absolute;
+	top: calc(100% + 4px);
+	left: 0;
+	background: var(--e-a-bg-default, #fff);
+	border: 1px solid #d5d8dc;
+	border-radius: 4px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	min-width: 160px;
+	z-index: 9999;
+	padding: 4px 0;
+}
+
+.mpl4e-element-toggle-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 12px;
+	cursor: pointer;
+	font-size: 12px;
+	white-space: nowrap;
+
+	&:hover {
+		background: var(--e-a-bg-hover, #f1f2f3);
+	}
+
+	input[type='checkbox'] {
+		margin: 0;
+		cursor: pointer;
+	}
+
+	&.is-hidden {
+		opacity: 0.55;
 	}
 }

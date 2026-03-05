@@ -66,6 +66,10 @@ export function updateZIndex(
 			...(existingCustomLayout.zindex || layoutData.zindex || {}),
 			[itemId]: newZIndex,
 		},
+		// Preserve hidden items list if present (used by single-product-layout).
+		...((existingCustomLayout.hidden || layoutData.hidden) && {
+			hidden: existingCustomLayout.hidden || layoutData.hidden,
+		}),
 	};
 
 	updateFn(widgetType, widgetId, settingKey, JSON.stringify(customLayout));

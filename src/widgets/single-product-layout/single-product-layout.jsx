@@ -41,30 +41,23 @@ const productCache = createCache();
 // ── Element definitions ──────────────────────────────────────────────────
 // Maps layout item IDs to product element types.
 const ELEMENT_MAP = {
-	'item-0': { id: 'title', name: 'Title' },
-	'item-1': { id: 'price', name: 'Price' },
-	'item-2': { id: 'addToCart', name: 'Add to Cart' },
-	'item-3': { id: 'image', name: 'Image' },
-	'item-4': { id: 'excerpt', name: 'Excerpt' },
-	'item-5': { id: 'saleBadge', name: 'Sale Badge' },
-	'item-6': { id: 'rating', name: 'Rating' },
-	'item-7': { id: 'categories', name: 'Categories' },
-	'item-8': { id: 'brands', name: 'Brands' },
+	'item-0': { id: 'title', name: 'Title', section: 'sp_title_style_section' },
+	'item-1': { id: 'price', name: 'Price', section: 'sp_price_style_section' },
+	'item-2': { id: 'addToCart', name: 'Add to Cart', section: 'sp_addtocart_style_section' },
+	'item-3': { id: 'image', name: 'Image', section: 'sp_image_style_section' },
+	'item-4': { id: 'excerpt', name: 'Excerpt', section: 'sp_excerpt_style_section' },
+	'item-5': { id: 'saleBadge', name: 'Sale Badge', section: 'sp_sale_badge_style_section' },
+	'item-6': { id: 'rating', name: 'Rating', section: 'sp_rating_style_section' },
+	'item-7': { id: 'categories', name: 'Categories', section: 'sp_categories_style_section' },
+	'item-8': { id: 'brands', name: 'Brands', section: 'sp_brands_style_section' },
 };
 
-// Maps element IDs to their Elementor Style tab section IDs.
+// Derived map of element ID → Elementor Style tab section ID.
 // Used by the "Edit element" button to jump directly to the relevant section.
-const ELEMENT_SECTION_MAP = {
-	title:      'sp_title_style_section',
-	price:      'sp_price_style_section',
-	addToCart:  'sp_addtocart_style_section',
-	image:      'sp_image_style_section',
-	excerpt:    'sp_excerpt_style_section',
-	saleBadge:  'sp_sale_badge_style_section',
-	rating:     'sp_rating_style_section',
-	categories: 'sp_categories_style_section',
-	brands:     'sp_brands_style_section',
-};
+const ELEMENT_SECTION_MAP = Object.fromEntries(
+	Object.values(ELEMENT_MAP).map(({ id, section }) => [id, section])
+);
+
 
 // ── Layout helpers ──────────────────────────────────────────────────────
 /**
@@ -158,6 +151,9 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 	// Used to avoid blanking the widget while switching products.
 	const hasProductRef = useRef(false);
 
+	const [isElementsDropdownOpen, setIsElementsDropdownOpen] = useState(false);
+	const dropdownRef = useRef(null);
+
 	// ── Settings extraction ──────────────────────────────────────────
 	const productId = widgetData?.mpl4e_sp_product_id || '';
 	const layoutId = widgetData?.mpl4e_sp_layout || 'default';
@@ -165,8 +161,8 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 	const featuredImageSize = widgetData?.mpl4e_sp_featured_image_size || 'automatic';
 	const imagePosition = widgetData?.mpl4e_sp_image_position || { x: 50, y: 50 };
 	const imageFit = widgetData?.mpl4e_sp_image_fit || 'cover';
-
 	const excerptTruncate = widgetData?.mpl4e_sp_excerpt_truncate ?? true;
+	const outlineLabels = widgetData?.mpl4e_sp_helper_outline_labels || 'none';
 
 	// Grid settings using shared hook (columns differ from products widget).
 	const gridSettings = useGridSettings(widgetData, 'mpl4e_sp_items_margin', 'mpl4e_sp_row_height');
@@ -182,6 +178,18 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 		() => getLayout(layoutId, customLayoutData),
 		[layoutId, customLayoutData]
 	);
+
+	const hiddenItems = useMemo(() => new Set(layoutData.hidden || []), [layoutData.hidden]);
+	const visibleLayoutData = useMemo(() => {
+		if (!hiddenItems.size) return layoutData;
+		const filter = (items) => (items || []).filter((item) => !hiddenItems.has(item.i));
+		return {
+			desktop: filter(layoutData.desktop),
+			tablet: filter(layoutData.tablet),
+			mobile: filter(layoutData.mobile),
+			zindex: layoutData.zindex || {},
+		};
+	}, [layoutData, hiddenItems]);
 
 	// ── Fetch product data ───────────────────────────────────────────
 	useEffect(() => {
@@ -238,6 +246,58 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 		loadProduct();
 	}, [productId]);
 
+	// ── Close dropdown on outside click ────────────────────────────
+	useEffect(() => {
+		if (!isElementsDropdownOpen) return;
+		const handleClickOutside = (e) => {
+			if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+				setIsElementsDropdownOpen(false);
+			}
+		};
+		document.addEventListener('mousedown', handleClickOutside);
+		return () => document.removeEventListener('mousedown', handleClickOutside);
+	}, [isElementsDropdownOpen]);
+
+	const handleToggleElement = (itemId) => {
+		if (!isEditMode || !widgetId) return;
+		const currentHidden = layoutData.hidden ? [...layoutData.hidden] : [];
+		const isNowHidden = !currentHidden.includes(itemId);
+		const newHidden = isNowHidden
+			? [...currentHidden, itemId]
+			: currentHidden.filter((id) => id !== itemId);
+		let existingCustomLayout = {};
+		if (customLayoutData) {
+			try { existingCustomLayout = JSON.parse(customLayoutData); } catch (e) { /* noop */ }
+		}
+
+		// Ensure all 9 items have position data. If an item is missing from the
+		// saved layout (e.g. lost in an older save or imported setup), fall back
+		// to its default position so it can reappear correctly when un-hidden.
+		const defaultLayoutData = getLayout(layoutId, null);
+		const ensureAllItems = (savedArr, defaultArr) => {
+			const savedIds = new Set((savedArr || []).map((item) => item.i));
+			const missing = (defaultArr || []).filter((item) => !savedIds.has(item.i));
+			return [...(savedArr || []), ...missing];
+		};
+
+		const fullDesktop = ensureAllItems(existingCustomLayout.desktop || layoutData.desktop, defaultLayoutData.desktop);
+		const fullTablet = ensureAllItems(existingCustomLayout.tablet || layoutData.tablet, defaultLayoutData.tablet);
+		const fullMobile = ensureAllItems(existingCustomLayout.mobile || layoutData.mobile, defaultLayoutData.mobile);
+
+		updateElementorSetting(
+			'single-product-layout',
+			widgetId,
+			'mpl4e_sp_custom_layout',
+			JSON.stringify({
+				desktop: fullDesktop,
+				tablet: fullTablet,
+				mobile: fullMobile,
+				zindex: existingCustomLayout.zindex || layoutData.zindex || {},
+				hidden: newHidden,
+			})
+		);
+	};
+
 	// ── Layout change handler (editor only) ──────────────────────────
 	const handleLayoutChange = (newLayouts) => {
 		if (typeof elementor === 'undefined' || !widgetId) return;
@@ -251,11 +311,25 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 			}
 		}
 
+		// RGL only returns positions for visible (rendered) items. Merge those
+		// changes back into the FULL layout so hidden items retain their
+		// last known position and can be restored later.
+		const mergeIntoFull = (fullArr, changedArr) => {
+			if (!changedArr?.length) return fullArr || [];
+			const changedById = Object.fromEntries(changedArr.map((item) => [item.i, item]));
+			return (fullArr || []).map((item) => changedById[item.i] || item);
+		};
+
+		const fullDesktop = existingCustomLayout.desktop || layoutData.desktop;
+		const fullTablet = existingCustomLayout.tablet || layoutData.tablet;
+		const fullMobile = existingCustomLayout.mobile || layoutData.mobile;
+
 		const customLayout = {
-			desktop: newLayouts.desktop || existingCustomLayout.desktop || layoutData.desktop,
-			tablet: newLayouts.tablet || existingCustomLayout.tablet || layoutData.tablet,
-			mobile: newLayouts.mobile || existingCustomLayout.mobile || layoutData.mobile,
+			desktop: mergeIntoFull(fullDesktop, newLayouts.desktop),
+			tablet: mergeIntoFull(fullTablet, newLayouts.tablet),
+			mobile: mergeIntoFull(fullMobile, newLayouts.mobile),
 			zindex: existingCustomLayout.zindex || layoutData.zindex || {},
+			hidden: existingCustomLayout.hidden || layoutData.hidden || [],
 		};
 
 		updateElementorSetting(
@@ -318,21 +392,14 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 	}
 
 	// ── Build grid items from layout ─────────────────────────────────
-	// Use Mobile layout as source of truth for item list (same as products widget).
-	const mobileLayout = layoutData.mobile || [];
-
+	// Use visible mobile layout as source of truth (hidden items excluded).
 	return (
 		<div
-			className="single-product-layout mosaic-single-product-layout micemade-widgets"
+			className={`single-product-layout mosaic-single-product-layout micemade-widgets ${outlineLabels && isEditMode ? outlineLabels : ''}`}
 			data-widget-id={widgetId}
 		>
 			<GridLayout
-				layouts={{
-					desktop: layoutData.desktop,
-					tablet: layoutData.tablet,
-					mobile: layoutData.mobile,
-					zindex: layoutData.zindex,
-				}}
+				layouts={visibleLayoutData}
 				columns={columns}
 				itemsMargin={gridSettings.itemsMargin}
 				rowHeight={gridSettings.rowHeight}
@@ -345,7 +412,7 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 				selectWidget={selectWidget}
 				draggableCancel=".mpl4e-item-controls"
 			>
-				{mobileLayout.map((layoutItem) => {
+				{visibleLayoutData.mobile.map((layoutItem) => {
 					const elementDef = ELEMENT_MAP[layoutItem.i];
 					if (!elementDef) return null;
 
@@ -356,6 +423,7 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 							key={layoutItem.i}
 							className={`sp-element ${elementDef.id}`}
 							style={{ zIndex }}
+							data-label={elementDef.name}
 						>
 							{renderElement(elementDef.id, product, {
 								excerptTruncate,
@@ -393,6 +461,49 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 					);
 				})}
 			</GridLayout>
+
+			{isEditMode && (
+				<div className="mpl4e-editor-toolbar">
+					<div className="mpl4e-elements-toggle-wrapper" ref={dropdownRef}>
+						<button
+							type="button"
+							className="mpl4e-toolbar-btn mpl4e-elements-toggle-btn"
+							onClick={() => setIsElementsDropdownOpen((prev) => !prev)}
+							title="Toggle element visibility"
+						>
+							<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+								<line x1="8" y1="6" x2="21" y2="6" />
+								<line x1="8" y1="12" x2="21" y2="12" />
+								<line x1="8" y1="18" x2="21" y2="18" />
+								<line x1="3" y1="6" x2="3.01" y2="6" />
+								<line x1="3" y1="12" x2="3.01" y2="12" />
+								<line x1="3" y1="18" x2="3.01" y2="18" />
+							</svg>
+							<span>Elements</span>
+						</button>
+						{isElementsDropdownOpen && (
+							<div className="mpl4e-elements-dropdown">
+								{Object.entries(ELEMENT_MAP).map(([itemId, elementDef]) => {
+									const isHidden = hiddenItems.has(itemId);
+									return (
+										<label
+											key={itemId}
+											className={`mpl4e-element-toggle-item${isHidden ? ' is-hidden' : ''}`}
+										>
+											<input
+												type="checkbox"
+												checked={!isHidden}
+												onChange={() => handleToggleElement(itemId)}
+											/>
+											<span>{elementDef.name}</span>
+										</label>
+									);
+								})}
+							</div>
+						)}
+					</div>
+				</div>
+			)}
 		</div>
 	);
 };
