@@ -204,9 +204,10 @@
 	}
 }
 
-// ── GridLayout integration ──────────────────────────────────────────────
+
 .mosaic-single-product-layout {
 
+	// ── Helpers ──────────────────────────────────────
 	// Outline aid for edit mode.
 	&.outline-aid {
 		.react-grid-item {
@@ -220,6 +221,7 @@
 		}
 	}
 	
+	// ── GridLayout integration ──────────────────────────────────────────────
 	.mosaic-grid-layout {
 
 		.react-grid-item {

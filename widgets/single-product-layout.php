@@ -367,9 +367,35 @@ class SingleProductLayout extends Widget_Base {
 		);
 
 		$this->add_control(
+			'mpl4e_sp_helper_notice',
+			array(
+				'type' => \Elementor\Controls_Manager::NOTICE,
+				'notice_type' => 'info',
+				'dismissible' => false,
+				'heading' => esc_html__( 'Helpers', 'mosaic-product-layouts-for-elementor' ),
+				'content' => esc_html__( 'Visual aids - a grid visualization for placing and resizing elements, and element outlines with labels.', 'mosaic-product-layouts-for-elementor' ),
+			)
+		);
+
+		$this->add_control(
+			'mpl4e_sp_helper_grid',
+			array(
+				'label'        => __( 'Grid Visualization', 'mosaic-product-layouts-for-elementor' ),
+				'type'         => Controls_Manager::SELECT,
+				'default'      => 'none',
+				'options'      => array(
+					'none'   => __( 'None', 'mosaic-product-layouts-for-elementor' ),
+					'front'  => __( 'Front', 'mosaic-product-layouts-for-elementor' ),
+					'behind' => __( 'Behind', 'mosaic-product-layouts-for-elementor' ),
+				),
+				'description'  => __( 'Visual aid for underlying grid structure.', 'mosaic-product-layouts-for-elementor' ),
+			)
+		);
+
+		$this->add_control(
 			'mpl4e_sp_helper_outline_labels',
 			array(
-				'label'        => __( 'Helper outline and labels', 'mosaic-product-layouts-for-elementor' ),
+				'label'        => __( 'Element outlines and labels', 'mosaic-product-layouts-for-elementor' ),
 				'type'         => Controls_Manager::SELECT,
 				'default'      => 'no-outline',
 				'options'      => array(

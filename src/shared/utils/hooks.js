@@ -5,8 +5,38 @@
  * Keeps widget files focused on rendering logic.
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { getActiveBreakpointNames } from '../../core/elementor-utils';
+
+/**
+ * Subscribe to Elementor's device mode switcher (desktop / tablet / mobile).
+ *
+ * Reads `elementor.channels.deviceMode.request('currentMode')` on mount and
+ * re-reads it whenever Elementor fires a `change` event on that channel.
+ * Falls back to 'desktop' when running outside the editor (frontend, SSR).
+ *
+ * @returns {string} Current device mode: 'desktop' | 'tablet' | 'mobile'
+ */
+export const useElementorDevice = () => {
+	const getMode = () => {
+		try {
+			return elementor?.channels?.deviceMode?.request('currentMode') || 'desktop';
+		} catch (_) {
+			return 'desktop';
+		}
+	};
+
+	const [device, setDevice] = useState(getMode);
+
+	useEffect(() => {
+		if (typeof elementor === 'undefined' || !elementor?.channels?.deviceMode) return;
+		const handler = () => setDevice(getMode());
+		elementor.channels.deviceMode.on('change', handler);
+		return () => elementor.channels.deviceMode.off('change', handler);
+	}, []);
+
+	return device;
+};
 
 /**
  * Generate CSS custom properties from responsive Elementor settings.

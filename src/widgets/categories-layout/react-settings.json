@@ -47,6 +47,10 @@
 		"type": "string",
 		"default": "vertical"
 	},
+	"mpl4e_helper_grid": {
+		"type": "string",
+		"default": "none"
+	},
 	"mpl4e_cat_card_layout": {
 		"type": "string",
 		"default": "vertical"

@@ -20,6 +20,7 @@ import DOMPurify from 'dompurify';
 // Components.
 import GridLayout from '../../shared/components/GridLayout.jsx';
 import ItemControls from '../../shared/components/ItemControls.jsx';
+import GridHelper from '../../shared/components/GridHelper.jsx';
 
 // Utilities and data.
 import { decode } from '../../shared/utils/generalUtils.js';
@@ -28,7 +29,7 @@ import { updateElementorSetting, getActiveBreakpointNames } from '../../core/ele
 import { addItemToLayout, removeItemFromLayout } from '../../shared/utils/addItem.js';
 import { getLayout } from '../../shared/utils/layoutUtils.js';
 import { LRUCache, createCache } from '../../shared/utils/LRUCache.js';
-import { useCssVariables, useGridSettings } from '../../shared/utils/hooks.js';
+import { useCssVariables, useGridSettings, useElementorDevice } from '../../shared/utils/hooks.js';
 import { getVisibleLayout, mergeVisibleIntoFullLayout } from '../../shared/utils/visibleLayout.js';
 
 import './categories-layout.scss';
@@ -194,6 +195,8 @@ const CategoriesLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'disp
 	const cardLayout = widgetData?.mpl4e_cat_card_layout || 'vertical';
 	const imageFit = widgetData?.mpl4e_cat_image_fit || 'cover';
 	const imagePosition = widgetData?.mpl4e_cat_image_position || { x: 50, y: 50 };
+	const helperType = widgetData?.mpl4e_helper_grid || 'none';
+
 
 	// Element ordering from repeater control
 	const elementOrdering = useMemo(
@@ -207,6 +210,8 @@ const CategoriesLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'disp
 
 	// Grid settings
 	const gridSettings = useGridSettings(widgetData, 'mpl4e_cat_items_margin', 'mpl4e_cat_row_height');
+	// Track Elementor's device mode switcher for the grid helper column calculation.
+	const deviceType = useElementorDevice();
 
 	// Memoize query settings
 	const querySettings = useMemo(
@@ -518,20 +523,24 @@ const CategoriesLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'disp
 			</GridLayout>
 
 			{isEditMode && (
-				<div className="mpl4e-editor-toolbar">
-					<button
-						type="button"
-						className="mpl4e-toolbar-btn mpl4e-add-item-btn"
-						onClick={handleAddItem}
-						title="Add Item"
-					>
-						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-							<line x1="12" y1="5" x2="12" y2="19"></line>
-							<line x1="5" y1="12" x2="19" y2="12"></line>
-						</svg>
-						<span>Add Item</span>
-					</button>
-				</div>
+				<>
+					<div className="mpl4e-editor-toolbar">
+						<button
+							type="button"
+							className="mpl4e-toolbar-btn mpl4e-add-item-btn"
+							onClick={handleAddItem}
+							title="Add Item"
+						>
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+								<line x1="12" y1="5" x2="12" y2="19"></line>
+								<line x1="5" y1="12" x2="19" y2="12"></line>
+							</svg>
+							<span>Add Item</span>
+						</button>
+					</div>
+
+					<GridHelper gridSettings={gridSettings} device={deviceType} cols={gridSettings.columns} type={helperType} />
+				</>
 			)}
 		</div>
 	);

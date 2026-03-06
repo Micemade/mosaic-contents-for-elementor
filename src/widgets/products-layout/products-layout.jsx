@@ -23,6 +23,7 @@ import ProductImage from '../../shared/components/ProductImage.jsx';
 import RatingStars from '../../shared/components/RatingStars.jsx';
 import AddToCartButton from '../../shared/components/AddToCartButton.jsx';
 import ItemControls from '../../shared/components/ItemControls.jsx';
+import GridHelper from '../../shared/components/GridHelper.jsx';
 
 // Utilities and data.
 import { decode } from '../../shared/utils/generalUtils.js';
@@ -31,7 +32,7 @@ import { updateElementorSetting, getActiveBreakpointNames } from '../../core/ele
 import { addItemToLayout, removeItemFromLayout } from '../../shared/utils/addItem.js';
 import { getLayout } from '../../shared/utils/layoutUtils.js';
 import { LRUCache, createCache } from '../../shared/utils/LRUCache.js';
-import { useCssVariables, useGridSettings } from '../../shared/utils/hooks.js';
+import { useCssVariables, useGridSettings, useElementorDevice } from '../../shared/utils/hooks.js';
 import { getVisibleLayout, mergeVisibleIntoFullLayout } from '../../shared/utils/visibleLayout.js';
 
 import './products-layout.scss';
@@ -171,6 +172,7 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 	const featuredImageSize = widgetData?.mpl4e_featured_image_size || 'automatic';
 	const featuredImagePosition = widgetData?.mpl4e_featured_image_position || { x: 50, y: 50 };
 	const featuredImageFit = widgetData?.mpl4e_image_fit || 'cover';
+	const helperType = widgetData?.mpl4e_helper_grid || 'none';
 
 	// Element ordering from repeater control
 	const elementOrdering = useMemo(
@@ -187,6 +189,8 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 
 	// Grid settings from Elementor controls
 	const gridSettings = useGridSettings(widgetData, 'mpl4e_items_margin', 'mpl4e_row_height');
+	// Track Elementor's device mode switcher for the grid helper column calculation.
+	const deviceType = useElementorDevice();
 
 	// Memoize query settings to prevent unnecessary re-fetches
 	const querySettings = useMemo(
@@ -579,20 +583,24 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 
 			{/* Editor-only floating toolbar */}
 			{isEditMode && (
-				<div className="mpl4e-editor-toolbar">
-					<button
-						type="button"
-						className="mpl4e-toolbar-btn mpl4e-add-item-btn"
-						onClick={handleAddItem}
-						title="Add Item"
-					>
-						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-							<line x1="12" y1="5" x2="12" y2="19"></line>
-							<line x1="5" y1="12" x2="19" y2="12"></line>
-						</svg>
-						<span>Add Item</span>
-					</button>
-				</div>
+				<>
+					<div className="mpl4e-editor-toolbar">
+						<button
+							type="button"
+							className="mpl4e-toolbar-btn mpl4e-add-item-btn"
+							onClick={handleAddItem}
+							title="Add Item"
+						>
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+								<line x1="12" y1="5" x2="12" y2="19"></line>
+								<line x1="5" y1="12" x2="19" y2="12"></line>
+							</svg>
+							<span>Add Item</span>
+						</button>
+					</div>
+
+					<GridHelper gridSettings={gridSettings} device={deviceType} cols={gridSettings.columns} type={helperType} />
+				</>
 			)}
 		</div>
 	);

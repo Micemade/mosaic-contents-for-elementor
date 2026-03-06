@@ -305,6 +305,33 @@ class ProductsLayout extends Widget_Base {
 			)
 		);
 
+
+		$this->add_control(
+			'mpl4e_helper_notice',
+			array(
+				'type' => \Elementor\Controls_Manager::NOTICE,
+				'notice_type' => 'info',
+				'dismissible' => false,
+				'heading' => esc_html__( 'Helpers', 'mosaic-product-layouts-for-elementor' ),
+				'content' => esc_html__( 'Visual aid - a grid visualization for placing and resizing items.', 'mosaic-product-layouts-for-elementor' ),
+			)
+		);
+
+		$this->add_control(
+			'mpl4e_helper_grid',
+			array(
+				'label'        => __( 'Grid Visualization', 'mosaic-product-layouts-for-elementor' ),
+				'type'         => Controls_Manager::SELECT,
+				'default'      => 'none',
+				'options'      => array(
+					'none'   => __( 'None', 'mosaic-product-layouts-for-elementor' ),
+					'front'  => __( 'Front', 'mosaic-product-layouts-for-elementor' ),
+					'behind' => __( 'Behind', 'mosaic-product-layouts-for-elementor' ),
+				),
+				'description'  => __( 'Visual aid for underlying grid structure.', 'mosaic-product-layouts-for-elementor' ),
+			)
+		);
+
 		$this->end_controls_section();
 
 		// Saved Setups Section.

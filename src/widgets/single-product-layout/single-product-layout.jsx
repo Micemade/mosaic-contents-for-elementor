@@ -24,11 +24,12 @@ import ProductImage from '../../shared/components/ProductImage.jsx';
 import RatingStars from '../../shared/components/RatingStars.jsx';
 import AddToCartButton from '../../shared/components/AddToCartButton.jsx';
 import ZIndexControls from '../../shared/components/ZIndexControls.jsx';
+import GridHelper from '../../shared/components/GridHelper.jsx';
 
 import { decode } from '../../shared/utils/generalUtils.js';
 import { updateElementorSetting, openPanelSection } from '../../core/elementor-utils';
 import { LRUCache, createCache } from '../../shared/utils/LRUCache.js';
-import { useGridSettings } from '../../shared/utils/hooks.js';
+import { useGridSettings, useElementorDevice } from '../../shared/utils/hooks.js';
 
 import singleProductLayouts from './utils/single-product-layouts.json';
 import './single-product-layout.scss';
@@ -163,9 +164,12 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 	const imageFit = widgetData?.mpl4e_sp_image_fit || 'cover';
 	const excerptTruncate = widgetData?.mpl4e_sp_excerpt_truncate ?? true;
 	const outlineLabels = widgetData?.mpl4e_sp_helper_outline_labels || 'none';
+	const helperType = widgetData?.mpl4e_sp_helper_grid || 'none';
 
 	// Grid settings using shared hook (columns differ from products widget).
 	const gridSettings = useGridSettings(widgetData, 'mpl4e_sp_items_margin', 'mpl4e_sp_row_height');
+	// Track Elementor's device mode switcher for the grid helper column calculation.
+	const deviceType = useElementorDevice();
 	// Override columns for single product (higher precision like the Gutenberg block).
 	const columns = useMemo(() => ({
 		desktop: 56,
@@ -463,47 +467,52 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 			</GridLayout>
 
 			{isEditMode && (
-				<div className="mpl4e-editor-toolbar">
-					<div className="mpl4e-elements-toggle-wrapper" ref={dropdownRef}>
-						<button
-							type="button"
-							className="mpl4e-toolbar-btn mpl4e-elements-toggle-btn"
-							onClick={() => setIsElementsDropdownOpen((prev) => !prev)}
-							title="Toggle element visibility"
-						>
-							<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-								<line x1="8" y1="6" x2="21" y2="6" />
-								<line x1="8" y1="12" x2="21" y2="12" />
-								<line x1="8" y1="18" x2="21" y2="18" />
-								<line x1="3" y1="6" x2="3.01" y2="6" />
-								<line x1="3" y1="12" x2="3.01" y2="12" />
-								<line x1="3" y1="18" x2="3.01" y2="18" />
-							</svg>
-							<span>Elements</span>
-						</button>
-						{isElementsDropdownOpen && (
-							<div className="mpl4e-elements-dropdown">
-								{Object.entries(ELEMENT_MAP).map(([itemId, elementDef]) => {
-									const isHidden = hiddenItems.has(itemId);
-									return (
-										<label
-											key={itemId}
-											className={`mpl4e-element-toggle-item${isHidden ? ' is-hidden' : ''}`}
-										>
-											<input
-												type="checkbox"
-												checked={!isHidden}
-												onChange={() => handleToggleElement(itemId)}
-											/>
-											<span>{elementDef.name}</span>
-										</label>
-									);
-								})}
-							</div>
-						)}
+				<>
+					<div className="mpl4e-editor-toolbar">
+						<div className="mpl4e-elements-toggle-wrapper" ref={dropdownRef}>
+							<button
+								type="button"
+								className="mpl4e-toolbar-btn mpl4e-elements-toggle-btn"
+								onClick={() => setIsElementsDropdownOpen((prev) => !prev)}
+								title="Toggle element visibility"
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+									<line x1="8" y1="6" x2="21" y2="6" />
+									<line x1="8" y1="12" x2="21" y2="12" />
+									<line x1="8" y1="18" x2="21" y2="18" />
+									<line x1="3" y1="6" x2="3.01" y2="6" />
+									<line x1="3" y1="12" x2="3.01" y2="12" />
+									<line x1="3" y1="18" x2="3.01" y2="18" />
+								</svg>
+								<span>Elements</span>
+							</button>
+							{isElementsDropdownOpen && (
+								<div className="mpl4e-elements-dropdown">
+									{Object.entries(ELEMENT_MAP).map(([itemId, elementDef]) => {
+										const isHidden = hiddenItems.has(itemId);
+										return (
+											<label
+												key={itemId}
+												className={`mpl4e-element-toggle-item${isHidden ? ' is-hidden' : ''}`}
+											>
+												<input
+													type="checkbox"
+													checked={!isHidden}
+													onChange={() => handleToggleElement(itemId)}
+												/>
+												<span>{elementDef.name}</span>
+											</label>
+										);
+									})}
+								</div>
+							)}
+						</div>
 					</div>
-				</div>
-			)}
+
+					<GridHelper gridSettings={gridSettings} device={deviceType} cols={columns} type={helperType} />
+				</>
+			)}{/* end of isEditMode */}
+
 		</div>
 	);
 };

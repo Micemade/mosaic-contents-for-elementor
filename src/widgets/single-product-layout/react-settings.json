@@ -33,6 +33,10 @@
 		"type": "string",
 		"default": "none"
 	},
+	"mpl4e_sp_helper_grid": {
+		"type": "string",
+		"default": "none"
+	},
 	"mpl4e_sp_helper_outline_labels": {
 		"type": "string",
 		"default": "none"

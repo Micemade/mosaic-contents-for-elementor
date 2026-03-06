@@ -298,6 +298,21 @@ function captureSettingsFromModel(model) {
 		}
 	});
 
+	// Also capture responsive keys not already covered by baseKeys.
+	// For example, single-product-layout lists per-element text size/alignment
+	// keys in responsiveKeys but not in styleKeys.
+	config.responsiveKeys.forEach(key => {
+		if (!baseKeys.includes(key)) {
+			BREAKPOINT_SUFFIXES.forEach(suffix => {
+				const fullKey = key + suffix;
+				const value = settingsModel.get(fullKey);
+				if (value !== undefined && value !== null) {
+					captured[fullKey] = value;
+				}
+			});
+		}
+	});
+
 	// Capture group control sub-keys by scanning all attributes
 	config.groupControlPrefixes.forEach(prefix => {
 		Object.keys(allAttributes).forEach(attrKey => {
