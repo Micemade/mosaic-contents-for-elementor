@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80" role="img" aria-label="Retro Vintage preset preview">
+  <rect width="120" height="80" rx="8" fill="#fdf3d0"/>
+  <rect x="8" y="8" width="104" height="64" rx="6" fill="#f8e7b3" stroke="#c8861a" stroke-width="2" stroke-dasharray="4 3"/>
+  <rect x="12" y="14" width="96" height="28" rx="4" fill="#e9c977"/>
+  <rect x="16" y="49" width="54" height="5" rx="2.5" fill="#4a3728"/>
+  <rect x="16" y="58" width="34" height="4" rx="2" fill="#4a3728" opacity=".75"/>
+  <rect x="82" y="62" width="24" height="8" rx="4" fill="#e8961e"/>
+</svg>

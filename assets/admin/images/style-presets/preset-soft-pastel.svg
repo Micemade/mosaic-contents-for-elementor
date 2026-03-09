@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80" role="img" aria-label="Soft Pastel preset preview">
+  <rect width="120" height="80" rx="16" fill="#fce8f0"/>
+  <rect x="8" y="8" width="104" height="34" rx="12" fill="#f9a8c9" opacity=".45"/>
+  <rect x="12" y="49" width="54" height="5" rx="2.5" fill="#8b2252"/>
+  <rect x="12" y="58" width="38" height="4" rx="2" fill="#8b2252" opacity=".75"/>
+  <rect x="12" y="66" width="44" height="5" rx="2.5" fill="#c93070"/>
+  <rect x="86" y="63" width="26" height="9" rx="4.5" fill="#c93070"/>
+</svg>

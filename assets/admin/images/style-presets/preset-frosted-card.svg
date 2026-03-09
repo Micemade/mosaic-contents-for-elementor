@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80" role="img" aria-label="Frosted Card preset preview">
+  <rect width="120" height="80" rx="12" fill="#dbe6f8"/>
+  <rect x="8" y="8" width="104" height="64" rx="10" fill="#e8eef8" fill-opacity=".85" stroke="#ffffff" stroke-opacity=".65"/>
+  <rect x="12" y="14" width="96" height="28" rx="8" fill="#ffffff" fill-opacity=".4"/>
+  <rect x="16" y="49" width="50" height="5" rx="2.5" fill="#1a2744"/>
+  <rect x="16" y="58" width="36" height="4" rx="2" fill="#1a2744" opacity=".7"/>
+  <rect x="82" y="62" width="24" height="8" rx="4" fill="#4a7cf8"/>
+</svg>

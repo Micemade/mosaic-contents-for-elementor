@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80" role="img" aria-label="Gradient Chic preset preview">
+  <defs>
+    <linearGradient id="gc" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#ec4899"/>
+    </linearGradient>
+  </defs>
+  <rect width="120" height="80" rx="14" fill="url(#gc)"/>
+  <rect x="8" y="8" width="104" height="34" rx="10" fill="#ffffff" opacity=".12"/>
+  <rect x="12" y="49" width="56" height="5" rx="2.5" fill="#ffffff"/>
+  <rect x="12" y="58" width="40" height="4" rx="2" fill="#ffffff" opacity=".85"/>
+  <rect x="12" y="66" width="44" height="5" rx="2.5" fill="#ffffff" opacity=".7"/>
+  <rect x="86" y="63" width="26" height="9" rx="4.5" fill="#ffffff"/>
+</svg>

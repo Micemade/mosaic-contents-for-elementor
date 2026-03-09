@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80" role="img" aria-label="Magazine Overlay preset preview">
+  <defs>
+    <linearGradient id="mo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#161616" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#161616" stop-opacity=".9"/>
+    </linearGradient>
+  </defs>
+  <rect width="120" height="80" rx="8" fill="#161616"/>
+  <rect x="8" y="8" width="104" height="64" rx="6" fill="#444"/>
+  <rect x="8" y="8" width="104" height="64" rx="6" fill="url(#mo)"/>
+  <rect x="24" y="40" width="72" height="5" rx="2.5" fill="#ffffff"/>
+  <rect x="30" y="50" width="60" height="4" rx="2" fill="#ffffff" opacity=".85"/>
+  <rect x="88" y="13" width="20" height="9" rx="4.5" fill="#ff6b35"/>
+</svg>

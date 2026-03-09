@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80" role="img" aria-label="Nordic Clean preset preview">
+  <rect width="120" height="80" rx="8" fill="#f7f6f4" stroke="#e9e7e3"/>
+  <rect x="8" y="8" width="104" height="36" rx="4" fill="#ffffff"/>
+  <rect x="12" y="50" width="50" height="5" rx="2.5" fill="#2c2c2c"/>
+  <rect x="12" y="59" width="34" height="4" rx="2" fill="#8a8a8a"/>
+  <rect x="12" y="67" width="40" height="5" rx="2.5" fill="#2c2c2c" opacity=".55"/>
+  <rect x="88" y="64" width="24" height="8" rx="4" fill="#2c2c2c"/>
+</svg>

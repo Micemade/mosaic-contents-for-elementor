@@ -11,6 +11,25 @@ import widgetManager from './widget-manager';
 import { getActiveBreakpointNames } from './elementor-utils';
 import { addItemToLayout } from '../shared/utils/addItem';
 import { getComputedLayout } from '../shared/utils/layoutUtils';
+import productsStylePresets from '../widgets/products-layout/style-presets.json';
+
+const PRODUCTS_STYLE_PRESET_MAP = productsStylePresets.reduce((acc, preset) => {
+	if (preset?.id && preset?.settings) {
+		acc[preset.id] = preset.settings;
+	}
+	return acc;
+}, {});
+
+const PRODUCTS_STYLE_PRESET_SETTING_KEYS = Array.from(
+	new Set(
+		productsStylePresets.flatMap((preset) => {
+			if (!preset?.settings || typeof preset.settings !== 'object') {
+				return [];
+			}
+			return Object.keys(preset.settings);
+		})
+	)
+);
 
 /**
  * Widget-specific settings key mapping.
@@ -23,6 +42,8 @@ const WIDGET_KEYS = {
 		layoutKey: 'mpl4e_layout',
 		customLayoutKey: 'mpl4e_custom_layout',
 		savedSetupKey: 'mpl4e_saved_setup',
+		stylePresetKey: 'mpl4e_style_preset',
+		presetSettingKeys: PRODUCTS_STYLE_PRESET_SETTING_KEYS,
 		resetEvent: 'mosaic:resetLayout',
 		applySetupEvent: 'mosaic:applySetup',
 		addItemEvent: 'mosaic:addItem',
@@ -33,6 +54,8 @@ const WIDGET_KEYS = {
 		layoutKey: 'mpl4e_cat_layout',
 		customLayoutKey: 'mpl4e_cat_custom_layout',
 		savedSetupKey: 'mpl4e_cat_saved_setup',
+		stylePresetKey: null,
+		presetSettingKeys: [],
 		resetEvent: 'mosaic:catResetLayout',
 		applySetupEvent: 'mosaic:catApplySetup',
 		addItemEvent: 'mosaic:catAddItem',
@@ -43,6 +66,8 @@ const WIDGET_KEYS = {
 		layoutKey: 'mpl4e_sp_layout',
 		customLayoutKey: 'mpl4e_sp_custom_layout',
 		savedSetupKey: 'mpl4e_sp_saved_setup',
+		stylePresetKey: null,
+		presetSettingKeys: [],
 		resetEvent: 'mosaic:spResetLayout',
 		applySetupEvent: 'mosaic:spApplySetup',
 		addItemEvent: 'mosaic:spAddItem',
@@ -120,6 +145,16 @@ export const registerEditorHooks = () => {
 					const wKeys = WIDGET_KEYS[widgetType];
 					if (wKeys?.savedSetupKey) {
 						expandedWidgetKeys.add(wKeys.savedSetupKey);
+					}
+
+					if (wKeys?.stylePresetKey) {
+						expandedWidgetKeys.add(wKeys.stylePresetKey);
+					}
+
+					if (Array.isArray(wKeys?.presetSettingKeys)) {
+						wKeys.presetSettingKeys.forEach((key) => {
+							expandedWidgetKeys.add(key);
+						});
 					}
 
 					widgetKeys.forEach(key => {
@@ -256,6 +291,36 @@ export const registerEditorHooks = () => {
 			// Clear custom layout when predefined layout changes
 			// This ensures switching predefined layouts applies immediately
 			if (wKeys) {
+				let isApplyingStylePreset = false;
+				let isApplyingSetupBatch = false;
+
+				if (wKeys.stylePresetKey && wKeys.applySetupEvent) {
+					model.get('settings').on(`change:${wKeys.stylePresetKey}`, (settingsModel, presetId) => {
+						void settingsModel;
+						if (isApplyingStylePreset || isApplyingSetupBatch || !presetId) {
+							return;
+						}
+
+						const presetSettings = PRODUCTS_STYLE_PRESET_MAP[presetId];
+						if (!presetSettings) {
+							return;
+						}
+
+						isApplyingStylePreset = true;
+						elementor.channels.editor.trigger(wKeys.applySetupEvent, {
+							widgetId,
+							source: 'stylePreset',
+							settings: {
+								...presetSettings,
+								[wKeys.stylePresetKey]: presetId,
+							},
+						});
+						setTimeout(() => {
+							isApplyingStylePreset = false;
+						}, 0);
+					});
+				}
+
 				model.get('settings').on(`change:${wKeys.layoutKey}`, (settingsModel, newLayoutId) => {
 					const customLayout = model.getSetting(wKeys.customLayoutKey);
 					if (customLayout) {
@@ -276,13 +341,14 @@ export const registerEditorHooks = () => {
 				// Listen for 'apply setup' event from the Saved Setups control.
 				// Batch-sets all settings atomically, preventing mid-batch DOM
 				// destruction that causes lost React updates and stale CSS.
-				elementor.channels.editor.on(wKeys.applySetupEvent, ({ widgetId: targetWidgetId, settings: setupSettings }) => {
+				elementor.channels.editor.on(wKeys.applySetupEvent, ({ widgetId: targetWidgetId, settings: setupSettings, source }) => {
 					// Only apply if this widget is currently open in the panel
 					if (elementor.getPanelView().getCurrentPageView().model.id !== widgetId || targetWidgetId !== widgetId) {
 						return;
 					}
 
 					const settingsModel = model.get('settings');
+					const panelModel = elementor.getPanelView()?.getCurrentPageView()?.model;
 
 					// 1. Temporarily disable view.renderOnChange to prevent DOM
 					//    re-renders mid-batch (which would destroy the React root).
@@ -300,8 +366,23 @@ export const registerEditorHooks = () => {
 						settingsModel.off(`change:${wKeys.layoutKey}`);
 					}
 
-					// 3. Batch-set ALL settings atomically.
-					settingsModel.set(setupSettings);
+					isApplyingSetupBatch = true;
+					try {
+						// 3. Batch-set ALL settings atomically.
+						settingsModel.set(setupSettings);
+
+						// 3b. Keep Elementor panel controls in sync when the panel
+						// and preview use different Backbone model instances.
+						// Use setSetting() so Elementor updates control UIs, not just
+						// the raw Backbone attributes.
+						if (source === 'stylePreset' && panelModel && panelModel.id === widgetId && typeof panelModel.setSetting === 'function') {
+							Object.entries(setupSettings).forEach(([key, value]) => {
+								panelModel.setSetting(key, value);
+							});
+						}
+					} finally {
+						isApplyingSetupBatch = false;
+					}
 
 					// 4. Restore view.renderOnChange.
 					if (view && savedRenderOnChange) {

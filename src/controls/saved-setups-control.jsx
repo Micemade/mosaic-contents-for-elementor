@@ -34,6 +34,7 @@ const WIDGET_CONFIGS = {
 		],
 		// Style settings (React-mapped)
 		styleKeys: [
+			'mpl4e_style_preset',
 			'mpl4e_product_layout',
 			'mpl4e_title_size',
 			'mpl4e_price_size',

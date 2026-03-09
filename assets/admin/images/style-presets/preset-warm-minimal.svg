@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80" role="img" aria-label="Warm Minimal preset preview">
+  <rect width="120" height="80" rx="8" fill="#faf6f0"/>
+  <rect x="8" y="8" width="104" height="36" rx="6" fill="#f0e5d8"/>
+  <rect x="12" y="50" width="54" height="5" rx="2.5" fill="#3d2c1e"/>
+  <rect x="12" y="59" width="34" height="4" rx="2" fill="#3d2c1e" opacity=".7"/>
+  <rect x="12" y="67" width="42" height="5" rx="2.5" fill="#d4956a"/>
+  <rect x="88" y="64" width="24" height="8" rx="4" fill="#d4956a"/>
+</svg>

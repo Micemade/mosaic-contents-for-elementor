@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80" role="img" aria-label="Dark Slate preset preview">
+  <rect width="120" height="80" rx="8" fill="#1e1e2e"/>
+  <rect x="8" y="8" width="104" height="34" rx="6" fill="#2d2d45"/>
+  <rect x="12" y="49" width="58" height="5" rx="2.5" fill="#e2e2f0"/>
+  <rect x="12" y="58" width="40" height="4" rx="2" fill="#e2e2f0" opacity=".75"/>
+  <rect x="12" y="66" width="46" height="5" rx="2.5" fill="#7c6af7"/>
+  <rect x="86" y="63" width="26" height="9" rx="4.5" fill="#7c6af7"/>
+</svg>
