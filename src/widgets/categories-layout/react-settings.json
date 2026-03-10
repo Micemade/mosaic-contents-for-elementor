@@ -51,6 +51,10 @@
 		"type": "string",
 		"default": "none"
 	},
+	"mpl4e_style_preset": {
+		"type": "string",
+		"default": ""
+	},
 	"mpl4e_cat_card_layout": {
 		"type": "string",
 		"default": "vertical"

@@ -93,6 +93,7 @@ const WIDGET_CONFIGS = {
 			'mpl4e_cat_element_ordering',
 		],
 		styleKeys: [
+			'mpl4e_style_preset',
 			'mpl4e_cat_card_layout',
 			'mpl4e_cat_title_size',
 			'mpl4e_cat_count_size',

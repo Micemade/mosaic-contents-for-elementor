@@ -421,6 +421,26 @@ class CategoriesLayout extends Widget_Base {
 			)
 		);
 
+		$this->add_control(
+			'mpl4e_style_preset',
+			array(
+				'label'       => esc_html__( 'Style Preset', 'mosaic-product-layouts-for-elementor' ),
+				'type'        => Controls_Manager::VISUAL_CHOICE,
+				'columns'     => 4,
+				'label_block' => true,
+				'default'     => '',
+				'options'     => $this->get_style_preset_options( 'categories-layout' ),
+				'description' => esc_html__( 'Pick a preset to instantly apply a complete style pack.', 'mosaic-product-layouts-for-elementor' ),
+			)
+		);
+
+		$this->add_control(
+			'mpl4e_cat_style_preset_divider',
+			array(
+				'type' => Controls_Manager::DIVIDER,
+			)
+		);
+
 		// STYLE TABS: Text, Layout, Image, Colors, Borders.
 		$this->start_controls_tabs( 'category_styles' );
 

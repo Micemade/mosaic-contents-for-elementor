@@ -80,61 +80,6 @@ class ProductsLayout extends Widget_Base {
 	}
 
 	/**
-	 * Get visual style preset options for the Products Layout widget.
-	 *
-	 * @return array
-	 */
-	private function get_style_preset_options() {
-		static $cached_options = null;
-
-		if ( null !== $cached_options ) {
-			return $cached_options;
-		}
-
-		$plugin_file = dirname( __DIR__ ) . '/mosaic-product-layouts-for-elementor.php';
-		$presets_file = dirname( __DIR__ ) . '/src/widgets/products-layout/style-presets.json';
-
-		if ( ! is_readable( $presets_file ) ) {
-			$cached_options = array();
-			return $cached_options;
-		}
-
-		$raw_presets = file_get_contents( $presets_file );
-		if ( false === $raw_presets ) {
-			$cached_options = array();
-			return $cached_options;
-		}
-
-		$decoded_presets = json_decode( $raw_presets, true );
-		if ( ! is_array( $decoded_presets ) ) {
-			$cached_options = array();
-			return $cached_options;
-		}
-
-		$options = array();
-
-		foreach ( $decoded_presets as $preset ) {
-			if ( empty( $preset['id'] ) || empty( $preset['label'] ) ) {
-				continue;
-			}
-
-			$preset_id = (string) $preset['id'];
-			if ( 1 !== preg_match( '/^[a-z0-9-]+$/', $preset_id ) ) {
-				continue;
-			}
-
-			$options[ $preset_id ] = array(
-				'title' => sanitize_text_field( $preset['label'] ),
-				'image' => plugins_url( sprintf( 'assets/admin/images/style-presets/%s.svg', $preset_id ), $plugin_file ),
-			);
-		}
-
-		$cached_options = $options;
-
-		return $cached_options;
-	}
-
-	/**
 	 * Register widget controls.
 	 */
 	public function register_controls() {
@@ -471,7 +416,7 @@ class ProductsLayout extends Widget_Base {
 				'columns'     => 4,
 				'label_block' => true,
 				'default'     => '',
-				'options'     => $this->get_style_preset_options(),
+				'options'     => $this->get_style_preset_options( 'products-layout' ),
 				'description' => esc_html__( 'Pick a preset to instantly apply a complete style pack.', 'mosaic-product-layouts-for-elementor' ),
 			)
 		);

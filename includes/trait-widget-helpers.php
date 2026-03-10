@@ -29,6 +29,13 @@ trait WidgetHelpers {
 	private static $settings_cache = array();
 
 	/**
+	 * Cached style preset options keyed by widget name.
+	 *
+	 * @var array
+	 */
+	private static $style_preset_options_cache = array();
+
+	/**
 	 * Get range configuration for slider controls.
 	 *
 	 * @return array
@@ -179,6 +186,65 @@ trait WidgetHelpers {
 			}
 		}
 		return self::$settings_cache[ $widget_name ];
+	}
+
+	/**
+	 * Get visual style preset options for a widget.
+	 *
+	 * @param string $widget_name Widget slug matching src/widgets/{widget_name}.
+	 * @return array
+	 */
+	protected function get_style_preset_options( $widget_name ) {
+		if ( isset( self::$style_preset_options_cache[ $widget_name ] ) ) {
+			return self::$style_preset_options_cache[ $widget_name ];
+		}
+
+		$presets_file = plugin_dir_path( __DIR__ ) . "src/widgets/{$widget_name}/style-presets.json";
+
+		if ( ! is_readable( $presets_file ) ) {
+			self::$style_preset_options_cache[ $widget_name ] = array();
+			return self::$style_preset_options_cache[ $widget_name ];
+		}
+
+		if ( function_exists( 'wp_json_file_decode' ) ) {
+			$decoded_presets = wp_json_file_decode( $presets_file, array( 'associative' => true ) );
+		} else {
+			$raw_presets = file_get_contents( $presets_file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+			if ( false === $raw_presets ) {
+				self::$style_preset_options_cache[ $widget_name ] = array();
+				return self::$style_preset_options_cache[ $widget_name ];
+			}
+
+			$decoded_presets = json_decode( $raw_presets, true );
+		}
+
+		if ( ! is_array( $decoded_presets ) ) {
+			self::$style_preset_options_cache[ $widget_name ] = array();
+			return self::$style_preset_options_cache[ $widget_name ];
+		}
+
+		$image_base_url = plugins_url( 'assets/admin/images/style-presets/', defined( 'MPL4E_PLUGIN_FILE' ) ? MPL4E_PLUGIN_FILE : dirname( __DIR__ ) . '/mosaic-product-layouts-for-elementor.php' );
+		$options = array();
+
+		foreach ( $decoded_presets as $preset ) {
+			if ( empty( $preset['id'] ) || empty( $preset['label'] ) ) {
+				continue;
+			}
+
+			$preset_id = (string) $preset['id'];
+			if ( 1 !== preg_match( '/^[a-z0-9-]+$/', $preset_id ) ) {
+				continue;
+			}
+
+			$options[ $preset_id ] = array(
+				'title' => sanitize_text_field( $preset['label'] ),
+				'image' => $image_base_url . $preset_id . '.svg',
+			);
+		}
+
+		self::$style_preset_options_cache[ $widget_name ] = $options;
+
+		return self::$style_preset_options_cache[ $widget_name ];
 	}
 
 	/**

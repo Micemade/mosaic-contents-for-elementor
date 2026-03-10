@@ -22,6 +22,22 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+if ( ! defined( 'MPL4E_VERSION' ) ) {
+	define( 'MPL4E_VERSION', '0.1.0' );
+}
+
+if ( ! defined( 'MPL4E_PLUGIN_FILE' ) ) {
+	define( 'MPL4E_PLUGIN_FILE', __FILE__ );
+}
+
+if ( ! defined( 'MPL4E_PLUGIN_DIR' ) ) {
+	define( 'MPL4E_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+}
+
+if ( ! defined( 'MPL4E_PLUGIN_URL' ) ) {
+	define( 'MPL4E_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+}
+
 final class MosaicProductLayoutsElementor {
 
 	const VERSION                   = '0.1.0';

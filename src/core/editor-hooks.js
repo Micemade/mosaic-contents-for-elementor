@@ -12,6 +12,7 @@ import { getActiveBreakpointNames } from './elementor-utils';
 import { addItemToLayout } from '../shared/utils/addItem';
 import { getComputedLayout } from '../shared/utils/layoutUtils';
 import productsStylePresets from '../widgets/products-layout/style-presets.json';
+import categoriesStylePresets from '../widgets/categories-layout/style-presets.json';
 
 const PRODUCTS_STYLE_PRESET_MAP = productsStylePresets.reduce((acc, preset) => {
 	if (preset?.id && preset?.settings) {
@@ -23,6 +24,24 @@ const PRODUCTS_STYLE_PRESET_MAP = productsStylePresets.reduce((acc, preset) => {
 const PRODUCTS_STYLE_PRESET_SETTING_KEYS = Array.from(
 	new Set(
 		productsStylePresets.flatMap((preset) => {
+			if (!preset?.settings || typeof preset.settings !== 'object') {
+				return [];
+			}
+			return Object.keys(preset.settings);
+		})
+	)
+);
+
+const CATEGORIES_STYLE_PRESET_MAP = categoriesStylePresets.reduce((acc, preset) => {
+	if (preset?.id && preset?.settings) {
+		acc[preset.id] = preset.settings;
+	}
+	return acc;
+}, {});
+
+const CATEGORIES_STYLE_PRESET_SETTING_KEYS = Array.from(
+	new Set(
+		categoriesStylePresets.flatMap((preset) => {
 			if (!preset?.settings || typeof preset.settings !== 'object') {
 				return [];
 			}
@@ -44,6 +63,7 @@ const WIDGET_KEYS = {
 		savedSetupKey: 'mpl4e_saved_setup',
 		stylePresetKey: 'mpl4e_style_preset',
 		presetSettingKeys: PRODUCTS_STYLE_PRESET_SETTING_KEYS,
+		stylePresetMap: PRODUCTS_STYLE_PRESET_MAP,
 		resetEvent: 'mosaic:resetLayout',
 		applySetupEvent: 'mosaic:applySetup',
 		addItemEvent: 'mosaic:addItem',
@@ -54,8 +74,9 @@ const WIDGET_KEYS = {
 		layoutKey: 'mpl4e_cat_layout',
 		customLayoutKey: 'mpl4e_cat_custom_layout',
 		savedSetupKey: 'mpl4e_cat_saved_setup',
-		stylePresetKey: null,
-		presetSettingKeys: [],
+		stylePresetKey: 'mpl4e_style_preset',
+		presetSettingKeys: CATEGORIES_STYLE_PRESET_SETTING_KEYS,
+		stylePresetMap: CATEGORIES_STYLE_PRESET_MAP,
 		resetEvent: 'mosaic:catResetLayout',
 		applySetupEvent: 'mosaic:catApplySetup',
 		addItemEvent: 'mosaic:catAddItem',
@@ -68,6 +89,7 @@ const WIDGET_KEYS = {
 		savedSetupKey: 'mpl4e_sp_saved_setup',
 		stylePresetKey: null,
 		presetSettingKeys: [],
+		stylePresetMap: null,
 		resetEvent: 'mosaic:spResetLayout',
 		applySetupEvent: 'mosaic:spApplySetup',
 		addItemEvent: 'mosaic:spAddItem',
@@ -301,7 +323,7 @@ export const registerEditorHooks = () => {
 							return;
 						}
 
-						const presetSettings = PRODUCTS_STYLE_PRESET_MAP[presetId];
+						const presetSettings = wKeys.stylePresetMap?.[presetId];
 						if (!presetSettings) {
 							return;
 						}
