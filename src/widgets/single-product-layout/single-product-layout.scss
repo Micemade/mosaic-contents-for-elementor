@@ -10,7 +10,7 @@
 
 @use '../../shared/assets/gridLayout' as *;
 @use '../../shared/assets/productElements' as *;
-@use '../../shared/assets/zindexControls' as *;
+@use '../../shared/assets/itemControls' as *;
 
 // Apply grid layout styles.
 .mosaic-grid-layout {
@@ -256,35 +256,6 @@
 
 				@extend %spItemLayout;
 
-				// ── Edit element button ────────────────────────────────
-				.sp-edit-element-btn {
-					width: 22px;
-					height: 22px;
-					display: flex;
-					align-items: center;
-					justify-content: center;
-					background: #000;
-					color: #fff;
-					border: none;
-					border-radius: 3px;
-					cursor: pointer;
-					line-height: 1;
-					transition: background 0.15s ease;
-					box-shadow: 0 0 1px #fff;
-
-					i {
-						font-size: 11px;
-						line-height: 1;
-						pointer-events: none;
-					}
-
-					&:hover {
-						background: rgba(113, 216, 247, 0.85);
-						color: #000;
-						box-shadow: 0 0 1px rgba(0, 0, 0, 0.7);
-					}
-				}
-
 				.empty-element {
 					display: none;
 				}
@@ -428,52 +399,4 @@
 	}
 }
 
-// ── Group member dropdown ───────────────────────────────────────────────
-.mpl4e-group-controls-wrapper {
-	position: relative;
-}
 
-.mpl4e-group-dropdown {
-	position: absolute;
-	top: calc(100% + 4px);
-	left: 0;
-	background: var(--e-a-bg-default, #fff);
-	border: 1px solid #d5d8dc;
-	border-radius: 4px;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-	min-width: 160px;
-	z-index: 9999;
-	padding: 4px 0;
-
-	.mpl4e-element-toggle-item {
-		&.is-active {
-			background: rgba(0, 200, 0, 0.08);
-		}
-		&.in-other-group {
-			color: #888;
-		}
-	}
-
-	.mpl4e-other-group-badge {
-		font-size: 10px;
-		background: #ddd;
-		color: #555;
-		padding: 1px 4px;
-		border-radius: 3px;
-		margin-left: auto;
-	}
-}
-
-// ── Add Group toolbar button ────────────────────────────────────────────
-.mpl4e-add-group-btn {
-	display: inline-flex;
-	align-items: center;
-	gap: 4px;
-}
-
-// ── Remove Group button (red tint) ──────────────────────────────────────
-.sp-remove-group-btn {
-	&:hover {
-		background: rgba(200, 0, 0, 0.85) !important;
-	}
-}

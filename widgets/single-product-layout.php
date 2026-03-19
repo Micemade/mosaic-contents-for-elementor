@@ -778,7 +778,7 @@ class SingleProductLayout extends Widget_Base {
 					),
 				),
 				'selectors' => array(
-					'{{WRAPPER}} {{CURRENT_ITEM}}.sp-element .elements-wrapper .grouped-elements' => 'align-items: {{VALUE}}; text-align: {{VALUE}};',
+					'{{WRAPPER}} {{CURRENT_ITEM}}.sp-element .elements-wrapper .grouped-elements' => 'align-items: {{VALUE}};',
 				),
 				'separator' => 'before',
 			)
@@ -830,7 +830,7 @@ class SingleProductLayout extends Widget_Base {
 				'type'      => Controls_Manager::COLOR,
 				'default'   => '#333333',
 				'selectors' => array(
-					'{{WRAPPER}} {{CURRENT_ITEM}}.sp-element > .elements-wrapper a' => 'color: {{VALUE}};',
+					'{{WRAPPER}} {{CURRENT_ITEM}}.sp-element > .elements-wrapper a:not(.add_to_cart_button)' => 'color: {{VALUE}};',
 				),
 			)
 		);

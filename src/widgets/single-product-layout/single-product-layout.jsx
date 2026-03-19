@@ -198,16 +198,6 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 	);
 
 	const hiddenItems = useMemo(() => new Set(layoutData.hidden || []), [layoutData.hidden]);
-	const visibleLayoutData = useMemo(() => {
-		if (!hiddenItems.size) return layoutData;
-		const filter = (items) => (items || []).filter((item) => !hiddenItems.has(item.i));
-		return {
-			desktop: filter(layoutData.desktop),
-			tablet: filter(layoutData.tablet),
-			mobile: filter(layoutData.mobile),
-			zindex: layoutData.zindex || {},
-		};
-	}, [layoutData, hiddenItems]);
 
 	// ── Group data (derived from layout JSON) ────────────────────────
 	const grouped = useMemo(() => layoutData.grouped || {}, [layoutData.grouped]);
@@ -226,6 +216,20 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 		Object.values(grouped).forEach((members) => members.forEach((id) => set.add(id)));
 		return set;
 	}, [grouped]);
+
+	// Visible layout: exclude hidden items AND items currently inside a group.
+	const visibleLayoutData = useMemo(() => {
+		if (!hiddenItems.size && !allGroupedElementIds.size) return layoutData;
+		const filter = (items) => (items || []).filter(
+			(item) => !hiddenItems.has(item.i) && !allGroupedElementIds.has(item.i)
+		);
+		return {
+			desktop: filter(layoutData.desktop),
+			tablet: filter(layoutData.tablet),
+			mobile: filter(layoutData.mobile),
+			zindex: layoutData.zindex || {},
+		};
+	}, [layoutData, hiddenItems, allGroupedElementIds]);
 
 	// ── Fetch product data ───────────────────────────────────────────
 	useEffect(() => {
@@ -639,8 +643,14 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 
 	/**
 	 * Sync the Elementor repeater rows to match the current group item IDs.
+	 *
 	 * Creates or removes rows so that each group has exactly one repeater row
-	 * with a `group_id` field matching the grid item ID.
+	 * with a `group_id` field matching the grid item ID. Uses Elementor's
+	 * `$e.run('document/repeater/insert|remove')` commands when available so
+	 * that proper Containers are created for each row; falls back to direct
+	 * Backbone collection manipulation for older Elementor versions.
+	 *
+	 * @param {string[]} targetGroupIds - Desired group item IDs (e.g. `['group-item-0']`).
 	 */
 	const syncRepeaterToGroups = (targetGroupIds) => {
 		if (typeof window.MosaicLayoutsReact === 'undefined') return;
@@ -665,7 +675,63 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 
 		if (!toAdd.length && !toRemove.length) return;
 
-		// Remove obsolete rows first (reverse index order to keep indices stable).
+		// Use Elementor's $e command API so that proper Containers are created
+		// for each repeater row.  Direct collection.add() skips Container
+		// creation, which causes Backbone initialization errors when the Style
+		// tab renders the repeater control.
+		const $e = window.$e || window.parent?.$e;
+		let container = null;
+		try {
+			const el = typeof elementor !== 'undefined' ? elementor : window.parent?.elementor;
+			container = el?.getContainer?.(widgetId);
+		} catch (_) { /* getContainer may not exist in older Elementor */ }
+
+		if ($e && container) {
+			try {
+				// Remove obsolete rows (reverse index order for stable indices).
+				const removeIndices = toRemove
+					.map((row) => repeaterCollection.indexOf(
+						repeaterCollection.findWhere({ group_id: row.group_id })
+					))
+					.filter((idx) => idx !== -1)
+					.sort((a, b) => b - a);
+
+				removeIndices.forEach((idx) => {
+					$e.run('document/repeater/remove', {
+						container,
+						name: 'mpl4e_sp_group_styles',
+						index: idx,
+					});
+				});
+
+				// Add new rows.
+				toAdd.forEach((groupId) => {
+					const label = `Group ${groupId.replace('group-item-', '')}`;
+					$e.run('document/repeater/insert', {
+						container,
+						name: 'mpl4e_sp_group_styles',
+						model: { group_id: groupId, group_label: label },
+					});
+				});
+
+				// Fire an immediate settings change so React receives the
+				// repeater update in the same batch as the layout update.
+				// Without this the 80ms debounced scheduleRepeaterUpdate
+				// creates a window where the reverse-sync useEffect sees an
+				// orphaned grid item (layout changed, repeater not yet) and
+				// removes it — requiring a second click.
+				settingsModel.trigger('change', settingsModel);
+
+				if (typeof elementor !== 'undefined' && elementor.saver) {
+					elementor.saver.setFlagEditorChange(true);
+				}
+				return;
+			} catch (err) {
+				console.warn('$e.run repeater command failed, falling back:', err);
+			}
+		}
+
+		// Fallback: direct collection manipulation (older Elementor).
 		toRemove.forEach((row) => {
 			const idx = repeaterCollection.indexOf(repeaterCollection.findWhere({ group_id: row.group_id }));
 			if (idx !== -1) {
@@ -673,16 +739,11 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 			}
 		});
 
-		// Add new rows.
 		toAdd.forEach((groupId) => {
 			const label = `Group ${groupId.replace('group-item-', '')}`;
-			// Use Elementor's internal add() which assigns a unique _id.
 			repeaterCollection.add({ group_id: groupId, group_label: label });
 		});
 
-		// Trigger a full settings change so editor-hooks.js regenerates CSS
-		// (renderUI). The specific event alone doesn't fire the generic
-		// `change` handler that calls view.renderUI().
 		settingsModel.trigger('change', settingsModel);
 		if (typeof elementor !== 'undefined' && elementor.saver) {
 			elementor.saver.setFlagEditorChange(true);
@@ -800,6 +861,7 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 										imagePosition,
 										imageFit,
 									}}
+									isEditMode={isEditMode}
 								/>
 
 								{isEditMode && (
@@ -836,7 +898,7 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 													);
 												}}
 											>
-												<i className="eicon-plus" />
+												<i className="eicon-menu-bar" />
 											</button>
 											{isGroupDropdownOpen === layoutItem.i && (
 												<div className="mpl4e-group-dropdown">
@@ -896,18 +958,12 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 					if (!elementDef) return null;
 
 					const zIndex = layoutData.zindex?.[layoutItem.i] || 0;
-					const isGroupedElsewhere = allGroupedElementIds.has(layoutItem.i);
 
 					return (
 						<div
 							key={layoutItem.i}
-							className={`sp-element ${elementDef.id}${isGroupedElsewhere ? ' is-grouped' : ''}`}
-							style={{
-								zIndex,
-								...(isGroupedElsewhere
-									? { display: 'none', visibility: 'hidden' }
-									: {}),
-							}}
+							className={`sp-element ${elementDef.id}`}
+							style={{ zIndex }}
 							data-label={elementDef.name}
 						>
 							{renderElement(elementDef.id, product, {
@@ -1019,7 +1075,7 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 									<line x1="12" y1="8" x2="12" y2="16" />
 									<line x1="8" y1="12" x2="16" y2="12" />
 								</svg>
-								<span>Group</span>
+								<span>Add Group</span>
 							</button>
 						)}
 					</div>

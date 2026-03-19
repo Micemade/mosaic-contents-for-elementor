@@ -28,14 +28,19 @@ const GroupElement = ({
 	elementMap,
 	repeaterRow,
 	styles,
+	isEditMode
 }) => {
 	const memberIds = grouped?.[groupId] || [];
+
+	// Map Elementor's flex alignment values to CSS text-align values.
+	const alignMap = { 'flex-start': 'left', 'flex-end': 'right', 'center': 'center' };
+	const textAlign = alignMap[repeaterRow?.group_align] || 'center';
 
 	if (!product) return null;
 
 	return (
 		<div className="elements-wrapper">
-			<div className="grouped-elements">
+			<div className="grouped-elements" style={{ textAlign }}>
 				{memberIds.map((itemId) => {
 					const def = elementMap[itemId];
 					if (!def) return null;
@@ -45,7 +50,7 @@ const GroupElement = ({
 						</div>
 					);
 				})}
-				{memberIds.length === 0 && (
+				{memberIds.length === 0 && isEditMode && (
 					<span className="group-empty-hint">
 						Elements will be added here
 					</span>
