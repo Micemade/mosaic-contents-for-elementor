@@ -124,6 +124,14 @@ final class MosaicProductLayoutsElementor {
 		wp_enqueue_script( 'react' );
 		wp_enqueue_script( 'react-dom' );
 
+		// Panel-only styles (parent window, not the preview iframe).
+		wp_register_style( 'mpl4e-editor-panel', false );
+		wp_enqueue_style( 'mpl4e-editor-panel' );
+		wp_add_inline_style(
+			'mpl4e-editor-panel',
+			'.elementor-control-mpl4e_sp_group_styles .elementor-repeater-row-tool.elementor-repeater-tool-duplicate{display:none!important}'
+		);
+
 		// The control script is enqueued by the control's enqueue() method
 	}
 

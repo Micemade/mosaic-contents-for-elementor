@@ -88,7 +88,7 @@ class SingleProductLayout extends Widget_Base {
 	 */
 	private function register_element_style_controls( $element_id, $css_class ) {
 		
-		$selector = "{{WRAPPER}} .sp-element.{$css_class} .elements-wrapper";
+		$selector = "{{WRAPPER}} .{$css_class} .elements-wrapper";
 
 		// Omit text size control for rating since it uses stars 
 		// instead of text and font-size would not apply well.
@@ -192,7 +192,7 @@ class SingleProductLayout extends Widget_Base {
 				'size_units' => array( 'px', '%', 'em', 'rem' ),
 				'range'      => self::get_range(),
 				'selectors'  => array(
-					$selector => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+					$selector => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}} !important;',
 				),
 			)
 		);
@@ -397,7 +397,7 @@ class SingleProductLayout extends Widget_Base {
 			array(
 				'label'        => __( 'Element outlines and labels', 'mosaic-product-layouts-for-elementor' ),
 				'type'         => Controls_Manager::SELECT,
-				'default'      => 'no-outline',
+				'default'      => 'outline-aid-hover',
 				'options'      => array(
 					'no-outline'        => __( 'None', 'mosaic-product-layouts-for-elementor' ),
 					'outline-aid-hover' => __( 'On widget hover', 'mosaic-product-layouts-for-elementor' ),
@@ -712,6 +712,251 @@ class SingleProductLayout extends Widget_Base {
 			array(
 				'name'     => 'mpl4e_sp_image_box_shadow',
 				'selector' => '{{WRAPPER}} .sp-element.image .product-featured-image',
+			)
+		);
+
+		$this->end_controls_section();
+
+		// ── Group Styles Section ───────────────────────────────────────────
+		$this->start_controls_section(
+			'sp_group_styles_section',
+			array(
+				'label' => esc_html__( 'Group Styles', 'mosaic-product-layouts-for-elementor' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			)
+		);
+
+		$this->add_control(
+			'sp_group_description',
+			array(
+				'type'            => Controls_Manager::RAW_HTML,
+				'raw'             => esc_html__( 'Style controls for group containers. Add groups using the "Add group" button in the widget toolbar.', 'mosaic-product-layouts-for-elementor' ),
+				'content_classes' => 'elementor-descriptor',
+			)
+		);
+
+		$group_repeater = new \Elementor\Repeater();
+
+		$group_repeater->add_control(
+			'group_id',
+			array(
+				'label'   => esc_html__( 'Group ID', 'mosaic-product-layouts-for-elementor' ),
+				'type'    => Controls_Manager::HIDDEN,
+				'default' => '',
+			)
+		);
+
+		$group_repeater->add_control(
+			'group_label',
+			array(
+				'label'       => esc_html__( 'Group', 'mosaic-product-layouts-for-elementor' ),
+				'type'        => Controls_Manager::HIDDEN,
+				'default'     => '',
+				// 'label_block' => true,
+				// 'ai'          => array( 'active' => false ),
+			)
+		);
+
+		$group_repeater->add_control(
+			'group_align',
+			array(
+				'label'     => esc_html__( 'Horizontal Align', 'mosaic-product-layouts-for-elementor' ),
+				'type'      => Controls_Manager::CHOOSE,
+				'default'   => 'center',
+				'options'   => array(
+					'flex-start' => array(
+						'title' => esc_html__( 'Left', 'mosaic-product-layouts-for-elementor' ),
+						'icon'  => 'eicon-h-align-left',
+					),
+					'center'     => array(
+						'title' => esc_html__( 'Center', 'mosaic-product-layouts-for-elementor' ),
+						'icon'  => 'eicon-h-align-center',
+					),
+					'flex-end'   => array(
+						'title' => esc_html__( 'Right', 'mosaic-product-layouts-for-elementor' ),
+						'icon'  => 'eicon-h-align-right',
+					),
+				),
+				'selectors' => array(
+					'{{WRAPPER}} {{CURRENT_ITEM}}.sp-element .elements-wrapper .grouped-elements' => 'align-items: {{VALUE}}; text-align: {{VALUE}};',
+				),
+				'separator' => 'before',
+			)
+		);
+
+		$group_repeater->add_control(
+			'group_valign',
+			array(
+				'label'     => esc_html__( 'Vertical Align', 'mosaic-product-layouts-for-elementor' ),
+				'type'      => Controls_Manager::CHOOSE,
+				'default'   => 'center',
+				'options'   => array(
+					'flex-start' => array(
+						'title' => esc_html__( 'Top', 'mosaic-product-layouts-for-elementor' ),
+						'icon'  => 'eicon-v-align-top',
+					),
+					'center'     => array(
+						'title' => esc_html__( 'Middle', 'mosaic-product-layouts-for-elementor' ),
+						'icon'  => 'eicon-v-align-middle',
+					),
+					'flex-end'   => array(
+						'title' => esc_html__( 'Bottom', 'mosaic-product-layouts-for-elementor' ),
+						'icon'  => 'eicon-v-align-bottom',
+					),
+				),
+				'selectors' => array(
+					'{{WRAPPER}} {{CURRENT_ITEM}}.sp-element > .elements-wrapper .grouped-elements' => 'justify-content: {{VALUE}};',
+				),
+			)
+		);
+
+		$group_repeater->add_control(
+			'group_text_color',
+			array(
+				'label'     => esc_html__( 'Text Color', 'mosaic-product-layouts-for-elementor' ),
+				'type'      => Controls_Manager::COLOR,
+				'default'   => '#333333',
+				'selectors' => array(
+					'{{WRAPPER}} {{CURRENT_ITEM}}.sp-element > .elements-wrapper' => 'color: {{VALUE}};',
+				),
+				'separator' => 'before',
+			)
+		);
+
+		$group_repeater->add_control(
+			'group_links_color',
+			array(
+				'label'     => esc_html__( 'Links Color', 'mosaic-product-layouts-for-elementor' ),
+				'type'      => Controls_Manager::COLOR,
+				'default'   => '#333333',
+				'selectors' => array(
+					'{{WRAPPER}} {{CURRENT_ITEM}}.sp-element > .elements-wrapper a' => 'color: {{VALUE}};',
+				),
+			)
+		);
+
+		$group_repeater->add_control(
+			'group_background',
+			array(
+				'label'     => esc_html__( 'Background Color', 'mosaic-product-layouts-for-elementor' ),
+				'type'      => Controls_Manager::COLOR,
+				'default'   => '#ffffff',
+				'selectors' => array(
+					'{{WRAPPER}} {{CURRENT_ITEM}}.sp-element > .elements-wrapper' => 'background-color: {{VALUE}};',
+				),
+				'separator' => 'before',
+			)
+		);
+
+		$group_repeater->add_responsive_control(
+			'group_padding',
+			array(
+				'label'      => esc_html__( 'Padding', 'mosaic-product-layouts-for-elementor' ),
+				'type'       => Controls_Manager::DIMENSIONS,
+				'size_units' => array( 'px', '%', 'em', 'rem' ),
+				'default'    => array(
+					'top'      => '1',
+					'right'    => '1',
+					'bottom'   => '1',
+					'left'     => '1',
+					'unit'     => 'em',
+					'isLinked' => true,
+				),
+				'selectors'  => array(
+					'{{WRAPPER}} {{CURRENT_ITEM}}.sp-element > .elements-wrapper' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+				),
+				'separator'  => 'before',
+			)
+		);
+
+		$group_repeater->add_control(
+			'group_gap',
+			array(
+				'label'      => esc_html__( 'Gap', 'mosaic-product-layouts-for-elementor' ),
+				'type'       => Controls_Manager::SLIDER,
+				'size_units' => array( 'em', 'px', 'rem' ),
+				'default'    => array(
+					'size' => 0.3,
+					'unit' => 'em',
+				),
+				'range'      => array(
+					'em'  => array(
+						'min'  => 0,
+						'max'  => 3,
+						'step' => 0.1,
+					),
+					'px'  => array(
+						'min'  => 0,
+						'max'  => 50,
+						'step' => 1,
+					),
+					'rem' => array(
+						'min'  => 0,
+						'max'  => 3,
+						'step' => 0.1,
+					),
+				),
+				'selectors'  => array(
+					'{{WRAPPER}} {{CURRENT_ITEM}}.sp-element > .elements-wrapper .grouped-elements' => 'gap: {{SIZE}}{{UNIT}};',
+				),
+			)
+		);
+
+		$group_repeater->add_group_control(
+			Group_Control_Border::get_type(),
+			array(
+				'name'      => 'group_border',
+				'selector'  => '{{WRAPPER}} {{CURRENT_ITEM}}.sp-element > .elements-wrapper',
+				'separator' => 'before',
+				'fields_options' => array(
+					'border' => array(
+						'default' => 'solid',
+					),
+					'width'  => array(
+						'default' => array(
+							'top'      => '1',
+							'right'    => '1',
+							'bottom'   => '1',
+							'left'     => '1',
+							'isLinked' => true,
+						),
+					),
+					'color'  => array(
+						'default' => '#cccccc',
+					),
+				),
+			)
+		);
+
+		$group_repeater->add_responsive_control(
+			'group_border_radius',
+			array(
+				'label'      => esc_html__( 'Border Radius', 'mosaic-product-layouts-for-elementor' ),
+				'type'       => Controls_Manager::DIMENSIONS,
+				'size_units' => array( 'px', '%' ),
+				'selectors'  => array(
+					'{{WRAPPER}} {{CURRENT_ITEM}}.sp-element > .elements-wrapper' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+				),
+			)
+		);
+
+		$group_repeater->add_group_control(
+			Group_Control_Box_Shadow::get_type(),
+			array(
+				'name'     => 'group_box_shadow',
+				'selector' => '{{WRAPPER}} {{CURRENT_ITEM}}.sp-element > .elements-wrapper',
+			)
+		);
+
+		$this->add_control(
+			'mpl4e_sp_group_styles',
+			array(
+				'label'         => esc_html__( 'Groups', 'mosaic-product-layouts-for-elementor' ),
+				'type'          => Controls_Manager::REPEATER,
+				'fields'        => $group_repeater->get_controls(),
+				'default'       => array(),
+				'title_field'   => '{{{ group_label || "Group" }}}',
+				'prevent_empty' => false,
 			)
 		);
 

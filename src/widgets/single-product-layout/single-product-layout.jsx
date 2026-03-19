@@ -25,9 +25,11 @@ import RatingStars from '../../shared/components/RatingStars.jsx';
 import AddToCartButton from '../../shared/components/AddToCartButton.jsx';
 import ZIndexControls from '../../shared/components/ZIndexControls.jsx';
 import GridHelper from '../../shared/components/GridHelper.jsx';
+import GroupElement from './GroupElement.jsx';
 
 import { decode } from '../../shared/utils/generalUtils.js';
 import { updateElementorSetting, openPanelSection } from '../../core/elementor-utils';
+import { addItemToLayout, removeItemFromLayout } from '../../shared/utils/addItem.js';
 import { LRUCache, createCache } from '../../shared/utils/LRUCache.js';
 import { useGridSettings, useElementorDevice } from '../../shared/utils/hooks.js';
 
@@ -58,6 +60,11 @@ const ELEMENT_MAP = {
 const ELEMENT_SECTION_MAP = Object.fromEntries(
 	Object.values(ELEMENT_MAP).map(({ id, section }) => [id, section])
 );
+
+// ── Group constants ─────────────────────────────────────────────────────
+const MAX_GROUPS = 3;
+// Elements that cannot be placed inside groups.
+const UNGROUPABLE_IDS = new Set(['item-3', 'item-5']); // image, saleBadge
 
 
 // ── Layout helpers ──────────────────────────────────────────────────────
@@ -155,6 +162,9 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 	const [isElementsDropdownOpen, setIsElementsDropdownOpen] = useState(false);
 	const dropdownRef = useRef(null);
 
+	const [isGroupDropdownOpen, setIsGroupDropdownOpen] = useState(null); // groupId or null
+	const groupDropdownRef = useRef(null);
+
 	// ── Settings extraction ──────────────────────────────────────────
 	const productId = widgetData?.mpl4e_sp_product_id || '';
 	const layoutId = widgetData?.mpl4e_sp_layout || 'default';
@@ -165,6 +175,10 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 	const excerptTruncate = widgetData?.mpl4e_sp_excerpt_truncate ?? true;
 	const outlineLabels = widgetData?.mpl4e_sp_helper_outline_labels || 'none';
 	const helperType = widgetData?.mpl4e_sp_helper_grid || 'none';
+	const groupStyles = useMemo(
+		() => (Array.isArray(widgetData?.mpl4e_sp_group_styles) ? widgetData.mpl4e_sp_group_styles : []),
+		[widgetData?.mpl4e_sp_group_styles]
+	);
 
 	// Grid settings using shared hook (columns differ from products widget).
 	const gridSettings = useGridSettings(widgetData, 'mpl4e_sp_items_margin', 'mpl4e_sp_row_height');
@@ -194,6 +208,24 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 			zindex: layoutData.zindex || {},
 		};
 	}, [layoutData, hiddenItems]);
+
+	// ── Group data (derived from layout JSON) ────────────────────────
+	const grouped = useMemo(() => layoutData.grouped || {}, [layoutData.grouped]);
+	const groupSnapshots = useMemo(() => layoutData.groupSnapshots || {}, [layoutData.groupSnapshots]);
+
+	// Group item IDs present in the layout (e.g. ['group-item-0', 'group-item-1']).
+	const groupItemIds = useMemo(() => {
+		return (layoutData.mobile || [])
+			.map((item) => item.i)
+			.filter((id) => id.startsWith('group-item-'));
+	}, [layoutData.mobile]);
+
+	// Collect all element IDs that are currently inside any group.
+	const allGroupedElementIds = useMemo(() => {
+		const set = new Set();
+		Object.values(grouped).forEach((members) => members.forEach((id) => set.add(id)));
+		return set;
+	}, [grouped]);
 
 	// ── Fetch product data ───────────────────────────────────────────
 	useEffect(() => {
@@ -254,13 +286,133 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 	useEffect(() => {
 		if (!isElementsDropdownOpen) return;
 		const handleClickOutside = (e) => {
-			if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-				setIsElementsDropdownOpen(false);
+			if (dropdownRef.current && dropdownRef.current.contains(e.target)) {
+				return;
 			}
+			setIsElementsDropdownOpen(false);
 		};
-		document.addEventListener('mousedown', handleClickOutside);
-		return () => document.removeEventListener('mousedown', handleClickOutside);
+		document.addEventListener('mousedown', handleClickOutside, true);
+		return () => document.removeEventListener('mousedown', handleClickOutside, true);
 	}, [isElementsDropdownOpen]);
+
+	// Close group member dropdown on any click/mousedown outside it.
+	useEffect(() => {
+		if (!isGroupDropdownOpen) return;
+		const handleClickOutside = (e) => {
+			// Keep open if the click is inside the wrapper that holds the
+			// toggle button + the dropdown panel.
+			if (groupDropdownRef.current && groupDropdownRef.current.contains(e.target)) {
+				return;
+			}
+			setIsGroupDropdownOpen(null);
+		};
+		// Use capture phase so we fire before RGL's drag handlers or
+		// stopPropagation calls swallow the event.
+		document.addEventListener('mousedown', handleClickOutside, true);
+		return () => document.removeEventListener('mousedown', handleClickOutside, true);
+	}, [isGroupDropdownOpen]);
+
+	// ── Reverse sync: repeater panel ↔ grid items ──────────────────
+	// Handles two directions:
+	// 1. "Add item" in panel → row arrives with empty group_id → create grid item.
+	// 2. "x" (remove) in panel → repeater row gone → remove orphaned grid item.
+	useEffect(() => {
+		if (!isEditMode || !widgetId) return;
+
+		const repeaterGroupIds = new Set(groupStyles.filter((r) => r.group_id).map((r) => r.group_id));
+		const unlinkedRows = groupStyles.filter((r) => !r.group_id);
+
+		// ── Remove orphaned grid items (repeater row deleted via panel) ──
+		const orphanedGridIds = groupItemIds.filter((id) => !repeaterGroupIds.has(id) && !unlinkedRows.length);
+		if (orphanedGridIds.length) {
+			let currentLayout = customLayoutData || JSON.stringify(layoutData);
+			orphanedGridIds.forEach((groupId) => {
+				// Restore grouped children and clean up layout JSON.
+				let parsed;
+				try { parsed = JSON.parse(currentLayout); } catch { return; }
+
+				const newGrouped = { ...(parsed.grouped || {}) };
+				const newSnapshots = { ...(parsed.groupSnapshots || {}) };
+
+				const memberIds = newGrouped[groupId] || [];
+				memberIds.forEach((childId) => {
+					const snap = newSnapshots[childId];
+					if (snap) {
+						['desktop', 'tablet', 'mobile'].forEach((bp) => {
+							if (snap[bp] && parsed[bp]) {
+								const idx = parsed[bp].findIndex((it) => it.i === childId);
+								if (idx !== -1) {
+									parsed[bp][idx] = { ...parsed[bp][idx], ...snap[bp] };
+								}
+							}
+						});
+						delete newSnapshots[childId];
+					}
+				});
+
+				delete newGrouped[groupId];
+				parsed.grouped = Object.keys(newGrouped).length ? newGrouped : undefined;
+				parsed.groupSnapshots = Object.keys(newSnapshots).length ? newSnapshots : undefined;
+
+				currentLayout = removeItemFromLayout(JSON.stringify(parsed), groupId);
+			});
+
+			updateElementorSetting(
+				'single-product-layout', widgetId,
+				'mpl4e_sp_custom_layout', currentLayout
+			);
+			return;
+		}
+
+		// ── Add grid items for new repeater rows (empty group_id) ────────
+		if (!unlinkedRows.length) return;
+
+		const slotsLeft = MAX_GROUPS - groupItemIds.length;
+		if (slotsLeft <= 0) return;
+
+		const rowsToLink = unlinkedRows.slice(0, slotsLeft);
+		let currentLayout = customLayoutData || JSON.stringify(layoutData);
+		const newGroupIds = [];
+
+		rowsToLink.forEach(() => {
+			const { newLayoutJson, newItemId } = addItemToLayout(
+				currentLayout,
+				columns,
+				{ itemPrefix: 'group-item-' }
+			);
+			currentLayout = newLayoutJson;
+			newGroupIds.push(newItemId);
+		});
+
+		updateElementorSetting(
+			'single-product-layout', widgetId,
+			'mpl4e_sp_custom_layout', currentLayout
+		);
+
+		// Assign group_id + label back to the unlinked Backbone rows.
+		if (typeof window.MosaicLayoutsReact !== 'undefined') {
+			const mgr = window.MosaicLayoutsReact;
+			const model = mgr.getModel('single-product-layout', widgetId);
+			const settingsModel = model?.get('settings');
+			const repeaterCollection = settingsModel?.get('mpl4e_sp_group_styles');
+
+			if (repeaterCollection) {
+				const rows = repeaterCollection.toJSON ? repeaterCollection.toJSON() : [];
+				let idx = 0;
+				rows.forEach((row, i) => {
+					if (!row.group_id && idx < newGroupIds.length) {
+						const bModel = repeaterCollection.at(i);
+						if (bModel) {
+							bModel.set('group_id', newGroupIds[idx]);
+							bModel.set('group_label', `Group ${newGroupIds[idx].replace('group-item-', '')}`);
+						}
+						idx++;
+					}
+				});
+				settingsModel.trigger('change', settingsModel);
+			}
+		}
+	}, [groupStyles, isEditMode, widgetId, groupItemIds, customLayoutData, layoutData, columns]);
 
 	const handleToggleElement = (itemId) => {
 		if (!isEditMode || !widgetId) return;
@@ -298,6 +450,8 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 				mobile: fullMobile,
 				zindex: existingCustomLayout.zindex || layoutData.zindex || {},
 				hidden: newHidden,
+				...(layoutData.grouped && { grouped: layoutData.grouped }),
+				...(layoutData.groupSnapshots && { groupSnapshots: layoutData.groupSnapshots }),
 			})
 		);
 	};
@@ -334,6 +488,8 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 			mobile: mergeIntoFull(fullMobile, newLayouts.mobile),
 			zindex: existingCustomLayout.zindex || layoutData.zindex || {},
 			hidden: existingCustomLayout.hidden || layoutData.hidden || [],
+			...(layoutData.grouped && { grouped: layoutData.grouped }),
+			...(layoutData.groupSnapshots && { groupSnapshots: layoutData.groupSnapshots }),
 		};
 
 		updateElementorSetting(
@@ -342,6 +498,195 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 			'mpl4e_sp_custom_layout',
 			JSON.stringify(customLayout)
 		);
+	};
+
+	// ── Group handlers (editor only) ─────────────────────────────────
+
+	/**
+	 * Add a new group grid item and a matching Elementor repeater row.
+	 */
+	const handleAddGroup = () => {
+		if (!isEditMode || !widgetId) return;
+		if (groupItemIds.length >= MAX_GROUPS) return;
+
+		const { newLayoutJson, newItemId } = addItemToLayout(
+			customLayoutData || JSON.stringify(layoutData),
+			columns,
+			{ itemPrefix: 'group-item-' }
+		);
+
+		// Persist the layout.
+		updateElementorSetting(
+			'single-product-layout', widgetId,
+			'mpl4e_sp_custom_layout', newLayoutJson
+		);
+
+		// Add a matching repeater row so Elementor generates a unique _id.
+		syncRepeaterToGroups([...groupItemIds, newItemId]);
+	};
+
+	/**
+	 * Remove a group: restore children to the main grid, clean up layout JSON.
+	 */
+	const handleRemoveGroup = (groupId) => {
+		if (!isEditMode || !widgetId) return;
+
+		// 1. Remove the group item from the layout.
+		let updatedJson = removeItemFromLayout(
+			customLayoutData || JSON.stringify(layoutData),
+			groupId
+		);
+
+		// 2. Restore grouped children positions from snapshots.
+		let parsed;
+		try { parsed = JSON.parse(updatedJson); } catch { return; }
+
+		const newGrouped = { ...(parsed.grouped || {}) };
+		const newSnapshots = { ...(parsed.groupSnapshots || {}) };
+
+		// Remove members from grouped and restore their snapshot positions (if any).
+		const memberIds = newGrouped[groupId] || [];
+		memberIds.forEach((childId) => {
+			const snap = newSnapshots[childId];
+			if (snap) {
+				['desktop', 'tablet', 'mobile'].forEach((bp) => {
+					if (snap[bp] && parsed[bp]) {
+						const idx = parsed[bp].findIndex((it) => it.i === childId);
+						if (idx !== -1) {
+							parsed[bp][idx] = { ...parsed[bp][idx], ...snap[bp] };
+						}
+					}
+				});
+				delete newSnapshots[childId];
+			}
+		});
+
+		delete newGrouped[groupId];
+		parsed.grouped = Object.keys(newGrouped).length ? newGrouped : undefined;
+		parsed.groupSnapshots = Object.keys(newSnapshots).length ? newSnapshots : undefined;
+
+		updateElementorSetting(
+			'single-product-layout', widgetId,
+			'mpl4e_sp_custom_layout', JSON.stringify(parsed)
+		);
+
+		// Sync repeater (remove the row).
+		const remainingGroupIds = groupItemIds.filter((id) => id !== groupId);
+		syncRepeaterToGroups(remainingGroupIds);
+	};
+
+	/**
+	 * Toggle an element's membership in a group.
+	 */
+	const handleElementGroup = (elementItemId, groupId) => {
+		if (!isEditMode || !widgetId) return;
+
+		let existingCustomLayout = {};
+		if (customLayoutData) {
+			try { existingCustomLayout = JSON.parse(customLayoutData); } catch { return; }
+		} else {
+			existingCustomLayout = { ...layoutData };
+		}
+
+		const newGrouped = { ...(existingCustomLayout.grouped || {}) };
+		const newSnapshots = { ...(existingCustomLayout.groupSnapshots || {}) };
+		const isInThisGroup = (newGrouped[groupId] || []).includes(elementItemId);
+
+		if (isInThisGroup) {
+			// Remove from group → restore snapshot.
+			newGrouped[groupId] = newGrouped[groupId].filter((id) => id !== elementItemId);
+			if (!newGrouped[groupId].length) delete newGrouped[groupId];
+
+			const snap = newSnapshots[elementItemId];
+			if (snap) {
+				['desktop', 'tablet', 'mobile'].forEach((bp) => {
+					if (snap[bp] && existingCustomLayout[bp]) {
+						const idx = existingCustomLayout[bp].findIndex((it) => it.i === elementItemId);
+						if (idx !== -1) {
+							existingCustomLayout[bp][idx] = { ...existingCustomLayout[bp][idx], ...snap[bp] };
+						}
+					}
+				});
+				delete newSnapshots[elementItemId];
+			}
+		} else {
+			// Remove from any other group first.
+			Object.keys(newGrouped).forEach((gId) => {
+				newGrouped[gId] = newGrouped[gId].filter((id) => id !== elementItemId);
+				if (!newGrouped[gId].length) delete newGrouped[gId];
+			});
+
+			// Snapshot current position before grouping.
+			const snap = {};
+			['desktop', 'tablet', 'mobile'].forEach((bp) => {
+				const item = (existingCustomLayout[bp] || []).find((it) => it.i === elementItemId);
+				if (item) snap[bp] = { x: item.x, y: item.y, w: item.w, h: item.h };
+			});
+			newSnapshots[elementItemId] = snap;
+
+			// Add to group.
+			newGrouped[groupId] = [...(newGrouped[groupId] || []), elementItemId];
+		}
+
+		existingCustomLayout.grouped = Object.keys(newGrouped).length ? newGrouped : undefined;
+		existingCustomLayout.groupSnapshots = Object.keys(newSnapshots).length ? newSnapshots : undefined;
+
+		updateElementorSetting(
+			'single-product-layout', widgetId,
+			'mpl4e_sp_custom_layout', JSON.stringify(existingCustomLayout)
+		);
+	};
+
+	/**
+	 * Sync the Elementor repeater rows to match the current group item IDs.
+	 * Creates or removes rows so that each group has exactly one repeater row
+	 * with a `group_id` field matching the grid item ID.
+	 */
+	const syncRepeaterToGroups = (targetGroupIds) => {
+		if (typeof window.MosaicLayoutsReact === 'undefined') return;
+		const mgr = window.MosaicLayoutsReact;
+		const model = mgr.getModel('single-product-layout', widgetId);
+		if (!model) return;
+
+		const settingsModel = model.get('settings');
+		if (!settingsModel) return;
+
+		const repeaterCollection = settingsModel.get('mpl4e_sp_group_styles');
+		if (!repeaterCollection) return;
+
+		// Current repeater rows.
+		const currentRows = repeaterCollection.toJSON ? repeaterCollection.toJSON() : (Array.isArray(repeaterCollection) ? repeaterCollection : []);
+		const currentGroupIds = new Set(currentRows.map((r) => r.group_id));
+
+		// Rows to add.
+		const toAdd = targetGroupIds.filter((id) => !currentGroupIds.has(id));
+		// Rows to remove (IDs no longer present).
+		const toRemove = currentRows.filter((r) => !targetGroupIds.includes(r.group_id));
+
+		if (!toAdd.length && !toRemove.length) return;
+
+		// Remove obsolete rows first (reverse index order to keep indices stable).
+		toRemove.forEach((row) => {
+			const idx = repeaterCollection.indexOf(repeaterCollection.findWhere({ group_id: row.group_id }));
+			if (idx !== -1) {
+				repeaterCollection.remove(repeaterCollection.at(idx));
+			}
+		});
+
+		// Add new rows.
+		toAdd.forEach((groupId) => {
+			const label = `Group ${groupId.replace('group-item-', '')}`;
+			// Use Elementor's internal add() which assigns a unique _id.
+			repeaterCollection.add({ group_id: groupId, group_label: label });
+		});
+
+		// Trigger a full settings change so editor-hooks.js regenerates CSS
+		// (renderUI). The specific event alone doesn't fire the generic
+		// `change` handler that calls view.renderUI().
+		settingsModel.trigger('change', settingsModel);
+		if (typeof elementor !== 'undefined' && elementor.saver) {
+			elementor.saver.setFlagEditorChange(true);
+		}
 	};
 
 	const selectWidget = () => {
@@ -401,6 +746,10 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 		<div
 			className={`single-product-layout mosaic-single-product-layout micemade-widgets ${outlineLabels && isEditMode ? outlineLabels : ''}`}
 			data-widget-id={widgetId}
+			onMouseLeave={() => {
+				if (isElementsDropdownOpen) setIsElementsDropdownOpen(false);
+				if (isGroupDropdownOpen) setIsGroupDropdownOpen(null);
+			}}
 		>
 			<GridLayout
 				layouts={visibleLayoutData}
@@ -417,16 +766,148 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 				draggableCancel=".mpl4e-item-controls"
 			>
 				{visibleLayoutData.mobile.map((layoutItem) => {
+
+					// ── Group item ──
+					if (layoutItem.i.startsWith('group-item-')) {
+						const zIndex = layoutData.zindex?.[layoutItem.i] || 0;
+						const repeaterRow = groupStyles.find((r) => r.group_id === layoutItem.i) || {};
+						const repeaterClass = repeaterRow._id
+							? `elementor-repeater-item-${repeaterRow._id}`
+							: '';
+
+						return (
+							<div
+								key={layoutItem.i}
+								className={`sp-element group-element ${repeaterClass}`}
+								style={{ zIndex }}
+								data-label={repeaterRow.group_label || 'Group'}
+								onMouseLeave={() => {
+									if (isGroupDropdownOpen === layoutItem.i) {
+										setIsGroupDropdownOpen(null);
+									}
+								}}
+							>
+								<GroupElement
+									groupId={layoutItem.i}
+									grouped={grouped}
+									product={product}
+									renderElement={renderElement}
+									elementMap={ELEMENT_MAP}
+									repeaterRow={repeaterRow}
+									styles={{
+										excerptTruncate,
+										featuredImageSize,
+										imagePosition,
+										imageFit,
+									}}
+								/>
+
+								{isEditMode && (
+									<div className="mpl4e-item-controls">
+										<ZIndexControls
+											itemId={layoutItem.i}
+											layoutData={layoutData}
+											customLayoutData={customLayoutData}
+											widgetType="single-product-layout"
+											widgetId={widgetId}
+											settingKey="mpl4e_sp_custom_layout"
+											updateFn={updateElementorSetting}
+										/>
+										<button
+											className="sp-edit-element-btn"
+											title="Edit group style"
+											onMouseDownCapture={(e) => {
+												e.stopPropagation();
+												e.preventDefault();
+												openPanelSection('sp_group_styles_section');
+											}}
+										>
+											<i className="eicon-edit" />
+										</button>
+										<div className="mpl4e-group-controls-wrapper" ref={isGroupDropdownOpen === layoutItem.i ? groupDropdownRef : null}>
+											<button
+												className="sp-edit-element-btn"
+												title="Group members"
+												onMouseDownCapture={(e) => {
+													e.stopPropagation();
+													e.preventDefault();
+													setIsGroupDropdownOpen((prev) =>
+														prev === layoutItem.i ? null : layoutItem.i
+													);
+												}}
+											>
+												<i className="eicon-plus" />
+											</button>
+											{isGroupDropdownOpen === layoutItem.i && (
+												<div className="mpl4e-group-dropdown">
+													{Object.entries(ELEMENT_MAP).map(([itemId, def]) => {
+														if (UNGROUPABLE_IDS.has(itemId)) return null;
+														if (itemId.startsWith('group-item-')) return null;
+														const isInThisGroup = (grouped[layoutItem.i] || []).includes(itemId);
+														const isHidden = hiddenItems.has(itemId);
+														// Find if element is in another group.
+														const otherGroup = Object.entries(grouped).find(
+															([gId, members]) => gId !== layoutItem.i && members.includes(itemId)
+														);
+														return (
+															<label
+																key={itemId}
+																className={`mpl4e-element-toggle-item${isInThisGroup ? ' is-active' : ''}${otherGroup ? ' in-other-group' : ''}${isHidden ? ' is-hidden' : ''}`}
+																title={
+																	otherGroup
+																		? `In ${otherGroup[0]} — will be moved here`
+																		: isInThisGroup
+																			? 'Remove from group'
+																			: 'Add to group'
+																}
+															>
+																<input
+																	type="checkbox"
+																	checked={isInThisGroup}
+																	onChange={() => handleElementGroup(itemId, layoutItem.i)}
+																/>
+																<span>{def.name}</span>
+																{otherGroup && <span className="mpl4e-other-group-badge">{otherGroup[0].replace('group-item-', 'G')}</span>}
+															</label>
+														);
+													})}
+												</div>
+											)}
+										</div>
+										<button
+											className="mpl4e-remove-item-btn"
+											title="Remove group"
+											onMouseDownCapture={(e) => {
+												e.stopPropagation();
+												e.preventDefault();
+												handleRemoveGroup(layoutItem.i);
+											}}
+										>
+											<i className="eicon-close" />
+										</button>
+									</div>
+								)}
+							</div>
+						);
+					}
+
+					// ── Regular element item ──
 					const elementDef = ELEMENT_MAP[layoutItem.i];
 					if (!elementDef) return null;
 
 					const zIndex = layoutData.zindex?.[layoutItem.i] || 0;
+					const isGroupedElsewhere = allGroupedElementIds.has(layoutItem.i);
 
 					return (
 						<div
 							key={layoutItem.i}
-							className={`sp-element ${elementDef.id}`}
-							style={{ zIndex }}
+							className={`sp-element ${elementDef.id}${isGroupedElsewhere ? ' is-grouped' : ''}`}
+							style={{
+								zIndex,
+								...(isGroupedElsewhere
+									? { display: 'none', visibility: 'hidden' }
+									: {}),
+							}}
 							data-label={elementDef.name}
 						>
 							{renderElement(elementDef.id, product, {
@@ -504,9 +985,43 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 											</label>
 										);
 									})}
+									{groupItemIds.map((groupId) => {
+										const isHidden = hiddenItems.has(groupId);
+										const row = groupStyles.find((r) => r.group_id === groupId) || {};
+										const label = row.group_label || `Group ${groupId.replace('group-item-', '')}`;
+										return (
+											<label
+												key={groupId}
+												className={`mpl4e-element-toggle-item${isHidden ? ' is-hidden' : ''}`}
+											>
+												<input
+													type="checkbox"
+													checked={!isHidden}
+													onChange={() => handleToggleElement(groupId)}
+												/>
+												<span>{label}</span>
+											</label>
+										);
+									})}
 								</div>
 							)}
 						</div>
+
+						{groupItemIds.length < MAX_GROUPS && (
+							<button
+								type="button"
+								className="mpl4e-toolbar-btn mpl4e-add-group-btn"
+								onClick={handleAddGroup}
+								title="Add group container"
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+									<rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+									<line x1="12" y1="8" x2="12" y2="16" />
+									<line x1="8" y1="12" x2="16" y2="12" />
+								</svg>
+								<span>Group</span>
+							</button>
+						)}
 					</div>
 
 					<GridHelper gridSettings={gridSettings} device={deviceType} cols={columns} type={helperType} />

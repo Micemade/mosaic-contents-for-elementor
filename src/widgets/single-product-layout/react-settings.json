@@ -59,5 +59,9 @@
 			"x": 50,
 			"y": 50
 		}
+	},
+	"mpl4e_sp_group_styles": {
+		"type": "array",
+		"default": []
 	}
 }

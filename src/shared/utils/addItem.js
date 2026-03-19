@@ -247,9 +247,13 @@ const buildNewItemForDevice = (device, existingLayouts, gridWidth, itemId) => {
  * 
  * @param {string} currentLayoutJson - Current layout as JSON string
  * @param {Object} gridColumns - Object with column counts per breakpoint { desktop: 48, tablet: 24, mobile: 12 }
+ * @param {Object} [options] - Additional options
+ * @param {string} [options.itemPrefix='item-'] - Prefix for item IDs (e.g. 'group-item-' for groups)
  * @returns {Object} Object containing { newLayoutJson, newItemId }
  */
-export const addItemToLayout = (currentLayoutJson, gridColumns = { desktop: 48, tablet: 24, mobile: 12 }) => {
+export const addItemToLayout = (currentLayoutJson, gridColumns = { desktop: 48, tablet: 24, mobile: 12 }, options = {}) => {
+	const itemPrefix = options.itemPrefix || 'item-';
+	const isGroup = itemPrefix === 'group-item-';
 	let layouts;
 	
 	// Parse current layout or create empty structure
@@ -274,9 +278,9 @@ export const addItemToLayout = (currentLayoutJson, gridColumns = { desktop: 48, 
 	const breakpoints = getActiveBreakpointNames();
 	
 	// Find the highest item number and create new item ID
-	const highestNumber = getHighestItemNumber(layouts, 'item-');
+	const highestNumber = getHighestItemNumber(layouts, itemPrefix);
 	const newItemNumber = highestNumber + 1;
-	const newItemId = `item-${newItemNumber}`;
+	const newItemId = `${itemPrefix}${newItemNumber}`;
 
 	// Find the highest z-index
 	const highestZIndex = Object.values(layouts.zindex || {}).reduce(
@@ -292,7 +296,20 @@ export const addItemToLayout = (currentLayoutJson, gridColumns = { desktop: 48, 
 		
 		const existingItems = layouts[device] || [];
 		const columns = gridColumns[device] || 48;
-		const newItem = buildNewItemForDevice(device, existingItems, columns, newItemId);
+
+		let newItem;
+		if (isGroup) {
+			// Groups use fixed dimensions, placed centrally
+			const groupDimensions = {
+				desktop: { w: 20, h: 20, x: 10, y: 10 },
+				tablet: { w: 16, h: 16, x: 8, y: 8 },
+				mobile: { w: 14, h: 14, x: 4, y: 4 },
+			};
+			const dims = groupDimensions[device] || groupDimensions.desktop;
+			newItem = { i: newItemId, ...dims };
+		} else {
+			newItem = buildNewItemForDevice(device, existingItems, columns, newItemId);
+		}
 		
 		updatedLayouts[device] = [...existingItems, newItem];
 	});
@@ -302,6 +319,14 @@ export const addItemToLayout = (currentLayoutJson, gridColumns = { desktop: 48, 
 		...(layouts.zindex || {}),
 		[newItemId]: highestZIndex + 1
 	};
+
+	// Preserve grouped and groupSnapshots if present
+	if (layouts.grouped) {
+		updatedLayouts.grouped = layouts.grouped;
+	}
+	if (layouts.groupSnapshots) {
+		updatedLayouts.groupSnapshots = layouts.groupSnapshots;
+	}
 
 	return {
 		newLayoutJson: JSON.stringify(updatedLayouts),

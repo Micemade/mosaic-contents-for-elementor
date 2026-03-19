@@ -94,6 +94,7 @@ const WIDGET_KEYS = {
 		applySetupEvent: 'mosaic:spApplySetup',
 		addItemEvent: 'mosaic:spAddItem',
 		gridColumns: { desktop: 56, tablet: 48, mobile: 36 },
+		repeaterKeys: ['mpl4e_sp_group_styles'],
 	},
 };
 

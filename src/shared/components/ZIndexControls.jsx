@@ -70,6 +70,14 @@ export function updateZIndex(
 		...((existingCustomLayout.hidden || layoutData.hidden) && {
 			hidden: existingCustomLayout.hidden || layoutData.hidden,
 		}),
+		// Preserve group data if present.
+		...((existingCustomLayout.grouped || layoutData.grouped) && {
+			grouped: existingCustomLayout.grouped || layoutData.grouped,
+		}),
+		// Preserve group snapshots if present (used for undo/redo of group changes).
+		...((existingCustomLayout.groupSnapshots || layoutData.groupSnapshots) && {
+			groupSnapshots: existingCustomLayout.groupSnapshots || layoutData.groupSnapshots,
+		}),
 	};
 
 	updateFn(widgetType, widgetId, settingKey, JSON.stringify(customLayout));

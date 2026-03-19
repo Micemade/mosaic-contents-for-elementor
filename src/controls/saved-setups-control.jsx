@@ -142,6 +142,7 @@ const WIDGET_CONFIGS = {
 			'mpl4e_sp_featured_image_size',
 			'mpl4e_sp_excerpt_truncate',
 			'mpl4e_sp_image_fit',
+			'mpl4e_sp_group_styles',
 		],
 		responsiveKeys: [
 			// Global
