@@ -81,6 +81,29 @@ class SingleProductLayout extends Widget_Base {
 	}
 
 	/**
+	 * Read single-product layout presets from JSON and return as id => label options.
+	 *
+	 * @return array Associative array of layout_id => label.
+	 */
+	private function get_sp_layout_options() {
+		$json_path = MPL4E_PLUGIN_DIR . 'src/widgets/single-product-layout/utils/single-product-layouts.json';
+		$layouts   = wp_json_file_decode( $json_path, array( 'associative' => true ) );
+
+		if ( empty( $layouts ) || ! is_array( $layouts ) ) {
+			return array( 'default' => __( 'Default', 'mosaic-product-layouts-for-elementor' ) );
+		}
+
+		$options = array();
+		foreach ( $layouts as $layout ) {
+			if ( isset( $layout['id'], $layout['label'] ) ) {
+				$options[ $layout['id'] ] = $layout['label'];
+			}
+		}
+
+		return $options;
+	}
+
+	/**
 	 * Register a standard set of style controls for a text element.
 	 *
 	 * @param string $element_id  Snake‑case ID for control names (e.g. 'title', 'sale_badge').
@@ -108,7 +131,8 @@ class SingleProductLayout extends Widget_Base {
 				)
 			);
 	
-		}	
+		}
+		
 		// Text color.
 		$this->add_control(
 			"mpl4e_sp_{$element_id}_text_color",
@@ -265,19 +289,15 @@ class SingleProductLayout extends Widget_Base {
 			)
 		);
 
+		$layout_options = $this->get_sp_layout_options();
+
 		$this->add_control(
 			'mpl4e_sp_layout',
 			array(
 				'label'       => __( 'Predefined Layouts', 'mosaic-product-layouts-for-elementor' ),
 				'type'        => Controls_Manager::SELECT,
 				'default'     => 'default',
-				'options'     => array(
-					'default'  => __( 'Default (Image left, details right)', 'mosaic-product-layouts-for-elementor' ),
-					'layout-2' => __( 'Layout 2 (Full width image, details below)', 'mosaic-product-layouts-for-elementor' ),
-					'layout-3' => __( 'Layout 3 (Details left, image right)', 'mosaic-product-layouts-for-elementor' ),
-					'layout-4' => __( 'Layout 4 (Hero title, image center)', 'mosaic-product-layouts-for-elementor' ),
-					'layout-5' => __( 'Layout 5 (Image left overlap)', 'mosaic-product-layouts-for-elementor' ),
-				),
+				'options'     => $layout_options,
 				'description' => __( 'Choose a predefined element arrangement.', 'mosaic-product-layouts-for-elementor' ),
 			)
 		);
@@ -511,22 +531,25 @@ class SingleProductLayout extends Widget_Base {
 				'selectors'  => array(
 					'{{WRAPPER}} .sp-element .elements-wrapper' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
 				),
+				'separator' => 'before'
 			)
 		);
 
 		$this->add_group_control(
 			Group_Control_Background::get_type(),
 			array(
-				'name'     => 'mpl4e_sp_global_background',
-				'selector' => '{{WRAPPER}} .sp-element .elements-wrapper',
+				'name'      => 'mpl4e_sp_global_background',
+				'selector'  => '{{WRAPPER}} .sp-element .elements-wrapper',
+				'separator' => 'before'
 			)
 		);
 
 		$this->add_group_control(
 			Group_Control_Border::get_type(),
 			array(
-				'name'     => 'mpl4e_sp_global_border',
-				'selector' => '{{WRAPPER}} .sp-element .elements-wrapper',
+				'name'      => 'mpl4e_sp_global_border',
+				'selector'  => '{{WRAPPER}} .sp-element .elements-wrapper',
+				'separator' => 'before'
 			)
 		);
 
@@ -545,8 +568,9 @@ class SingleProductLayout extends Widget_Base {
 		$this->add_group_control(
 			Group_Control_Box_Shadow::get_type(),
 			array(
-				'name'     => 'mpl4e_sp_global_box_shadow',
-				'selector' => '{{WRAPPER}} .sp-element .elements-wrapper',
+				'name'      => 'mpl4e_sp_global_box_shadow',
+				'selector'  => '{{WRAPPER}} .sp-element .elements-wrapper',
+				'separator' => 'before' 
 			)
 		);
 
@@ -554,14 +578,16 @@ class SingleProductLayout extends Widget_Base {
 
 		// ── Per-Element Style Sections ─────────────────────────────────────
 		$text_elements = array(
-			array( 'id' => 'title',      'label' => 'Title',             'css_class' => 'title' ),
-			array( 'id' => 'price',      'label' => 'Price',             'css_class' => 'price' ),
-			array( 'id' => 'excerpt',    'label' => 'Short Description', 'css_class' => 'excerpt' ),
-			array( 'id' => 'addtocart',  'label' => 'Add to Cart',       'css_class' => 'addToCart' ),
-			array( 'id' => 'sale_badge', 'label' => 'Sale Badge',        'css_class' => 'saleBadge' ),
-			array( 'id' => 'rating',     'label' => 'Rating',            'css_class' => 'rating' ),
-			array( 'id' => 'categories', 'label' => 'Categories',        'css_class' => 'categories' ),
-			array( 'id' => 'brands',     'label' => 'Brands',            'css_class' => 'brands' ),
+			array( 'id' => 'title',      'label' => 'Title',              'css_class' => 'title' ),
+			array( 'id' => 'price',      'label' => 'Price',              'css_class' => 'price' ),
+			array( 'id' => 'excerpt',    'label' => 'Short Description',  'css_class' => 'excerpt' ),
+			array( 'id' => 'addtocart',  'label' => 'Add to Cart',        'css_class' => 'addToCart' ),
+			array( 'id' => 'sale_badge', 'label' => 'Sale Badge',         'css_class' => 'saleBadge' ),
+			array( 'id' => 'rating',     'label' => 'Rating',             'css_class' => 'rating' ),
+			array( 'id' => 'categories', 'label' => 'Categories',         'css_class' => 'categories' ),
+			array( 'id' => 'brands',     'label' => 'Brands',             'css_class' => 'brands' ),
+			array( 'id' => 'outofstock', 'label' => 'Out of Stock Badge', 'css_class' => 'outofstock' ),
+			array( 'id' => 'attributes', 'label' => 'Attributes',         'css_class' => 'attributes' ),
 		);
 
 		foreach ( $text_elements as $element ) {
@@ -752,8 +778,6 @@ class SingleProductLayout extends Widget_Base {
 				'label'       => esc_html__( 'Group', 'mosaic-product-layouts-for-elementor' ),
 				'type'        => Controls_Manager::HIDDEN,
 				'default'     => '',
-				// 'label_block' => true,
-				// 'ai'          => array( 'active' => false ),
 			)
 		);
 

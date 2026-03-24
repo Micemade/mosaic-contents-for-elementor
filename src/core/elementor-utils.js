@@ -180,6 +180,8 @@ ${mq} {
  * @param {string} [tab='style'] - Tab name: 'content' | 'style' | 'advanced'
  */
 export const openPanelSection = (sectionId, tab = 'style') => {
+	console.log(sectionId, tab);
+
 	if (typeof elementor === 'undefined') return;
 	try {
 		// The panel lives in the parent frame; use its jQuery to query the DOM.

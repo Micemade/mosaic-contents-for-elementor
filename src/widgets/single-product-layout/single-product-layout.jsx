@@ -53,6 +53,8 @@ const ELEMENT_MAP = {
 	'item-6': { id: 'rating', name: 'Rating', section: 'sp_rating_style_section' },
 	'item-7': { id: 'categories', name: 'Categories', section: 'sp_categories_style_section' },
 	'item-8': { id: 'brands', name: 'Brands', section: 'sp_brands_style_section' },
+	'item-9': { id: 'outofstock', name: 'Out of Stock Badge', section: 'sp_outofstock_style_section' },
+	'item-10': { id: 'attributes', name: 'Attributes', section: 'sp_attributes_style_section' },
 };
 
 // Derived map of element ID → Elementor Style tab section ID.
@@ -64,7 +66,7 @@ const ELEMENT_SECTION_MAP = Object.fromEntries(
 // ── Group constants ─────────────────────────────────────────────────────
 const MAX_GROUPS = 3;
 // Elements that cannot be placed inside groups.
-const UNGROUPABLE_IDS = new Set(['item-3', 'item-5']); // image, saleBadge
+const UNGROUPABLE_IDS = new Set(['item-3', 'item-5', 'item-9', 'item-10']); // image, saleBadge, outofstock, attributes
 
 
 // ── Layout helpers ──────────────────────────────────────────────────────
@@ -115,7 +117,7 @@ async function fetchProduct(productId) {
 	const params = new URLSearchParams();
 	params.append(
 		'_fields',
-		'id,name,short_description,price_html,images,permalink,add_to_cart,type,average_rating,review_count,on_sale,categories,brands'
+		'id,name,short_description,price_html,images,permalink,add_to_cart,type,average_rating,review_count,on_sale,categories,brands,is_purchasable,is_in_stock,variations,attributes'
 	);
 
 	const response = await fetch(
@@ -196,6 +198,15 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 		() => getLayout(layoutId, customLayoutData),
 		[layoutId, customLayoutData]
 	);
+
+	// TODO: TEMP – remove after debugging
+	console.log('[SPL] layoutId:', layoutId);
+	console.log('[SPL] "value" (copy-paste into JSON):\n' + JSON.stringify({
+		desktop: layoutData.desktop,
+		tablet: layoutData.tablet,
+		mobile: layoutData.mobile,
+	}));
+	console.log('[SPL] "zindex" (copy-paste into JSON):\n' + JSON.stringify(layoutData.zindex || {}));
 
 	const hiddenItems = useMemo(() => new Set(layoutData.hidden || []), [layoutData.hidden]);
 
