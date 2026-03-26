@@ -13,7 +13,17 @@ import ZIndexControls from "./ZIndexControls";
  * @param {string}   props.widgetId        - Elementor widget instance ID.
  * @param {Function} props.onRemove        - Called with itemId when the remove button is clicked.
  */
-const ItemControls = ({ settingKey, itemId, layoutData, customLayoutData, widgetId, widgetType, onRemove }) => (
+const ItemControls = ({
+	settingKey,
+	itemId,
+	layoutData,
+	customLayoutData,
+	widgetId,
+	widgetType,
+	onRemove,
+	onManage,
+	manageTitle = 'Manage',
+}) => (
 
 	<div className="mpl4e-item-controls">
 		<ZIndexControls
@@ -25,6 +35,20 @@ const ItemControls = ({ settingKey, itemId, layoutData, customLayoutData, widget
 			settingKey={settingKey}
 			updateFn={updateElementorSetting}
 		/>
+		{typeof onManage === 'function' && (
+			<button
+				type="button"
+				className="mpl4e-manage-item-btn"
+				onMouseDownCapture={(e) => {
+					e.stopPropagation();
+					e.preventDefault();
+					onManage(itemId);
+				}}
+				title={manageTitle}
+			>
+				<i className="eicon-image-bold" aria-hidden="true" />
+			</button>
+		)}
 		{layoutData.mobile.length > 1 && (
 			<button
 				type="button"

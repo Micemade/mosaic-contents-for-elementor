@@ -91,6 +91,7 @@
 	}// end .mpl4e-zindex-controls
 
 	// ── SINGLE PRODUCT Edit Styles button ────────────────────────────────
+	.mpl4e-manage-item-btn,
 	.sp-edit-element-btn {
 		width: 22px;
 		height: 22px;
@@ -118,6 +119,7 @@
 			box-shadow: 0 0 1px rgba(0, 0, 0, 0.7);
 		}
 	}
+	.mpl4e-manage-item-btn i {font-size: 18px;}
 
 	// ── SINGLE PRODUCT Group member dropdown ───────────────────────────────────────────────
 	.mpl4e-group-controls-wrapper {

@@ -81,7 +81,7 @@
 
 		/* Global taxonomy styles (used in products-layout and single-product-layout) */
 		.taxonomy {
-			display: inline-flex !important;
+			display: inline !important;
 
 			.links {
 				display: inline;
@@ -136,6 +136,11 @@
 		opacity: 1;
 	}
 }
+@keyframes fadeIn {
+	to {
+		opacity: 1;
+	}
+} 
 
 /* HELPER STYLES */
 .grid-helper,

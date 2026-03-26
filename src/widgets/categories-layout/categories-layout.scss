@@ -74,44 +74,6 @@
 			object-fit: cover;
 			object-position: 50% 50%;
 		}
-
-		.mpl4e-cat-set-image-btn {
-			position: absolute;
-			top: 8px;
-			left: 50%;
-			transform: translateX(-50%);
-			z-index: 15;
-			padding: 6px 10px;
-			border: 1px solid #1f2937;
-			border-radius: 6px;
-			background: rgba(255, 255, 255, 0.96);
-			color: #111827;
-			font-size: 11px;
-			font-weight: 600;
-			line-height: 1.1;
-			cursor: pointer;
-			white-space: nowrap;
-			opacity: 0;
-			visibility: hidden;
-			pointer-events: none;
-			transition: opacity 0.18s ease, visibility 0.18s ease, background-color 0.18s ease;
-
-			&:focus-visible {
-				opacity: 1;
-				visibility: visible;
-				pointer-events: auto;
-				outline: 2px solid #111827;
-				outline-offset: 2px;
-			}
-		}
-
-		&:hover .mpl4e-cat-set-image-btn,
-		&:focus-within .mpl4e-cat-set-image-btn {
-			opacity: 1;
-			visibility: visible;
-			pointer-events: auto;
-			background: #ffffff;
-		}
 	}
 
 	.category-elements {
@@ -176,13 +138,6 @@
 			@extend %categoryLayout;
 		}
 
-		&:hover .mpl4e-cat-set-image-btn,
-		&:focus-within .mpl4e-cat-set-image-btn {
-			opacity: 1;
-			visibility: visible;
-			pointer-events: auto;
-		}
-
 	}
 
 } // end .mosaic-grid-layout (categories)
@@ -205,6 +160,7 @@
 	border: 1px solid #d1d5db;
 	background: #ffffff;
 	box-shadow: 0 18px 45px rgba(0, 0, 0, 0.2);
+	position: relative;
 
 	button {
 		cursor: pointer;
@@ -222,6 +178,15 @@
 	margin: 6px 0 14px;
 	color: #4b5563;
 	font-size: 13px;
+}
+.mpl4e-cat-image-modal-note {
+	margin: 18px 0 0px;
+	color: rgb(1, 62, 147);
+	font-size: 13px;
+	background: rgb(221, 234, 252);
+	padding: 8px;
+	border: 1px solid rgb(163, 199, 248);
+	border-radius: 6px;
 }
 
 .mpl4e-cat-image-modal-actions {
@@ -256,7 +221,9 @@
 }
 
 .mpl4e-cat-image-modal-footer {
-	margin-top: 14px;
+	position: absolute;
+	top: 18px;
+	right: 18px;
 	display: flex;
 	justify-content: flex-end;
 

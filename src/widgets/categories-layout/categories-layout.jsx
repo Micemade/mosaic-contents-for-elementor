@@ -21,6 +21,7 @@ import DOMPurify from 'dompurify';
 import GridLayout from '../../shared/components/GridLayout.jsx';
 import ItemControls from '../../shared/components/ItemControls.jsx';
 import GridHelper from '../../shared/components/GridHelper.jsx';
+import CategoryImage from './CategoryImage.jsx';
 
 // Utilities and data.
 import { decode } from '../../shared/utils/generalUtils.js';
@@ -126,7 +127,7 @@ function prepareCategoriesData(categories, layoutItems) {
  * @param {Object|null} props.image - Image object from Store API { src, thumbnail }
  * @param {Object} props.style - CSS styles for img element
  */
-const CategoryImage = ({ name, image, style = {} }) => {
+/* const CategoryImage = ({ name, image, style = {} }) => {
 	const placeholderImg = window.MPL4E?.placeholderImg || '';
 
 	if (!image || !image.src) {
@@ -149,7 +150,7 @@ const CategoryImage = ({ name, image, style = {} }) => {
 		/>
 	);
 };
-
+ */
 /**
  * Categories Layout Widget Component.
  *
@@ -463,7 +464,7 @@ const CategoriesLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'disp
 			isResizable={isEditMode}
 			onLayoutChange={isEditMode ? handleLayoutChange : undefined}
 			selectWidget={selectWidget}
-				draggableCancel=".mpl4e-item-controls, .mpl4e-cat-set-image-btn"
+				draggableCancel=".mpl4e-item-controls"
 		>
 			{/* Map over visible layout items only — items without a matching category are hidden */}
 			{visibleLayoutData.mobile.map((layoutItem) => {
@@ -510,25 +511,14 @@ const CategoriesLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'disp
 									customLayoutData={customLayoutData}
 									widgetId={widgetId}
 									widgetType='categories-layout'
+									onManage={() => handleOpenImageModal(matchedCategory)}
+									manageTitle="Manage category image"
 									onRemove={handleRemoveItem}
 								/>
 							)}
 
 							<div className={`item-wrapper ${cardLayout}`}>
 								<figure className="category-image gradient-preloader">
-									{isEditMode && (
-										<button
-											type="button"
-											className="mpl4e-cat-set-image-btn"
-											onMouseDownCapture={(e) => {
-												e.stopPropagation();
-												e.preventDefault();
-												handleOpenImageModal(matchedCategory);
-											}}
-										>
-											Manage Image
-										</button>
-									)}
 									<CategoryImage
 										name={matchedCategory.name}
 										image={matchedCategory.image}

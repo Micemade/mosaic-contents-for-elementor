@@ -195,7 +195,7 @@ const CategoryImageModal = ({ isOpen, category, onClose, onSaved }) => {
 				onMouseDown={(event) => event.stopPropagation()}
 			>
 				<h4 id={titleId} className="mpl4e-cat-image-modal-title">Manage Category Image</h4>
-				<p className="mpl4e-cat-image-modal-subtitle">{category.name}</p>
+				<p className="mpl4e-cat-image-modal-subtitle">for the "<strong>{category.name}</strong>" category</p>
 
 				<div className="mpl4e-cat-image-modal-actions">
 					<button type="button" onClick={handleChooseLibrary} disabled={isSaving}>
@@ -204,10 +204,14 @@ const CategoryImageModal = ({ isOpen, category, onClose, onSaved }) => {
 					<button type="button" onClick={handleFileClick} disabled={isSaving}>
 						Upload New
 					</button>
-					<button type="button" onClick={handleRemove} disabled={isSaving}>
-						Remove Image
-					</button>
+					{category.image?.src && (
+						<button type="button" onClick={handleRemove} disabled={isSaving}>
+							Remove Image
+						</button>
+					)}
 				</div>
+
+				<p className="mpl4e-cat-image-modal-note"><strong>NOTE:</strong> Changing the category image will affect how it appears across the site.</p>
 
 				<input
 					type="file"
@@ -220,7 +224,14 @@ const CategoryImageModal = ({ isOpen, category, onClose, onSaved }) => {
 				{error ? <p className="mpl4e-cat-image-modal-error">{error}</p> : null}
 
 				<div className="mpl4e-cat-image-modal-footer">
-					<button type="button" onClick={onClose} disabled={isSaving}>Close</button>
+					<button
+						type="button"
+						onClick={onClose}
+						disabled={isSaving}
+						title='Close the modal'
+					>
+						<i className="eicon-close" aria-hidden="true" />
+					</button>
 				</div>
 			</div>
 		</div>
