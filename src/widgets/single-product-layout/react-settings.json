@@ -3,6 +3,10 @@
 		"type": "string",
 		"default": ""
 	},
+	"mpl4e_sp_style_preset": {
+		"type": "string",
+		"default": ""
+	},
 	"mpl4e_sp_layout": {
 		"type": "string",
 		"default": "default"

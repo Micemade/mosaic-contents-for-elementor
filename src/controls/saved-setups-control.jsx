@@ -139,6 +139,7 @@ const WIDGET_CONFIGS = {
 			'mpl4e_sp_compaction_type',
 		],
 		styleKeys: [
+			'mpl4e_sp_style_preset',
 			'mpl4e_sp_featured_image_size',
 			'mpl4e_sp_excerpt_truncate',
 			'mpl4e_sp_image_fit',

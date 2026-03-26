@@ -13,6 +13,7 @@ import { addItemToLayout } from '../shared/utils/addItem';
 import { getComputedLayout } from '../shared/utils/layoutUtils';
 import productsStylePresets from '../widgets/products-layout/style-presets.json';
 import categoriesStylePresets from '../widgets/categories-layout/style-presets.json';
+import singleProductStylePresets from '../widgets/single-product-layout/style-presets.json';
 
 const PRODUCTS_STYLE_PRESET_MAP = productsStylePresets.reduce((acc, preset) => {
 	if (preset?.id && preset?.settings) {
@@ -42,6 +43,24 @@ const CATEGORIES_STYLE_PRESET_MAP = categoriesStylePresets.reduce((acc, preset) 
 const CATEGORIES_STYLE_PRESET_SETTING_KEYS = Array.from(
 	new Set(
 		categoriesStylePresets.flatMap((preset) => {
+			if (!preset?.settings || typeof preset.settings !== 'object') {
+				return [];
+			}
+			return Object.keys(preset.settings);
+		})
+	)
+);
+
+const SP_STYLE_PRESET_MAP = singleProductStylePresets.reduce((acc, preset) => {
+	if (preset?.id && preset?.settings) {
+		acc[preset.id] = preset.settings;
+	}
+	return acc;
+}, {});
+
+const SP_STYLE_PRESET_SETTING_KEYS = Array.from(
+	new Set(
+		singleProductStylePresets.flatMap((preset) => {
 			if (!preset?.settings || typeof preset.settings !== 'object') {
 				return [];
 			}
@@ -87,9 +106,9 @@ const WIDGET_KEYS = {
 		layoutKey: 'mpl4e_sp_layout',
 		customLayoutKey: 'mpl4e_sp_custom_layout',
 		savedSetupKey: 'mpl4e_sp_saved_setup',
-		stylePresetKey: null,
-		presetSettingKeys: [],
-		stylePresetMap: null,
+		stylePresetKey: 'mpl4e_sp_style_preset',
+		presetSettingKeys: SP_STYLE_PRESET_SETTING_KEYS,
+		stylePresetMap: SP_STYLE_PRESET_MAP,
 		resetEvent: 'mosaic:spResetLayout',
 		applySetupEvent: 'mosaic:spApplySetup',
 		addItemEvent: 'mosaic:spAddItem',
@@ -402,6 +421,25 @@ export const registerEditorHooks = () => {
 							Object.entries(setupSettings).forEach(([key, value]) => {
 								panelModel.setSetting(key, value);
 							});
+						}
+
+						// 3c. Apply group styles template to existing repeater rows.
+						// The template defines visual style (colors, borders, etc.)
+						// without overwriting group_id/group_label associations.
+						const groupTemplate = setupSettings.mpl4e_sp_group_styles_template;
+						if (groupTemplate && typeof groupTemplate === 'object') {
+							const repeaterCollection = settingsModel.get('mpl4e_sp_group_styles');
+							if (repeaterCollection && typeof repeaterCollection.each === 'function') {
+								repeaterCollection.each((rowModel) => {
+									Object.entries(groupTemplate).forEach(([key, value]) => {
+										rowModel.set(key, value, { silent: true });
+									});
+								});
+								repeaterCollection.trigger('change', repeaterCollection);
+							}
+							// Remove the transient template key from settings so
+							// it is not persisted as an unknown Elementor control.
+							settingsModel.unset('mpl4e_sp_group_styles_template', { silent: true });
 						}
 					} finally {
 						isApplyingSetupBatch = false;

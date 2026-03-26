@@ -292,6 +292,52 @@
 				justify-content: center;
 				align-items: center;
 			}
+
+			&.outofstock-badge-wrapper {
+				background: #555;
+				color: white;
+				justify-content: center;
+				align-items: center;
+
+				.outofstock-badge {
+					font-size: 0.9em;
+					font-weight: 600;
+					text-transform: uppercase;
+					letter-spacing: 0.05em;
+				}
+			}
+
+			&.attributes-wrapper {
+				align-items: stretch;
+
+				.attributes-table {
+					width: 100%;
+					border-collapse: collapse;
+					font-size: 0.85em;
+
+					.attribute-row {
+						border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+
+						&:last-child {
+							border-bottom: none;
+						}
+					}
+
+					.attribute-name {
+						text-align: left;
+						font-weight: 600;
+						padding: 0.4em 0.6em;
+						white-space: nowrap;
+						width: 1%;
+						background: rgba(0, 0, 0, 0.03);
+					}
+
+					.attribute-values {
+						padding: 0.4em 0.6em;
+						text-align: left;
+					}
+				}
+			}
 		}
 	}
 

@@ -32,6 +32,40 @@ const getHighestItemNumber = (layouts, itemPrefix = 'item-') => {
 };
 
 /**
+ * Find the first available (unused) item number within a fixed range.
+ *
+ * Scans 1..maxItems and returns the lowest number not already present in the
+ * layout. Falls back to getHighestItemNumber + 1 when no gap exists (should
+ * not happen if callers respect the cap).
+ *
+ * @param {Object} layouts - Layout object with breakpoint keys
+ * @param {string} itemPrefix - Prefix for item IDs (e.g., 'group-item-')
+ * @param {number} maxItems - Upper bound of the ID range (e.g., 3)
+ * @returns {number} First available item number
+ */
+const getFirstAvailableItemNumber = (layouts, itemPrefix, maxItems) => {
+	const layoutArrays = Object.entries(layouts)
+		.filter(([, value]) => Array.isArray(value))
+		.map(([, value]) => value);
+
+	const existingNumbers = new Set(
+		layoutArrays.flat()
+			.filter(item => item && typeof item.i === 'string')
+			.map(item => {
+				const match = item.i.match(new RegExp(`^${itemPrefix}(\\d+)$`));
+				return match ? parseInt(match[1]) : null;
+			})
+			.filter(n => n !== null)
+	);
+
+	for (let n = 1; n <= maxItems; n++) {
+		if (!existingNumbers.has(n)) return n;
+	}
+	// Fallback (shouldn't be reached when callers check capacity).
+	return getHighestItemNumber(layouts, itemPrefix) + 1;
+};
+
+/**
  * Check if a position is occupied by any existing item
  * 
  * @param {Array} existingLayouts - Existing layout items
@@ -277,9 +311,10 @@ export const addItemToLayout = (currentLayoutJson, gridColumns = { desktop: 48, 
 	// Get active breakpoints
 	const breakpoints = getActiveBreakpointNames();
 	
-	// Find the highest item number and create new item ID
-	const highestNumber = getHighestItemNumber(layouts, itemPrefix);
-	const newItemNumber = highestNumber + 1;
+	// Find the next item number: reuse gaps when maxItems is set, otherwise increment.
+	const newItemNumber = options.maxItems
+		? getFirstAvailableItemNumber(layouts, itemPrefix, options.maxItems)
+		: getHighestItemNumber(layouts, itemPrefix) + 1;
 	const newItemId = `${itemPrefix}${newItemNumber}`;
 
 	// Find the highest z-index

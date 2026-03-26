@@ -66,7 +66,7 @@ const ELEMENT_SECTION_MAP = Object.fromEntries(
 // ── Group constants ─────────────────────────────────────────────────────
 const MAX_GROUPS = 3;
 // Elements that cannot be placed inside groups.
-const UNGROUPABLE_IDS = new Set(['item-3', 'item-5', 'item-9', 'item-10']); // image, saleBadge, outofstock, attributes
+const UNGROUPABLE_IDS = new Set(['item-3', 'item-5', 'item-9']); // image, saleBadge, outofstock
 
 
 // ── Layout helpers ──────────────────────────────────────────────────────
@@ -200,13 +200,13 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 	);
 
 	// TODO: TEMP – remove after debugging
-	console.log('[SPL] layoutId:', layoutId);
-	console.log('[SPL] "value" (copy-paste into JSON):\n' + JSON.stringify({
-		desktop: layoutData.desktop,
-		tablet: layoutData.tablet,
-		mobile: layoutData.mobile,
-	}));
-	console.log('[SPL] "zindex" (copy-paste into JSON):\n' + JSON.stringify(layoutData.zindex || {}));
+	// console.log('[SPL] layoutId:', layoutId);
+	// console.log('[SPL] "value" (copy-paste into JSON):\n' + JSON.stringify({
+	// 	desktop: layoutData.desktop,
+	// 	tablet: layoutData.tablet,
+	// 	mobile: layoutData.mobile,
+	// }));
+	// console.log('[SPL] "zindex" (copy-paste into JSON):\n' + JSON.stringify(layoutData.zindex || {}));
 
 	const hiddenItems = useMemo(() => new Set(layoutData.hidden || []), [layoutData.hidden]);
 
@@ -393,7 +393,7 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 			const { newLayoutJson, newItemId } = addItemToLayout(
 				currentLayout,
 				columns,
-				{ itemPrefix: 'group-item-' }
+				{ itemPrefix: 'group-item-', maxItems: MAX_GROUPS }
 			);
 			currentLayout = newLayoutJson;
 			newGroupIds.push(newItemId);
@@ -527,7 +527,7 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 		const { newLayoutJson, newItemId } = addItemToLayout(
 			customLayoutData || JSON.stringify(layoutData),
 			columns,
-			{ itemPrefix: 'group-item-' }
+			{ itemPrefix: 'group-item-', maxItems: MAX_GROUPS }
 		);
 
 		// Persist the layout.
@@ -1241,6 +1241,35 @@ function renderElement(elementId, product, styles) {
 							</a>
 						])}
 					</div>
+				</div>
+			);
+
+		case 'outofstock':
+			if (product.isInStock) return <div className="elements-wrapper empty-element" />;
+			return (
+				<div className="elements-wrapper outofstock-badge-wrapper">
+					<span className="product-badge outofstock-badge">
+						{product.stockAvailability?.text || 'Out of stock'}
+					</span>
+				</div>
+			);
+
+		case 'attributes':
+			if (!product.attributes?.length) return <div className="elements-wrapper empty-element" />;
+			return (
+				<div className="elements-wrapper attributes-wrapper">
+					<table className="attributes-table">
+						<tbody>
+							{product.attributes.map((attr) => (
+								<tr key={attr.id} className="attribute-row">
+									<th className="attribute-name">{decode(attr.name)}</th>
+									<td className="attribute-values">
+										{attr.terms?.map((term) => decode(term.name)).join(', ') || '—'}
+									</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
 				</div>
 			);
 

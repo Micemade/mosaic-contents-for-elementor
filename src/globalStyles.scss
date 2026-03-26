@@ -84,13 +84,10 @@
 			display: inline-flex !important;
 
 			.links {
-				display: flex;
-				flex-direction: row;
-				gap: 2px;
+				display: inline;
 			}
 
 			.tax-link {
-				border-radius: 3px;
 				text-decoration: none;
 				transition: filter 0.2s;
 				color: inherit;

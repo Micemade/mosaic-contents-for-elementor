@@ -454,6 +454,30 @@ class SingleProductLayout extends Widget_Base {
 		// STYLE TAB
 		// ══════════════════════════════════════════════════════════════════
 
+		// ── Style Presets ──────────────────────────────────────────────────
+		$this->start_controls_section(
+			'sp_style_preset_section',
+			array(
+				'label' => esc_html__( 'Style Presets', 'mosaic-product-layouts-for-elementor' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			)
+		);
+
+		$this->add_control(
+			'mpl4e_sp_style_preset',
+			array(
+				'label'       => esc_html__( 'Style Preset', 'mosaic-product-layouts-for-elementor' ),
+				'type'        => Controls_Manager::VISUAL_CHOICE,
+				'columns'     => 4,
+				'label_block' => true,
+				'default'     => '',
+				'options'     => $this->get_style_preset_options( 'single-product-layout' ),
+				'description' => esc_html__( 'Pick a preset to instantly apply a complete style pack.', 'mosaic-product-layouts-for-elementor' ),
+			)
+		);
+
+		$this->end_controls_section();
+
 		// ── Global Element Styles ──────────────────────────────────────────
 		$this->start_controls_section(
 			'sp_global_styles_section',
@@ -492,7 +516,7 @@ class SingleProductLayout extends Widget_Base {
 					),
 				),
 				'selectors' => array(
-					'{{WRAPPER}} .sp-element .elements-wrapper' => 'align-items: {{VALUE}}; text-align: {{VALUE}};',
+					'{{WRAPPER}} .sp-element > .elements-wrapper' => 'align-items: {{VALUE}}; text-align: {{VALUE}};',
 				),
 			)
 		);
@@ -517,7 +541,7 @@ class SingleProductLayout extends Widget_Base {
 					),
 				),
 				'selectors' => array(
-					'{{WRAPPER}} .sp-element .elements-wrapper' => 'justify-content: {{VALUE}};',
+					'{{WRAPPER}} .sp-element > .elements-wrapper' => 'justify-content: {{VALUE}};',
 				),
 			)
 		);
@@ -529,7 +553,7 @@ class SingleProductLayout extends Widget_Base {
 				'type'       => Controls_Manager::DIMENSIONS,
 				'size_units' => array( 'px', '%', 'em', 'rem' ),
 				'selectors'  => array(
-					'{{WRAPPER}} .sp-element .elements-wrapper' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+					'{{WRAPPER}} .sp-element > .elements-wrapper' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
 				),
 				'separator' => 'before'
 			)
@@ -539,7 +563,7 @@ class SingleProductLayout extends Widget_Base {
 			Group_Control_Background::get_type(),
 			array(
 				'name'      => 'mpl4e_sp_global_background',
-				'selector'  => '{{WRAPPER}} .sp-element .elements-wrapper',
+				'selector'  => '{{WRAPPER}} .sp-element > .elements-wrapper',
 				'separator' => 'before'
 			)
 		);
@@ -548,7 +572,7 @@ class SingleProductLayout extends Widget_Base {
 			Group_Control_Border::get_type(),
 			array(
 				'name'      => 'mpl4e_sp_global_border',
-				'selector'  => '{{WRAPPER}} .sp-element .elements-wrapper',
+				'selector'  => '{{WRAPPER}} .sp-element > .elements-wrapper',
 				'separator' => 'before'
 			)
 		);
@@ -560,7 +584,7 @@ class SingleProductLayout extends Widget_Base {
 				'type'       => Controls_Manager::DIMENSIONS,
 				'size_units' => array( 'px', '%' ),
 				'selectors'  => array(
-					'{{WRAPPER}} .sp-element .elements-wrapper' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+					'{{WRAPPER}} .sp-element > .elements-wrapper' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
 				),
 			)
 		);
@@ -569,7 +593,7 @@ class SingleProductLayout extends Widget_Base {
 			Group_Control_Box_Shadow::get_type(),
 			array(
 				'name'      => 'mpl4e_sp_global_box_shadow',
-				'selector'  => '{{WRAPPER}} .sp-element .elements-wrapper',
+				'selector'  => '{{WRAPPER}} .sp-element > .elements-wrapper',
 				'separator' => 'before' 
 			)
 		);
@@ -802,7 +826,7 @@ class SingleProductLayout extends Widget_Base {
 					),
 				),
 				'selectors' => array(
-					'{{WRAPPER}} {{CURRENT_ITEM}}.sp-element .elements-wrapper .grouped-elements' => 'align-items: {{VALUE}};',
+					'{{WRAPPER}} {{CURRENT_ITEM}}.sp-element > .elements-wrapper .grouped-elements' => 'align-items: {{VALUE}};',
 				),
 				'separator' => 'before',
 			)
