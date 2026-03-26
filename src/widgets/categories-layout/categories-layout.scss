@@ -167,6 +167,29 @@
 	}
 }
 
+.mpl4e-cat-image-modal-overlay {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 10px;
+	background: rgba(255, 255, 255, 0.65);
+	backdrop-filter: blur(3px);
+	-webkit-backdrop-filter: blur(3px);
+	z-index: 3;
+
+	span {
+		padding: 8px 12px;
+		border-radius: 999px;
+		background: rgba(17, 24, 39, 0.86);
+		color: #fff;
+		font-size: 12px;
+		font-weight: 600;
+		letter-spacing: 0.01em;
+	}
+}
+
 .mpl4e-cat-image-modal-title {
 	margin: 0;
 	font-size: 16px;

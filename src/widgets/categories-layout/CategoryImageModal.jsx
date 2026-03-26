@@ -68,6 +68,7 @@ const uploadMedia = async (file) => {
 
 const CategoryImageModal = ({ isOpen, category, onClose, onSaved }) => {
 	const [isSaving, setIsSaving] = useState(false);
+	const [isUploadingAndApplying, setIsUploadingAndApplying] = useState(false);
 	const [error, setError] = useState('');
 	const fileInputRef = useRef(null);
 	const titleId = 'mpl4e-cat-image-modal-title';
@@ -76,6 +77,7 @@ const CategoryImageModal = ({ isOpen, category, onClose, onSaved }) => {
 		if (!isOpen) {
 			setError('');
 			setIsSaving(false);
+			setIsUploadingAndApplying(false);
 			return undefined;
 		}
 
@@ -95,14 +97,17 @@ const CategoryImageModal = ({ isOpen, category, onClose, onSaved }) => {
 		return null;
 	}
 
-	const applyAttachment = async (attachmentLike) => {
+	const applyAttachment = async (attachmentLike, options = {}) => {
+		const { manageSavingState = true } = options;
 		const image = toImagePayload(attachmentLike);
 		if (!image) {
 			setError('Invalid image selected.');
 			return;
 		}
 
-		setIsSaving(true);
+		if (manageSavingState) {
+			setIsSaving(true);
+		}
 		setError('');
 		try {
 			const result = await saveCategoryImage(category.id, image.id);
@@ -110,7 +115,9 @@ const CategoryImageModal = ({ isOpen, category, onClose, onSaved }) => {
 		} catch (err) {
 			setError(err.message || 'Failed to set category image.');
 		} finally {
-			setIsSaving(false);
+			if (manageSavingState) {
+				setIsSaving(false);
+			}
 		}
 	};
 
@@ -148,6 +155,7 @@ const CategoryImageModal = ({ isOpen, category, onClose, onSaved }) => {
 		const file = event.target.files?.[0];
 		if (!file) return;
 
+		setIsUploadingAndApplying(true);
 		setIsSaving(true);
 		setError('');
 		try {
@@ -158,10 +166,12 @@ const CategoryImageModal = ({ isOpen, category, onClose, onSaved }) => {
 				sizes: uploaded.media_details?.sizes || {},
 				alt: uploaded.alt_text || '',
 			};
-			await applyAttachment(normalized);
+			await applyAttachment(normalized, { manageSavingState: false });
 		} catch (err) {
 			setError(err.message || 'Failed to upload image.');
+		} finally {
 			setIsSaving(false);
+			setIsUploadingAndApplying(false);
 		}
 	};
 
@@ -233,6 +243,12 @@ const CategoryImageModal = ({ isOpen, category, onClose, onSaved }) => {
 						<i className="eicon-close" aria-hidden="true" />
 					</button>
 				</div>
+
+				{isUploadingAndApplying ? (
+					<div className="mpl4e-cat-image-modal-overlay" role="status" aria-live="polite">
+						<span>Uploading and applying</span>
+					</div>
+				) : null}
 			</div>
 		</div>
 	);
