@@ -31,6 +31,7 @@ import { getLayout } from '../../shared/utils/layoutUtils.js';
 import { LRUCache, createCache } from '../../shared/utils/LRUCache.js';
 import { useCssVariables, useGridSettings, useElementorDevice } from '../../shared/utils/hooks.js';
 import { getVisibleLayout, mergeVisibleIntoFullLayout } from '../../shared/utils/visibleLayout.js';
+import CategoryImageModal from './CategoryImageModal.jsx';
 
 import './categories-layout.scss';
 
@@ -165,6 +166,7 @@ const CategoriesLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'disp
 	const [isLoading, setIsLoading] = useState(true);
 	const [isFetching, setIsFetching] = useState(false);
 	const [error, setError] = useState(null);
+	const [imageModalCategory, setImageModalCategory] = useState(null);
 
 	/**
 	 * Generate CSS custom properties from responsive settings
@@ -373,6 +375,49 @@ const CategoriesLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'disp
 		updateElementorSetting('categories-layout', widgetId, 'mpl4e_cat_custom_layout', newLayoutJson);
 	};
 
+	const handleOpenImageModal = (category) => {
+		if (!isEditMode || !category?.id) return;
+		setImageModalCategory(category);
+	};
+
+	const handleImageSaved = (result) => {
+		const categoryId = result?.id;
+		if (!categoryId) {
+			setImageModalCategory(null);
+			return;
+		}
+
+		const nextImage = result?.image || null;
+		setCategories((prev) => prev.map((category) => (
+			category.id === categoryId
+				? { ...category, image: nextImage }
+				: category
+		)));
+
+		const cacheKey = JSON.stringify(querySettings);
+		if (categoriesCache instanceof LRUCache) {
+			const cachedData = categoriesCache.get(cacheKey);
+			if (Array.isArray(cachedData)) {
+				categoriesCache.set(
+					cacheKey,
+					cachedData.map((category) => (
+						category.id === categoryId
+							? { ...category, image: nextImage }
+							: category
+					))
+				);
+			}
+		} else if (Array.isArray(categoriesCache[cacheKey])) {
+			categoriesCache[cacheKey] = categoriesCache[cacheKey].map((category) => (
+				category.id === categoryId
+					? { ...category, image: nextImage }
+					: category
+			));
+		}
+
+		setImageModalCategory(null);
+	};
+
 	if (isLoading) {
 		return (
 			<div className="categories-layout">
@@ -418,7 +463,7 @@ const CategoriesLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'disp
 			isResizable={isEditMode}
 			onLayoutChange={isEditMode ? handleLayoutChange : undefined}
 			selectWidget={selectWidget}
-			draggableCancel=".mpl4e-item-controls"
+				draggableCancel=".mpl4e-item-controls, .mpl4e-cat-set-image-btn"
 		>
 			{/* Map over visible layout items only — items without a matching category are hidden */}
 			{visibleLayoutData.mobile.map((layoutItem) => {
@@ -471,6 +516,19 @@ const CategoriesLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'disp
 
 							<div className={`item-wrapper ${cardLayout}`}>
 								<figure className="category-image gradient-preloader">
+									{isEditMode && (
+										<button
+											type="button"
+											className="mpl4e-cat-set-image-btn"
+											onMouseDownCapture={(e) => {
+												e.stopPropagation();
+												e.preventDefault();
+												handleOpenImageModal(matchedCategory);
+											}}
+										>
+											Manage Image
+										</button>
+									)}
 									<CategoryImage
 										name={matchedCategory.name}
 										image={matchedCategory.image}
@@ -521,6 +579,13 @@ const CategoriesLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'disp
 					);
 				})}
 			</GridLayout>
+
+			<CategoryImageModal
+				isOpen={Boolean(imageModalCategory)}
+				category={imageModalCategory}
+				onClose={() => setImageModalCategory(null)}
+				onSaved={handleImageSaved}
+			/>
 
 			{isEditMode && (
 				<>

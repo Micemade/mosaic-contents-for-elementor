@@ -143,6 +143,7 @@ final class MosaicProductLayoutsElementor {
 		// Enqueue WordPress's React and ReactDOM
 		wp_enqueue_script( 'react' );
 		wp_enqueue_script( 'react-dom' );
+		wp_enqueue_media();
 
 		// Editor script (full functionality)
 		wp_enqueue_script(
@@ -267,6 +268,7 @@ final class MosaicProductLayoutsElementor {
 
 		$localize_data = array(
 			'storeApiNonce'   => $nonce,
+			'restNonce'       => wp_create_nonce( 'wp_rest' ),
 			'cartUrl'         => wc_get_cart_url(),
 			'ajaxUrl'         => admin_url( 'admin-ajax.php' ),
 			'placeholderImg'  => plugins_url( 'assets/images/woocommerce-placeholder-300x300.png', __FILE__ ),

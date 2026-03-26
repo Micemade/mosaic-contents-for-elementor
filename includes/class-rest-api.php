@@ -69,6 +69,31 @@ class RestAPI {
 				'args'                => $this->get_collection_params(),
 			)
 		);
+
+		// Product category image assignment endpoint.
+		register_rest_route(
+			self::NAMESPACE,
+			'/categories/(?P<id>\d+)/image',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( $this, 'set_category_image' ),
+				'permission_callback' => array( $this, 'check_category_image_permission' ),
+				'args'                => array(
+					'id'           => array(
+						'description'       => __( 'Product category term ID.', 'mosaic-product-layouts-for-elementor' ),
+						'type'              => 'integer',
+						'required'          => true,
+						'sanitize_callback' => 'absint',
+					),
+					'attachmentId' => array(
+						'description'       => __( 'Attachment ID to assign (0 to remove).', 'mosaic-product-layouts-for-elementor' ),
+						'type'              => 'integer',
+						'required'          => true,
+						'sanitize_callback' => 'absint',
+					),
+				),
+			)
+		);
 	}
 
 	/**
@@ -78,6 +103,22 @@ class RestAPI {
 	 */
 	public function check_permission(): bool {
 		return current_user_can( 'edit_posts' );
+	}
+
+	/**
+	 * Check if the current user can update product category images.
+	 *
+	 * @return bool True if user can manage product categories.
+	 */
+	public function check_category_image_permission(): bool {
+		$taxonomy = get_taxonomy( 'product_cat' );
+		if ( ! $taxonomy ) {
+			return false;
+		}
+
+		$manage_terms_cap = $taxonomy->cap->manage_terms ?? 'manage_categories';
+
+		return current_user_can( $manage_terms_cap ) || current_user_can( 'manage_woocommerce' );
 	}
 
 	/**
@@ -153,5 +194,95 @@ class RestAPI {
 		);
 
 		return rest_ensure_response( $products );
+	}
+
+	/**
+	 * Set or remove product category image.
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function set_category_image( WP_REST_Request $request ) {
+		$category_id   = absint( $request->get_param( 'id' ) );
+		$attachment_id = absint( $request->get_param( 'attachmentId' ) );
+
+		if ( ! taxonomy_exists( 'product_cat' ) ) {
+			return new WP_Error(
+				'product_cat_missing',
+				__( 'Product category taxonomy is not available.', 'mosaic-product-layouts-for-elementor' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		$term = get_term( $category_id, 'product_cat' );
+		if ( ! $term || is_wp_error( $term ) ) {
+			return new WP_Error(
+				'category_not_found',
+				__( 'Product category not found.', 'mosaic-product-layouts-for-elementor' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		if ( $attachment_id > 0 ) {
+			$attachment = get_post( $attachment_id );
+			if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
+				return new WP_Error(
+					'invalid_attachment',
+					__( 'Attachment not found.', 'mosaic-product-layouts-for-elementor' ),
+					array( 'status' => 400 )
+				);
+			}
+
+			$mime_type = get_post_mime_type( $attachment_id );
+			if ( ! $mime_type || 0 !== strpos( $mime_type, 'image/' ) ) {
+				return new WP_Error(
+					'invalid_attachment_type',
+					__( 'Attachment must be an image.', 'mosaic-product-layouts-for-elementor' ),
+					array( 'status' => 400 )
+				);
+			}
+
+			update_term_meta( $category_id, 'thumbnail_id', $attachment_id );
+		} else {
+			delete_term_meta( $category_id, 'thumbnail_id' );
+		}
+
+		clean_term_cache( $category_id, 'product_cat' );
+
+		$updated_attachment_id = absint( get_term_meta( $category_id, 'thumbnail_id', true ) );
+
+		return rest_ensure_response(
+			array(
+				'id'    => $category_id,
+				'name'  => $term->name,
+				'image' => $this->get_attachment_image_payload( $updated_attachment_id ),
+			)
+		);
+	}
+
+	/**
+	 * Build image payload from attachment ID.
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 * @return array|null
+	 */
+	private function get_attachment_image_payload( int $attachment_id ): ?array {
+		if ( $attachment_id <= 0 ) {
+			return null;
+		}
+
+		$src       = wp_get_attachment_image_url( $attachment_id, 'full' );
+		$thumbnail = wp_get_attachment_image_url( $attachment_id, 'thumbnail' ) ?: $src;
+
+		if ( ! $src ) {
+			return null;
+		}
+
+		return array(
+			'id'        => $attachment_id,
+			'src'       => $src,
+			'thumbnail' => $thumbnail,
+			'alt'       => get_post_meta( $attachment_id, '_wp_attachment_image_alt', true ) ?: '',
+		);
 	}
 }
