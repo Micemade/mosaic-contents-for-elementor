@@ -117,6 +117,48 @@ const WIDGET_KEYS = {
 	},
 };
 
+// Keep one active channel handler per event to avoid stacked callbacks
+// when the same widget panel is opened multiple times.
+const CHANNEL_EVENT_HANDLERS = {};
+
+const bindEditorChannelHandler = (eventName, handler) => {
+	if (!eventName || typeof handler !== 'function') {
+		return;
+	}
+
+	if (CHANNEL_EVENT_HANDLERS[eventName]) {
+		elementor.channels.editor.off(eventName, CHANNEL_EVENT_HANDLERS[eventName]);
+	}
+
+	elementor.channels.editor.on(eventName, handler);
+	CHANNEL_EVENT_HANDLERS[eventName] = handler;
+};
+
+const setWidgetSettingWithHistory = (model, widgetId, settingName, value) => {
+	const $e = window.$e || window.parent?.$e;
+	const elementorRef = typeof elementor !== 'undefined' ? elementor : window.parent?.elementor;
+	const container = elementorRef?.getContainer?.(widgetId);
+
+	if ($e && container) {
+		try {
+			$e.run('document/elements/settings', {
+				container,
+				settings: {
+					[settingName]: value,
+				},
+			});
+			return;
+		} catch (error) {
+			console.warn('History-aware setting command failed, falling back to setSetting:', error);
+		}
+	}
+
+	model.setSetting(settingName, value);
+	if (elementor?.saver) {
+		elementor.saver.setFlagEditorChange(true);
+	}
+};
+
 /**
  * Register frontend hooks for editor preview.
  * Same as frontend-hooks but with 'edit' mode.
@@ -373,7 +415,7 @@ export const registerEditorHooks = () => {
 
 				// Listen for custom 'reset layout' event from React component
 				// (React → Elementor)
-				elementor.channels.editor.on(wKeys.resetEvent, () => {
+				bindEditorChannelHandler(wKeys.resetEvent, () => {
 					// Only reset if this widget is currently open in the panel
 					if (elementor.getPanelView().getCurrentPageView().model.id === widgetId) {
 						model.setSetting(wKeys.customLayoutKey, ''); // Clear custom layout setting
@@ -383,7 +425,7 @@ export const registerEditorHooks = () => {
 				// Listen for 'apply setup' event from the Saved Setups control.
 				// Batch-sets all settings atomically, preventing mid-batch DOM
 				// destruction that causes lost React updates and stale CSS.
-				elementor.channels.editor.on(wKeys.applySetupEvent, ({ widgetId: targetWidgetId, settings: setupSettings, source }) => {
+				bindEditorChannelHandler(wKeys.applySetupEvent, ({ widgetId: targetWidgetId, settings: setupSettings, source }) => {
 					// Only apply if this widget is currently open in the panel
 					if (elementor.getPanelView().getCurrentPageView().model.id !== widgetId || targetWidgetId !== widgetId) {
 						return;
@@ -514,20 +556,27 @@ export const registerEditorHooks = () => {
 
 				// Listen for 'add grid item' event from panel button
 				// (Elementor Panel → React)
-				elementor.channels.editor.on(wKeys.addItemEvent, () => {
+				bindEditorChannelHandler(wKeys.addItemEvent, () => {
 					// Only add if this widget is currently open in the panel
 					if (elementor.getPanelView().getCurrentPageView().model.id === widgetId) {
-						const customLayoutData = model.getSetting(wKeys.customLayoutKey) || '';
-						const layoutId = model.getSetting(wKeys.layoutKey) || 'layout-1';
+						// Guard against duplicate firing in the same tick.
+						if (model.__mpl4eAddItemInProgress) {
+							return;
+						}
+						model.__mpl4eAddItemInProgress = true;
 
-						// Get the actual layout data (from custom or predefined)
-						const currentLayoutData = getComputedLayout(customLayoutData, layoutId);
-						const { newLayoutJson, newItemId } = addItemToLayout(JSON.stringify(currentLayoutData), wKeys.gridColumns);
-						model.setSetting(wKeys.customLayoutKey, newLayoutJson);
+						try {
+							const customLayoutData = model.getSetting(wKeys.customLayoutKey) || '';
+							const layoutId = model.getSetting(wKeys.layoutKey) || 'layout-1';
 
-						// Mark document as changed
-						if (elementor.saver) {
-							elementor.saver.setFlagEditorChange(true);
+							// Get the actual layout data (from custom or predefined)
+							const currentLayoutData = getComputedLayout(customLayoutData, layoutId);
+							const { newLayoutJson } = addItemToLayout(JSON.stringify(currentLayoutData), wKeys.gridColumns);
+							setWidgetSettingWithHistory(model, widgetId, wKeys.customLayoutKey, newLayoutJson);
+						} finally {
+							setTimeout(() => {
+								model.__mpl4eAddItemInProgress = false;
+							}, 0);
 						}
 					}
 				});

@@ -141,10 +141,29 @@ class WidgetManager {
 		const model = this.models[modelKey];
 
 		if (model && model.setSetting) {
-		// Update Elementor model (triggers auto-save).
+			// Prefer Elementor command API to create proper undo/redo history entries.
+			const $e = window.$e || window.parent?.$e;
+			const elementorRef = typeof elementor !== 'undefined' ? elementor : window.parent?.elementor;
+			const container = elementorRef?.getContainer?.(widgetId);
+
+			if ($e && container) {
+				try {
+					$e.run('document/elements/settings', {
+						container,
+						settings: {
+							[settingName]: value,
+						},
+					});
+					return;
+				} catch (error) {
+					console.warn('History-aware setting command failed, falling back to setSetting:', error);
+				}
+			}
+
+			// Fallback for older Elementor APIs.
 			model.setSetting(settingName, value);
 
-			// Mark document as changed to enable Update/Publish button
+			// Mark document as changed to enable Update/Publish button.
 			if (typeof elementor !== 'undefined' && elementor.saver) {
 				elementor.saver.setFlagEditorChange(true);
 			}

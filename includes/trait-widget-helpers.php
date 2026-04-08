@@ -136,7 +136,7 @@ trait WidgetHelpers {
 				array(
 					'label'        => sprintf(
 						/* translators: %s: breakpoint name (Desktop, Tablet, Mobile) */
-						__( '%s', 'mosaic-product-layouts-for-elementor' ),
+						__( '%s visibility', 'mosaic-product-layouts-for-elementor' ),
 						$bp_label
 					),
 					'type'         => Controls_Manager::SWITCHER,

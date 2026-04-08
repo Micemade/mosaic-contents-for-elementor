@@ -4,14 +4,15 @@
  * Plugin URI: https://github.com/Micemade/mosaic-product-layouts-for-elementor
  * Author: Micemade
  * Author URI: https://github.com/Micemade/mosaic-product-layouts-for-elementor
- * Description: A set of Elementor widgets to supercharge your WooCommerce online store with ReactJs.
+ * Description: A set of Elementor widgets to supercharge your WooCommerce online store with creative layouts.
  * Version: 0.1.0
- * License: 1.0.0
+ * License: GPLv2 or later
  * License URL: http://www.gnu.org/licenses/gpl-2.0.txt
  * text-domain: mosaic-product-layouts-for-elementor
  * Elementor tested up to: 3.43.1
  * Elementor Pro tested up to: 3.1.0
  */
+
 namespace Micemade\MosaicProductLayoutsElementor;
 
 use Micemade\MosaicProductLayoutsElementor\Widgets\ProductsLayout;
@@ -47,7 +48,6 @@ final class MosaicProductLayoutsElementor {
 	private static $_instance = null;
 
 	public function __construct() {
-		add_action( 'init', array( $this, 'i18n' ) );
 		add_action( 'plugins_loaded', array( $this, 'init_plugin' ) );
 		add_action( 'elementor/elements/categories_registered', array( $this, 'create_new_category' ) );
 		add_action( 'elementor/widgets/widgets_registered', array( $this, 'init_widgets' ) );
@@ -62,10 +62,6 @@ final class MosaicProductLayoutsElementor {
 
 		// Initialize custom REST API endpoints.
 		$this->init_rest_api();
-	}
-
-	public function i18n() {
-		load_plugin_textdomain( 'mosaic-product-layouts-for-elementor' );
 	}
 
 	public function init_plugin() {
@@ -315,18 +311,14 @@ final class MosaicProductLayoutsElementor {
 	}
 
 	public function admin_notice_missing_elementor() {
-		if ( isset( $_GET['activate'] ) ) {
-			unset( $_GET['activate'] );
-		}
-
 		$message = sprintf(
 			/* translators: 1: Plugin name 2: Elementor */
-			esc_html__( '"%1$s" requires "%2$s" to be installed and activated.', 'mosaic-product-layouts-for-elementor' ),
-			'<strong>' . esc_html__( 'Mosiac Product Layouts for Elementor', 'mosaic-product-layouts-for-elementor' ) . '</strong>',
-			'<strong>' . esc_html__( 'Elementor', 'mosaic-product-layouts-for-elementor' ) . '</strong>'
+			__( '"%1$s" requires "%2$s" to be installed and activated.', 'mosaic-product-layouts-for-elementor' ),
+			'<strong>' . __( 'Mosaic Product Layouts for Elementor', 'mosaic-product-layouts-for-elementor' ) . '</strong>',
+			'<strong>' . __( 'Elementor', 'mosaic-product-layouts-for-elementor' ) . '</strong>'
 		);
 
-		printf( '<div class="notice notice-warning is-dismissible"><p>%1$s</p></div>', $message );
+		printf( '<div class="notice notice-warning is-dismissible"><p>%1$s</p></div>', wp_kses_post( $message ) );
 	}
 }
 

@@ -53,6 +53,37 @@ class Element_Sorting extends Base_Data_Control {
 	}
 
 	/**
+	 * Enqueue control scripts.
+	 *
+	 * Registers a Backbone view for mpl4e_sorter_label in the Elementor panel.
+	 * Without this, Elementor 3.26+ (container architecture) fails to initialise
+	 * the container for repeater items that contain this control, causing all
+	 * other controls in the same row (e.g. visibility SWITCHERs) to throw:
+	 *   "can't access property validators, this.container.settings is undefined"
+	 * which prevents visibility changes from being saved to the model.
+	 *
+	 * @since 1.0.0
+	 * @access public
+	 */
+	public function enqueue() {
+		wp_add_inline_script(
+			'elementor-editor',
+			'(function(){
+	function registerSorterLabelView(){
+		if("undefined"===typeof elementor||!elementor.modules)return;
+		var Base=elementor.modules.controls.BaseData;
+		if(!Base)return;
+		elementor.addControlView("mpl4e_sorter_label",Base.extend({
+			onBaseInputChange:function(){}
+		}));
+	}
+	window.addEventListener("elementor/init",registerSorterLabelView);
+	if("undefined"!==typeof elementor){registerSorterLabelView();}
+}());'
+		);
+	}
+
+	/**
 	 * Render control output in the editor.
 	 *
 	 * Uses Underscore JS template to display the label and a hidden input.
@@ -72,7 +103,7 @@ class Element_Sorting extends Base_Data_Control {
 </div>
 <# if ( data.description ) { #>
 	<div class="elementor-control-field-description">{{{ data.description }}}</div>
-<# } #>
+	<# } #>
 		<?php
 	}
 }

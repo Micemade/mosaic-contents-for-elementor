@@ -24,6 +24,7 @@ import RatingStars from '../../shared/components/RatingStars.jsx';
 import AddToCartButton from '../../shared/components/AddToCartButton.jsx';
 import ItemControls from '../../shared/components/ItemControls.jsx';
 import GridHelper from '../../shared/components/GridHelper.jsx';
+import Pagination from '../../shared/components/Pagination.jsx';
 
 // Utilities and data.
 import { decode } from '../../shared/utils/generalUtils.js';
@@ -50,15 +51,16 @@ const productsCache = createCache();
  * Pattern adapted from mosaic-product-layouts apiFetchQuery.
  *
  * @param {Object} querySettings - Query parameters from Elementor controls.
- * @returns {Promise<Array>} Array of product objects with camelCase keys.
+ * @returns {Promise<Object>} Product result with items and pagination metadata.
  */
 async function fetchProducts(querySettings) {
-	const { mpl4e_per_page, mpl4e_orderby, mpl4e_order, mpl4e_category, mpl4e_on_sale, mpl4e_featured } = querySettings;
+	const { layoutItemLimit, mpl4e_orderby, mpl4e_order, mpl4e_category, mpl4e_on_sale, mpl4e_featured, mpl4e_page = 1 } = querySettings;
 
 	// Build query parameters
 	const params = new URLSearchParams();
 
-	if (mpl4e_per_page) params.append('per_page', mpl4e_per_page);
+	params.append('page', String(Math.max(1, Number(mpl4e_page) || 1)));
+	if (layoutItemLimit) params.append('per_page', layoutItemLimit);
 	if (mpl4e_orderby) params.append('orderby', mpl4e_orderby);
 	if (mpl4e_order) params.append('order', mpl4e_order);
 
@@ -87,10 +89,13 @@ async function fetchProducts(querySettings) {
 		throw new Error(`WC Store API error: ${response.status}`);
 	}
 
+	const total = parseInt(response.headers.get('X-WP-Total') || '0', 10);
+	const totalPages = parseInt(response.headers.get('X-WP-TotalPages') || '1', 10);
+
 	const data = await response.json();
 
 	// Convert snake_case keys to camelCase (matches mosaic-product-layouts pattern)
-	return data.map((item) => {
+	const items = data.map((item) => {
 		return Object.keys(item).reduce((acc, key) => {
 			const camelCaseKey = key.replace(/_([a-z])/g, (match, letter) =>
 				letter.toUpperCase()
@@ -99,6 +104,8 @@ async function fetchProducts(querySettings) {
 			return acc;
 		}, {});
 	});
+
+	return { items, total, totalPages };
 }
 
 /**
@@ -143,6 +150,8 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 	const [isLoading, setIsLoading] = useState(true);
 	const [isFetching, setIsFetching] = useState(false);
 	const [error, setError] = useState(null);
+	const [currentPage, setCurrentPage] = useState(1);
+	const [paginationMeta, setPaginationMeta] = useState({ total: 0, totalPages: 1 });
 
 	// Generate CSS custom properties from responsive settings
 	const cssVariables = useCssVariables(widgetData);
@@ -173,6 +182,14 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 	const featuredImagePosition = widgetData?.mpl4e_featured_image_position || { x: 50, y: 50 };
 	const featuredImageFit = widgetData?.mpl4e_image_fit || 'cover';
 	const helperType = widgetData?.mpl4e_helper_grid || 'none';
+	const enablePagination = widgetData?.mpl4e_enable_pagination || false;
+	const normalizedCategory = useMemo(() => {
+		if (Array.isArray(widgetData?.mpl4e_category)) {
+			return widgetData.mpl4e_category.join(',');
+		}
+
+		return widgetData?.mpl4e_category || '';
+	}, [widgetData?.mpl4e_category]);
 
 	// Element ordering from repeater control
 	const elementOrdering = useMemo(
@@ -192,26 +209,6 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 	// Track Elementor's device mode switcher for the grid helper column calculation.
 	const deviceType = useElementorDevice();
 
-	// Memoize query settings to prevent unnecessary re-fetches
-	const querySettings = useMemo(
-		() => ({
-			mpl4e_per_page: widgetData?.mpl4e_per_page || 10,
-			mpl4e_orderby: widgetData?.mpl4e_orderby || 'date',
-			mpl4e_order: widgetData?.mpl4e_order || 'desc',
-			mpl4e_category: widgetData?.mpl4e_category || '',
-			mpl4e_on_sale: widgetData?.mpl4e_on_sale || false,
-			mpl4e_featured: widgetData?.mpl4e_featured || false,
-		}),
-		[
-			widgetData?.mpl4e_per_page,
-			widgetData?.mpl4e_orderby,
-			widgetData?.mpl4e_order,
-			widgetData?.mpl4e_category,
-			widgetData?.mpl4e_on_sale,
-			widgetData?.mpl4e_featured,
-		]
-	);
-
 	// Get layout from predefined layouts (layout is source of truth for grid structure)
 	// If custom_layout exists, parse and use it; otherwise use predefined layout
 	const layoutData = useMemo(() => {
@@ -221,12 +218,49 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 				return parsed;
 			} catch (error) {
 				console.error('Failed to parse custom layout:', error);
-				return getLayout(layoutId, querySettings.mpl4e_per_page);
+				return getLayout(layoutId);
 			}
 		}
 
-		return getLayout(layoutId, querySettings.mpl4e_per_page);
-	}, [layoutId, customLayoutData, querySettings.mpl4e_per_page]);
+		return getLayout(layoutId);
+	}, [layoutId, customLayoutData]);
+
+	const layoutItemCount = Math.max(1, layoutData?.mobile?.length || 0);
+
+	// Memoize query settings to prevent unnecessary re-fetches
+	const querySettings = useMemo(
+		() => ({
+			layoutItemLimit: layoutItemCount,
+			mpl4e_orderby: widgetData?.mpl4e_orderby || 'date',
+			mpl4e_order: widgetData?.mpl4e_order || 'desc',
+			mpl4e_category: normalizedCategory,
+			mpl4e_on_sale: widgetData?.mpl4e_on_sale || false,
+			mpl4e_featured: widgetData?.mpl4e_featured || false,
+			mpl4e_page: enablePagination ? currentPage : 1,
+		}),
+		[
+			layoutItemCount,
+			widgetData?.mpl4e_orderby,
+			widgetData?.mpl4e_order,
+			normalizedCategory,
+			widgetData?.mpl4e_on_sale,
+			widgetData?.mpl4e_featured,
+			enablePagination,
+			currentPage,
+		]
+	);
+
+	useEffect(() => {
+		setCurrentPage(1);
+	}, [
+		layoutItemCount,
+		widgetData?.mpl4e_orderby,
+		widgetData?.mpl4e_order,
+		normalizedCategory,
+		widgetData?.mpl4e_on_sale,
+		widgetData?.mpl4e_featured,
+		enablePagination,
+	]);
 
 
 	// Visible layout: temporarily hide slots that have no matching product.
@@ -254,7 +288,17 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 				: productsCache[cacheKey];
 			
 			if (cachedData) {
-				setProducts(cachedData);
+				if (Array.isArray(cachedData)) {
+				// Backward-compatibility for old cache shape.
+					setProducts(cachedData);
+					setPaginationMeta({ total: cachedData.length, totalPages: 1 });
+				} else {
+					setProducts(cachedData.items || []);
+					setPaginationMeta({
+						total: cachedData.total || 0,
+						totalPages: cachedData.totalPages || 1,
+					});
+				}
 				setIsLoading(false);
 				setIsFetching(false);
 				setError(null);
@@ -271,19 +315,21 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 				}
 				setError(null);
 				
-				const data = await fetchProducts(querySettings);
+				const result = await fetchProducts(querySettings);
 				
 				// Store in cache (supports both LRU cache and plain object)
 				if (productsCache instanceof LRUCache) {
-					productsCache.set(cacheKey, data);
+					productsCache.set(cacheKey, result);
 				} else {
-					productsCache[cacheKey] = data;
+					productsCache[cacheKey] = result;
 				}
 				
-				setProducts(data);
+				setProducts(result.items || []);
+				setPaginationMeta({ total: result.total || 0, totalPages: result.totalPages || 1 });
 			} catch (err) {
 				console.error('Error fetching products:', err);
 				setError('Failed to fetch products. Please try again later.');
+				setPaginationMeta({ total: 0, totalPages: 1 });
 			} finally {
 				setIsLoading(false);
 				setIsFetching(false);
@@ -396,7 +442,7 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 	}
 
 	return (
-		<div
+		<><div
 			className="products-layout mosaic-product-layouts-widgets micemade-widgets"
 			data-widget-id={widgetId}
 			style={{ ...cssVariables, ...alignTextVars }}
@@ -581,6 +627,8 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 				})}
 			</GridLayout>
 
+
+
 			{/* Editor-only floating toolbar */}
 			{isEditMode && (
 				<>
@@ -603,6 +651,17 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 				</>
 			)}
 		</div>
+
+			{enablePagination && paginationMeta.totalPages > 1 && (
+				<Pagination
+					currentPage={currentPage}
+					totalPages={paginationMeta.totalPages}
+					total={paginationMeta.total}
+					itemsPerLayout={layoutItemCount}
+					onPageChange={setCurrentPage}
+				/>
+			)}
+		</>
 	);
 };
 

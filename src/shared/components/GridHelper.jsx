@@ -44,7 +44,7 @@ const GridHelper = ({ gridSettings, device, cols, type, width }) => {
 	}
 
 	return (
-		<div className="grid-helper-holder" style={{ width: width, zIndex: type === 'front' ? 2 : 0 }}>
+		<div className="grid-helper-holder" style={{ width: width, zIndex: type === 'front' ? 999 : 0 }}>
 			<div className='grid-helper' style={backgroundStyle} />
 		</div>
 	);

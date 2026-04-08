@@ -32,14 +32,6 @@ Key capabilities:
 3. Ensure Elementor and WooCommerce are installed and active.
 4. Edit a page with Elementor and use the widgets under the Micemade category.
 
-== Development ==
-
-Use these commands during development:
-
-* `npm install`
-* `npm run watch`
-* `npm run build`
-
 == Frequently Asked Questions ==
 
 = Does this plugin require WooCommerce? =

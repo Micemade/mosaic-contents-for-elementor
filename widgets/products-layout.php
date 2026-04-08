@@ -79,6 +79,18 @@ class ProductsLayout extends Widget_Base {
 		return $categories;
 	}
 
+	private function default_elements_visibility( $element_label, $devices=array() ) {
+
+		return array(
+			'element_label'        => $element_label,
+			'visible_desktop'      => $devices[0] ? 'yes' : 'no',
+			'visible_widescreen'   => $devices[1] ? 'yes' : 'no',
+			'visible_tablet'       => $devices[2] ? 'yes' : 'no',
+			'visible_mobile_extra' => $devices[3] ? 'yes' : 'no',
+			'visible_mobile'       => $devices[4] ? 'yes' : 'no',
+		);
+	}
+
 	/**
 	 * Register widget controls.
 	 */
@@ -90,17 +102,6 @@ class ProductsLayout extends Widget_Base {
 			array(
 				'label' => __( 'Query Settings', 'mosaic-product-layouts-for-elementor' ),
 				'tab'   => Controls_Manager::TAB_CONTENT,
-			)
-		);
-
-		$this->add_control(
-			'mpl4e_per_page',
-			array(
-				'label'   => __( 'Products Per Page', 'mosaic-product-layouts-for-elementor' ),
-				'type'    => Controls_Manager::NUMBER,
-				'min'     => 1,
-				'max'     => 100,
-				'default' => 10,
 			)
 		);
 
@@ -161,6 +162,18 @@ class ProductsLayout extends Widget_Base {
 			'mpl4e_featured',
 			array(
 				'label'        => __( 'Featured Only', 'mosaic-product-layouts-for-elementor' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'label_on'     => __( 'Yes', 'mosaic-product-layouts-for-elementor' ),
+				'label_off'    => __( 'No', 'mosaic-product-layouts-for-elementor' ),
+				'return_value' => 'yes',
+				'default'      => '',
+			)
+		);
+
+		$this->add_control(
+			'mpl4e_enable_pagination',
+			array(
+				'label'        => __( 'Enable Pagination', 'mosaic-product-layouts-for-elementor' ),
 				'type'         => Controls_Manager::SWITCHER,
 				'label_on'     => __( 'Yes', 'mosaic-product-layouts-for-elementor' ),
 				'label_off'    => __( 'No', 'mosaic-product-layouts-for-elementor' ),
@@ -360,41 +373,29 @@ class ProductsLayout extends Widget_Base {
 			'mpl4e_element_ordering',
 			__( 'Element Order & Visibility', 'mosaic-product-layouts-for-elementor' ),
 			array(
-				array(
-					'element_label'   => __( 'Title', 'mosaic-product-layouts-for-elementor' ),
-					'visible_desktop' => 'yes',
-					'visible_tablet'  => 'yes',
-					'visible_mobile'  => 'yes',
+				$this->default_elements_visibility(
+					__( 'Title', 'mosaic-product-layouts-for-elementor' ),
+					array( true, true, true, true, true )
 				),
-				array(
-					'element_label'   => __( 'Price', 'mosaic-product-layouts-for-elementor' ),
-					'visible_desktop' => 'yes',
-					'visible_tablet'  => 'yes',
-					'visible_mobile'  => 'yes',
+				$this->default_elements_visibility(
+					__( 'Price', 'mosaic-product-layouts-for-elementor' ),
+					array( true, true, true, true, true )
 				),
-				array(
-					'element_label'   => __( 'Rating', 'mosaic-product-layouts-for-elementor' ),
-					'visible_desktop' => 'yes',
-					'visible_tablet'  => 'yes',
-					'visible_mobile'  => 'yes',
+				$this->default_elements_visibility(
+					__( 'Rating', 'mosaic-product-layouts-for-elementor' ),
+					array( true, true, true, true, true )
 				),
-				array(
-					'element_label'   => __( 'Add to Cart', 'mosaic-product-layouts-for-elementor' ),
-					'visible_desktop' => 'yes',
-					'visible_tablet'  => 'yes',
-					'visible_mobile'  => 'yes',
+				$this->default_elements_visibility(
+					__( 'Add to Cart', 'mosaic-product-layouts-for-elementor' ),
+					array( true, true, true, true, true )
 				),
-				array(
-					'element_label'   => __( 'Categories', 'mosaic-product-layouts-for-elementor' ),
-					'visible_desktop' => 'yes',
-					'visible_tablet'  => 'yes',
-					'visible_mobile'  => 'yes',
+				$this->default_elements_visibility(
+					__( 'Categories', 'mosaic-product-layouts-for-elementor' ),
+					array( true, true, true, true, true )
 				),
-				array(
-					'element_label'   => __( 'Brands', 'mosaic-product-layouts-for-elementor' ),
-					'visible_desktop' => 'no',
-					'visible_tablet'  => 'no',
-					'visible_mobile'  => 'no',
+				$this->default_elements_visibility(
+					__( 'Brands', 'mosaic-product-layouts-for-elementor' ),
+					array( false, false, false, false, false )
 				),
 			)
 		);

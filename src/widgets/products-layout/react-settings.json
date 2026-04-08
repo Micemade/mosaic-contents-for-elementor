@@ -1,8 +1,4 @@
 {
-	"mpl4e_per_page": {
-		"type": "number",
-		"default": 10
-	},
 	"mpl4e_orderby": {
 		"type": "string",
 		"default": "date"
@@ -20,6 +16,10 @@
 		"default": false
 	},
 	"mpl4e_featured": {
+		"type": "boolean",
+		"default": false
+	},
+	"mpl4e_enable_pagination": {
 		"type": "boolean",
 		"default": false
 	},
