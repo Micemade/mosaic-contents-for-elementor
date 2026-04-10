@@ -26,12 +26,14 @@ import CategoryImage from './CategoryImage.jsx';
 // Utilities and data.
 import { decode } from '../../shared/utils/generalUtils.js';
 import { parseElementOrdering } from '../../shared/utils/elementOrdering.js';
-import { updateElementorSetting, getActiveBreakpointNames } from '../../core/elementor-utils';
-import { addItemToLayout, removeItemFromLayout } from '../../shared/utils/addItem.js';
+import { mapKeysToCamelCase } from '../../shared/utils/transformationUtils.js';
+import { getBreakpointTextAlignVars } from '../../shared/utils/alignmentUtils.js';
+import { applyLayoutChange, selectElementorWidget, addGridItem, removeGridItem } from '../../shared/utils/layoutEditing.js';
 import { getLayout } from '../../shared/utils/layoutUtils.js';
-import { LRUCache, createCache } from '../../shared/utils/LRUCache.js';
+import { createCache, getCacheEntry, setCacheEntry } from '../../shared/utils/LRUCache.js';
+import { loadCachedData } from '../../shared/utils/dataLoading.js';
 import { useCssVariables, useGridSettings, useElementorDevice } from '../../shared/utils/hooks.js';
-import { getVisibleLayout, mergeVisibleIntoFullLayout } from '../../shared/utils/visibleLayout.js';
+import { getVisibleLayout } from '../../shared/utils/visibleLayout.js';
 import CategoryImageModal from './CategoryImageModal.jsx';
 
 import './categories-layout.scss';
@@ -87,16 +89,7 @@ async function fetchCategories(querySettings) {
 
 	const data = await response.json();
 
-	// Convert snake_case keys to camelCase
-	return data.map((item) => {
-		return Object.keys(item).reduce((acc, key) => {
-			const camelCaseKey = key.replace(/_([a-z])/g, (match, letter) =>
-				letter.toUpperCase()
-			);
-			acc[camelCaseKey] = item[key];
-			return acc;
-		}, {});
-	});
+	return data.map((item) => mapKeysToCamelCase(item));
 }
 
 /**
@@ -116,41 +109,6 @@ function prepareCategoriesData(categories, layoutItems) {
 	});
 }
 
-
-/**
- * Category Image Component.
- *
- * Renders category thumbnail from Store API data.
- *
- * @param {Object} props
- * @param {string} props.name - Category name (for alt text)
- * @param {Object|null} props.image - Image object from Store API { src, thumbnail }
- * @param {Object} props.style - CSS styles for img element
- */
-/* const CategoryImage = ({ name, image, style = {} }) => {
-	const placeholderImg = window.MPL4E?.placeholderImg || '';
-
-	if (!image || !image.src) {
-		return (
-			<img
-				src={placeholderImg}
-				alt={name || 'Category'}
-				loading="lazy"
-				style={style}
-			/>
-		);
-	}
-
-	return (
-		<img
-			src={image.thumbnail || image.src}
-			alt={name || 'Category'}
-			loading="lazy"
-			style={style}
-		/>
-	);
-};
- */
 /**
  * Categories Layout Widget Component.
  *
@@ -177,19 +135,7 @@ const CategoriesLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'disp
 	// Map flex justify-content alignment values → text-align equivalents for .category-elements.
 	// flex-start → left, flex-end → right, center → center.
 	const alignTextVars = useMemo(() => {
-		const vars = {};
-		const alignSetting = widgetData?.mpl4e_cat_align;
-		if (alignSetting && typeof alignSetting === 'object') {
-			const flexToTextAlign = { 'flex-start': 'left', 'flex-end': 'right', 'center': 'center' };
-			getActiveBreakpointNames().forEach(bp => {
-				const mapped = flexToTextAlign[alignSetting[bp]];
-				if (mapped) {
-
-					vars[`--mpl4e-cat-align-text-${bp}`] = mapped;
-				}
-			});
-		}
-		return vars;
+		return getBreakpointTextAlignVars(widgetData?.mpl4e_cat_align, '--mpl4e-cat-align-text-');
 	}, [widgetData?.mpl4e_cat_align]);
 
 	// Extract settings with defaults
@@ -267,42 +213,26 @@ const CategoriesLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'disp
 		const loadCategories = async () => {
 			const cacheKey = JSON.stringify(querySettings);
 
-			const cachedData = categoriesCache instanceof LRUCache
-				? categoriesCache.get(cacheKey)
-				: categoriesCache[cacheKey];
+			setError(null);
 
-			if (cachedData) {
-				setCategories(cachedData);
-				setIsLoading(false);
-				setIsFetching(false);
-				setError(null);
-				return;
-			}
-
-			try {
-				if (categories.length === 0) {
-					setIsLoading(true);
-				} else {
-					setIsFetching(true);
-				}
-				setError(null);
-
-				const data = await fetchCategories(querySettings);
-
-				if (categoriesCache instanceof LRUCache) {
-					categoriesCache.set(cacheKey, data);
-				} else {
-					categoriesCache[cacheKey] = data;
-				}
-
-				setCategories(data);
-			} catch (err) {
-				console.error('Error fetching categories:', err);
-				setError('Failed to fetch categories. Please try again later.');
-			} finally {
-				setIsLoading(false);
-				setIsFetching(false);
-			}
+			await loadCachedData({
+				cache: categoriesCache,
+				cacheKey,
+				fetcher: () => fetchCategories(querySettings),
+				onCacheHit: (cachedData) => {
+					setCategories(cachedData);
+				},
+				onSuccess: (data) => {
+					setCategories(data);
+				},
+				onError: (err) => {
+					console.error('Error fetching categories:', err);
+					setError('Failed to fetch categories. Please try again later.');
+				},
+				setIsLoading,
+				setIsFetching,
+				hasExistingData: categories.length > 0,
+			});
 		};
 
 		loadCategories();
@@ -310,70 +240,46 @@ const CategoriesLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'disp
 
 	// Handle layout changes in editor (drag/resize)
 	const handleLayoutChange = (newLayouts) => {
-		if (typeof elementor === 'undefined' || !widgetId) return;
-
-		let existingCustomLayout = {};
-		if (customLayoutData) {
-			try {
-				existingCustomLayout = JSON.parse(customLayoutData);
-			} catch (error) {
-				console.error('Failed to parse existing custom layout:', error);
-			}
-		}
-
-		// react-grid-layout only reports visible items. Merge those changes back
-		// into the full layout so hidden items are not lost.
-		const baseLayout = existingCustomLayout.mobile?.length ? existingCustomLayout : layoutData;
-		const merged = mergeVisibleIntoFullLayout(baseLayout, newLayouts);
-
-		const customLayout = {
-			...merged,
-			zindex: existingCustomLayout.zindex || layoutData.zindex || {}
-		};
-
-		updateElementorSetting('categories-layout', widgetId, 'mpl4e_cat_custom_layout', JSON.stringify(customLayout));
+		applyLayoutChange({
+			widgetType: 'categories-layout',
+			widgetId,
+			settingKey: 'mpl4e_cat_custom_layout',
+			customLayoutData,
+			layoutData,
+			newLayouts,
+		});
 	};
 
 	const selectWidget = () => {
-		if (!isEditMode || !widgetId) return;
-
-		try {
-			const $widgetEl = jQuery(
-				`.categories-layout[data-widget-id="${widgetId}"]`
-			).closest('[data-id]');
-
-			if ($widgetEl && $widgetEl.length) {
-				$widgetEl.trigger('click');
-			}
-		} catch (err) {
-			console.error('Error selecting widget:', err);
-		}
+		selectElementorWidget({ isEditMode, widgetId, widgetClass: 'categories-layout' });
 	};
 
 	const handleAddItem = () => {
-		if (!isEditMode || !widgetId) return;
-
-		const gridColumns = {
-			desktop: gridSettings.columns.desktop,
-			tablet: gridSettings.columns.tablet,
-			mobile: gridSettings.columns.mobile
-		};
-
-		const currentLayout = customLayoutData || JSON.stringify(layoutData);
-		const { newLayoutJson } = addItemToLayout(currentLayout, gridColumns);
-		updateElementorSetting('categories-layout', widgetId, 'mpl4e_cat_custom_layout', newLayoutJson);
+		addGridItem({
+			isEditMode,
+			widgetType: 'categories-layout',
+			widgetId,
+			settingKey: 'mpl4e_cat_custom_layout',
+			customLayoutData,
+			layoutData,
+			gridColumns: {
+				desktop: gridSettings.columns.desktop,
+				tablet: gridSettings.columns.tablet,
+				mobile: gridSettings.columns.mobile,
+			},
+		});
 	};
 
 	const handleRemoveItem = (itemId) => {
-		if (!isEditMode || !widgetId) return;
-
-		if (layoutData.mobile.length <= 1) {
-			return;
-		}
-
-		const currentLayout = customLayoutData || JSON.stringify(layoutData);
-		const newLayoutJson = removeItemFromLayout(currentLayout, itemId);
-		updateElementorSetting('categories-layout', widgetId, 'mpl4e_cat_custom_layout', newLayoutJson);
+		removeGridItem({
+			isEditMode,
+			widgetType: 'categories-layout',
+			widgetId,
+			settingKey: 'mpl4e_cat_custom_layout',
+			customLayoutData,
+			layoutData,
+			itemId,
+		});
 	};
 
 	const handleOpenImageModal = (category) => {
@@ -396,24 +302,17 @@ const CategoriesLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'disp
 		)));
 
 		const cacheKey = JSON.stringify(querySettings);
-		if (categoriesCache instanceof LRUCache) {
-			const cachedData = categoriesCache.get(cacheKey);
-			if (Array.isArray(cachedData)) {
-				categoriesCache.set(
-					cacheKey,
-					cachedData.map((category) => (
-						category.id === categoryId
-							? { ...category, image: nextImage }
-							: category
-					))
-				);
-			}
-		} else if (Array.isArray(categoriesCache[cacheKey])) {
-			categoriesCache[cacheKey] = categoriesCache[cacheKey].map((category) => (
-				category.id === categoryId
-					? { ...category, image: nextImage }
-					: category
-			));
+		const cachedData = getCacheEntry(categoriesCache, cacheKey);
+		if (Array.isArray(cachedData)) {
+			setCacheEntry(
+				categoriesCache,
+				cacheKey,
+				cachedData.map((category) => (
+					category.id === categoryId
+						? { ...category, image: nextImage }
+						: category
+				))
+			);
 		}
 
 		setImageModalCategory(null);

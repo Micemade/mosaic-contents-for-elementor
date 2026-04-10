@@ -15,40 +15,10 @@ import { useState, useEffect } from 'react';
 import { publish } from './utils/events';
 import { Responsive as RGL } from 'react-grid-layout';
 import { withSize } from 'react-sizeme';
+import { getElementorGridBreakpoints } from '../../core/elementor-utils';
 import 'react-grid-layout/css/styles.css';
 
-/**
- * Get Elementor breakpoint values dynamically
- * Falls back to defaults if Elementor config is not available
- */
-const getElementorBreakpoints = () => {
-	if (typeof elementorFrontend !== 'undefined' && elementorFrontend.config?.responsive?.activeBreakpoints) {
-		const activeBreakpoints = elementorFrontend.config.responsive.activeBreakpoints;
-		const result = { mobile: 0 };
-
-		// Extract breakpoint values from Elementor config
-		Object.keys(activeBreakpoints).forEach(key => {
-			if (activeBreakpoints[key].value) {
-				result[key] = activeBreakpoints[key].value + 1; // Elementor uses max-width, we need min-width
-			}
-		});
-
-		// Desktop is always the highest breakpoint + 1
-		const tabletValue = result.tablet || 767;
-		result.desktop = tabletValue + 1;
-
-		return result;
-	}
-
-	// Fallback to default breakpoints
-	return {
-		desktop: 1025,
-		tablet: 767,
-		mobile: 0,
-	};
-};
-
-const ELEMENTOR_BREAKPOINTS = getElementorBreakpoints();
+const ELEMENTOR_BREAKPOINTS = getElementorGridBreakpoints();
 
 const isEditorMode = () => {
 	return typeof elementorFrontend !== 'undefined' && elementorFrontend.isEditMode();

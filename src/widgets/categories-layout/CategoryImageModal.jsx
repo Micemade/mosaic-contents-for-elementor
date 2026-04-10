@@ -1,8 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-
-const getRestNonce = () => {
-	return window.MPL4E?.restNonce || window.parent?.MPL4E?.restNonce || '';
-};
+import { getRestNonceHeaders, parseJsonOrThrow } from '../../shared/utils/fetchHelpers.js';
 
 const getWpMedia = () => {
 	return window.parent?.wp?.media || window.wp?.media || null;
@@ -23,28 +20,20 @@ const toImagePayload = (attachment) => {
 };
 
 const saveCategoryImage = async (categoryId, attachmentId) => {
-	const nonce = getRestNonce();
 	const response = await fetch(`/wp-json/mpl4e/v1/categories/${categoryId}/image`, {
 		method: 'POST',
 		credentials: 'same-origin',
 		headers: {
 			'Content-Type': 'application/json',
-			...(nonce ? { 'X-WP-Nonce': nonce } : {}),
+			...getRestNonceHeaders(),
 		},
 		body: JSON.stringify({ attachmentId }),
 	});
 
-	if (!response.ok) {
-		const errorJson = await response.json().catch(() => ({}));
-		const message = errorJson?.message || 'Failed to update category image.';
-		throw new Error(message);
-	}
-
-	return response.json();
+	return parseJsonOrThrow(response, 'Failed to update category image.');
 };
 
 const uploadMedia = async (file) => {
-	const nonce = getRestNonce();
 	const formData = new FormData();
 	formData.append('file', file, file.name);
 
@@ -52,18 +41,12 @@ const uploadMedia = async (file) => {
 		method: 'POST',
 		credentials: 'same-origin',
 		headers: {
-			...(nonce ? { 'X-WP-Nonce': nonce } : {}),
+			...getRestNonceHeaders(),
 		},
 		body: formData,
 	});
 
-	if (!response.ok) {
-		const errorJson = await response.json().catch(() => ({}));
-		const message = errorJson?.message || 'Upload failed.';
-		throw new Error(message);
-	}
-
-	return response.json();
+	return parseJsonOrThrow(response, 'Upload failed.');
 };
 
 const CategoryImageModal = ({ isOpen, category, onClose, onSaved }) => {

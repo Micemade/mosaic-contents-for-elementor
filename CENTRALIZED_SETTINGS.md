@@ -161,7 +161,7 @@ export const createSettingsMapper = (settingsDefinition) => (model) => {
         const value = settings.get(key);
 
         if (definition.type === 'responsive') {
-            result[key] = getResponsiveValue(settings, key, getActiveBreakpoints(), definition);
+            result[key] = getResponsiveValue(settings, key, getActiveBreakpointNames(), definition);
             // → { desktop: val, tablet: val_tablet, mobile: val_mobile }
         } else if (definition.type === 'boolean') {
             result[key] = value === 'yes';

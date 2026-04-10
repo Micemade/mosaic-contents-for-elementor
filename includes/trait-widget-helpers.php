@@ -337,6 +337,25 @@ trait WidgetHelpers {
 	}
 
 	/**
+	 * Get default element visibility settings.
+	 *
+	 * @param string $element_label Label for the element (e.g. 'Title').
+	 * @param array  $devices       Array of booleans for [desktop, widescreen, tablet, mobile_extra, mobile].
+	 * @return array Associative array of visibility settings for all breakpoints.
+	 */
+	protected function default_elements_visibility( $element_label, $devices=array() ) {
+
+		return array(
+			'element_label'        => $element_label,
+			'visible_desktop'      => $devices[0] ? 'yes' : 'no',
+			'visible_widescreen'   => $devices[1] ? 'yes' : 'no',
+			'visible_tablet'       => $devices[2] ? 'yes' : 'no',
+			'visible_mobile_extra' => $devices[3] ? 'yes' : 'no',
+			'visible_mobile'       => $devices[4] ? 'yes' : 'no',
+		);
+	}
+
+	/**
 	 * Render widget on frontend.
 	 *
 	 * Outputs a wrapper div with a hidden input containing JSON-encoded

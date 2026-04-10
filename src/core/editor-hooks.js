@@ -159,6 +159,60 @@ const setWidgetSettingWithHistory = (model, widgetId, settingName, value) => {
 	}
 };
 
+const createRepeaterUpdateScheduler = (widgetType, widgetId, getSettingsFromModel) => {
+	let repeaterTimer = null;
+
+	return () => {
+		clearTimeout(repeaterTimer);
+		repeaterTimer = setTimeout(() => {
+			widgetManager.updateInstance(
+				widgetType,
+				widgetId,
+				getSettingsFromModel()
+			);
+		}, 80);
+	};
+};
+
+const patchRepeaterCollection = (collection, widgetId, scheduleRepeaterUpdate) => {
+	if (!collection || typeof collection.add !== 'function') {
+		return;
+	}
+
+	// Skip if this exact collection instance was already patched
+	// (e.g. Elementor updated in-place rather than replacing it).
+	if (collection.__mpl4ePatched === widgetId) {
+		return;
+	}
+
+	collection.__mpl4ePatched = widgetId;
+
+	['add', 'remove', 'reset', 'sort'].forEach((method) => {
+		const original = collection[method];
+		if (typeof original !== 'function') return;
+		collection[method] = function (...args) {
+			const result = original.apply(this, args);
+			scheduleRepeaterUpdate();
+			return result;
+		};
+	});
+
+	// Also listen for `change` events bubbled from item models
+	// (e.g. visibility switcher toggles).
+	collection.on('change', scheduleRepeaterUpdate);
+};
+
+const patchRepeaterCollections = (settingsModel, repeaterKeys, widgetId, scheduleRepeaterUpdate) => {
+	if (!settingsModel || !Array.isArray(repeaterKeys)) {
+		return;
+	}
+
+	repeaterKeys.forEach((repeaterKey) => {
+		const collection = settingsModel.get(repeaterKey);
+		patchRepeaterCollection(collection, widgetId, scheduleRepeaterUpdate);
+	});
+};
+
 /**
  * Register frontend hooks for editor preview.
  * Same as frontend-hooks but with 'edit' mode.
@@ -334,42 +388,8 @@ export const registerEditorHooks = () => {
 			const wKeys = WIDGET_KEYS[widgetType];
 			if (wKeys?.repeaterKeys) {
 				const settingsModel = model.get('settings');
-				let repeaterTimer = null;
-				const scheduleRepeaterUpdate = () => {
-					clearTimeout(repeaterTimer);
-					repeaterTimer = setTimeout(() => {
-						widgetManager.updateInstance(
-							widgetType,
-							widgetId,
-							getSettingsFromModel()
-						);
-					}, 80);
-				};
-
-				wKeys.repeaterKeys.forEach(repeaterKey => {
-					const collection = settingsModel.get(repeaterKey);
-					if (!collection || typeof collection.add !== 'function') return;
-
-					// Mark this collection instance as patched so the
-					// applySetupEvent handler can skip re-patching it if
-					// Elementor updates the collection in-place.
-					collection.__mpl4ePatched = widgetId;
-
-					// Patch mutator methods to catch silent operations.
-					['add', 'remove', 'reset', 'sort'].forEach(method => {
-						const original = collection[method];
-						if (typeof original !== 'function') return;
-						collection[method] = function (...args) {
-							const result = original.apply(this, args);
-							scheduleRepeaterUpdate();
-							return result;
-						};
-					});
-
-					// Also listen for `change` events bubbled from item
-					// models (e.g. visibility switcher toggles).
-					collection.on('change', scheduleRepeaterUpdate);
-				});
+				const scheduleRepeaterUpdate = createRepeaterUpdateScheduler(widgetType, widgetId, getSettingsFromModel);
+				patchRepeaterCollections(settingsModel, wKeys.repeaterKeys, widgetId, scheduleRepeaterUpdate);
 			}
 
 			// Clear custom layout when predefined layout changes
@@ -507,40 +527,8 @@ export const registerEditorHooks = () => {
 					//     batch set above.  Without this, element ordering
 					//     changes after applying a setup are silently ignored.
 					if (wKeys?.repeaterKeys) {
-						let repeaterTimer = null;
-						const scheduleRepeaterUpdate = () => {
-							clearTimeout(repeaterTimer);
-							repeaterTimer = setTimeout(() => {
-								widgetManager.updateInstance(
-									widgetType,
-									widgetId,
-									getSettingsFromModel()
-								);
-							}, 80);
-						};
-
-						wKeys.repeaterKeys.forEach(repeaterKey => {
-							const collection = settingsModel.get(repeaterKey);
-							if (!collection || typeof collection.add !== 'function') return;
-
-							// Skip if this exact collection instance was already
-							// patched (e.g. Elementor updated in-place rather than
-							// replacing the collection object).
-							if (collection.__mpl4ePatched === widgetId) return;
-							collection.__mpl4ePatched = widgetId;
-
-							['add', 'remove', 'reset', 'sort'].forEach(method => {
-								const original = collection[method];
-								if (typeof original !== 'function') return;
-								collection[method] = function (...args) {
-									const result = original.apply(this, args);
-									scheduleRepeaterUpdate();
-									return result;
-								};
-							});
-
-							collection.on('change', scheduleRepeaterUpdate);
-						});
+						const scheduleRepeaterUpdate = createRepeaterUpdateScheduler(widgetType, widgetId, getSettingsFromModel);
+						patchRepeaterCollections(settingsModel, wKeys.repeaterKeys, widgetId, scheduleRepeaterUpdate);
 					}
 
 					// 7. Regenerate CSS for selector-based styles.

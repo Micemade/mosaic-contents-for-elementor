@@ -29,12 +29,14 @@ import Pagination from '../../shared/components/Pagination.jsx';
 // Utilities and data.
 import { decode } from '../../shared/utils/generalUtils.js';
 import { parseElementOrdering } from '../../shared/utils/elementOrdering.js';
-import { updateElementorSetting, getActiveBreakpointNames } from '../../core/elementor-utils';
-import { addItemToLayout, removeItemFromLayout } from '../../shared/utils/addItem.js';
+import { mapKeysToCamelCase } from '../../shared/utils/transformationUtils.js';
+import { getBreakpointTextAlignVars } from '../../shared/utils/alignmentUtils.js';
+import { applyLayoutChange, selectElementorWidget, addGridItem, removeGridItem } from '../../shared/utils/layoutEditing.js';
 import { getLayout } from '../../shared/utils/layoutUtils.js';
-import { LRUCache, createCache } from '../../shared/utils/LRUCache.js';
+import { createCache } from '../../shared/utils/LRUCache.js';
+import { loadCachedData } from '../../shared/utils/dataLoading.js';
 import { useCssVariables, useGridSettings, useElementorDevice } from '../../shared/utils/hooks.js';
-import { getVisibleLayout, mergeVisibleIntoFullLayout } from '../../shared/utils/visibleLayout.js';
+import { getVisibleLayout } from '../../shared/utils/visibleLayout.js';
 
 import './products-layout.scss';
 
@@ -80,7 +82,7 @@ async function fetchProducts(querySettings) {
 	// Specify fields to return (optimizes response size)
 	params.append(
 		'_fields',
-		'id,name,short_description,price_html,images,permalink,add_to_cart,type,average_rating,review_count,on_sale,categories,brands'
+		'id,name,short_description,price_html,images,permalink,add_to_cart,type,average_rating,review_count,on_sale,categories,brands,is_in_stock,is_purchasable,sku'
 	);
 
 	const response = await fetch(`/wp-json/wc/store/v1/products?${params.toString()}`);
@@ -94,16 +96,7 @@ async function fetchProducts(querySettings) {
 
 	const data = await response.json();
 
-	// Convert snake_case keys to camelCase (matches mosaic-product-layouts pattern)
-	const items = data.map((item) => {
-		return Object.keys(item).reduce((acc, key) => {
-			const camelCaseKey = key.replace(/_([a-z])/g, (match, letter) =>
-				letter.toUpperCase()
-			);
-			acc[camelCaseKey] = item[key];
-			return acc;
-		}, {});
-	});
+	const items = data.map((item) => mapKeysToCamelCase(item));
 
 	return { items, total, totalPages };
 }
@@ -159,18 +152,7 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 	// Map flex justify-content alignment values → text-align equivalents for .product-elements.
 	// flex-start → left, flex-end → right, center → center.
 	const alignTextVars = useMemo(() => {
-		const vars = {};
-		const alignSetting = widgetData?.mpl4e_product_align;
-		if (alignSetting && typeof alignSetting === 'object') {
-			const flexToTextAlign = { 'flex-start': 'left', 'flex-end': 'right', 'center': 'center' };
-			getActiveBreakpointNames().forEach(bp => {
-				const mapped = flexToTextAlign[alignSetting[bp]];
-				if (mapped) {
-					vars[`--mpl4e-product-align-text-${bp}`] = mapped;
-				}
-			});
-		}
-		return vars;
+		return getBreakpointTextAlignVars(widgetData?.mpl4e_product_align, '--mpl4e-product-align-text-');
 	}, [widgetData?.mpl4e_product_align]);
 
 	// Extract settings with defaults
@@ -281,59 +263,40 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 		const loadProducts = async () => {
 			// Create cache key from query settings
 			const cacheKey = JSON.stringify(querySettings);
-			
-			// Check cache first (supports both LRU cache and plain object)
-			const cachedData = productsCache instanceof LRUCache 
-				? productsCache.get(cacheKey)
-				: productsCache[cacheKey];
-			
-			if (cachedData) {
-				if (Array.isArray(cachedData)) {
-				// Backward-compatibility for old cache shape.
-					setProducts(cachedData);
-					setPaginationMeta({ total: cachedData.length, totalPages: 1 });
-				} else {
+
+			setError(null);
+
+			await loadCachedData({
+				cache: productsCache,
+				cacheKey,
+				fetcher: () => fetchProducts(querySettings),
+				onCacheHit: (cachedData) => {
+					if (Array.isArray(cachedData)) {
+						// Backward-compatibility for old cache shape.
+						setProducts(cachedData);
+						setPaginationMeta({ total: cachedData.length, totalPages: 1 });
+						return;
+					}
+
 					setProducts(cachedData.items || []);
 					setPaginationMeta({
 						total: cachedData.total || 0,
 						totalPages: cachedData.totalPages || 1,
 					});
-				}
-				setIsLoading(false);
-				setIsFetching(false);
-				setError(null);
-				return;
-			}
-			
-			try {
-				// Only show full loading on initial load (no products yet)
-				// Otherwise just show fetching indicator
-				if (products.length === 0) {
-					setIsLoading(true);
-				} else {
-					setIsFetching(true);
-				}
-				setError(null);
-				
-				const result = await fetchProducts(querySettings);
-				
-				// Store in cache (supports both LRU cache and plain object)
-				if (productsCache instanceof LRUCache) {
-					productsCache.set(cacheKey, result);
-				} else {
-					productsCache[cacheKey] = result;
-				}
-				
-				setProducts(result.items || []);
-				setPaginationMeta({ total: result.total || 0, totalPages: result.totalPages || 1 });
-			} catch (err) {
-				console.error('Error fetching products:', err);
-				setError('Failed to fetch products. Please try again later.');
-				setPaginationMeta({ total: 0, totalPages: 1 });
-			} finally {
-				setIsLoading(false);
-				setIsFetching(false);
-			}
+				},
+				onSuccess: (result) => {
+					setProducts(result.items || []);
+					setPaginationMeta({ total: result.total || 0, totalPages: result.totalPages || 1 });
+				},
+				onError: (err) => {
+					console.error('Error fetching products:', err);
+					setError('Failed to fetch products. Please try again later.');
+					setPaginationMeta({ total: 0, totalPages: 1 });
+				},
+				setIsLoading,
+				setIsFetching,
+				hasExistingData: products.length > 0,
+			});
 		};
 
 		loadProducts();
@@ -341,80 +304,48 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 
 	// Handle layout changes in editor (drag/resize)
 	const handleLayoutChange = (newLayouts) => {
-		// Only update in Elementor editor mode
-		if (typeof elementor === 'undefined' || !widgetId) return;
-
-		// Get custom layout data to preserve unchanged breakpoints
-		let existingCustomLayout = {};
-		if (customLayoutData) {
-			try {
-				existingCustomLayout = JSON.parse(customLayoutData);
-			} catch (error) {
-				console.error('Failed to parse existing custom layout:', error);
-			}
-		}
-
-		// react-grid-layout only reports visible items. Merge those changes back
-		// into the full layout so hidden items are not lost.
-		const baseLayout = existingCustomLayout.mobile?.length ? existingCustomLayout : layoutData;
-		const merged = mergeVisibleIntoFullLayout(baseLayout, newLayouts);
-
-		const customLayout = {
-			...merged,
-			zindex: existingCustomLayout.zindex || layoutData.zindex || {}
-		};
-
-		updateElementorSetting('products-layout', widgetId, 'mpl4e_custom_layout', JSON.stringify(customLayout));
+		applyLayoutChange({
+			widgetType: 'products-layout',
+			widgetId,
+			settingKey: 'mpl4e_custom_layout',
+			customLayoutData,
+			layoutData,
+			newLayouts,
+		});
 	};
 
 	const selectWidget = () => {
-		if (!isEditMode || !widgetId) return;
-
-		try {
-			// Find the editor view at selection time
-			const $widgetEl = jQuery(
-				`.products-layout[data-widget-id="${widgetId}"]`
-			).closest('[data-id]');
-
-			// Trigger a click on the editor widget element to cause selection
-			if ($widgetEl && $widgetEl.length) {
-				$widgetEl.trigger('click');
-			}
-		} catch (err) {
-			console.error('Error selecting widget:', err);
-		}
+		selectElementorWidget({ isEditMode, widgetId, widgetClass: 'products-layout' });
 	};
 
 	// Handle adding a new grid item (editor only)
 	const handleAddItem = () => {
-		if (!isEditMode || !widgetId) return;
-
-		const gridColumns = {
-			desktop: gridSettings.columns.desktop,
-			tablet: gridSettings.columns.tablet,
-			mobile: gridSettings.columns.mobile
-		};
-
-		// Use current layoutData (either from custom layout or predefined layout)
-		// This ensures predefined layout items are preserved when adding new items
-		const currentLayout = customLayoutData || JSON.stringify(layoutData);
-		const { newLayoutJson } = addItemToLayout(currentLayout, gridColumns);
-		updateElementorSetting('products-layout', widgetId, 'mpl4e_custom_layout', newLayoutJson);
+		addGridItem({
+			isEditMode,
+			widgetType: 'products-layout',
+			widgetId,
+			settingKey: 'mpl4e_custom_layout',
+			customLayoutData,
+			layoutData,
+			gridColumns: {
+				desktop: gridSettings.columns.desktop,
+				tablet: gridSettings.columns.tablet,
+				mobile: gridSettings.columns.mobile,
+			},
+		});
 	};
 
 	// Handle removing a grid item (editor only)
 	const handleRemoveItem = (itemId) => {
-		if (!isEditMode || !widgetId) return;
-
-		// Prevent removing if only one item left
-		if (layoutData.mobile.length <= 1) {
-			return;
-		}
-
-		// Use current layoutData (either from custom layout or predefined layout)
-		const currentLayout = customLayoutData || JSON.stringify(layoutData);
-		const newLayoutJson = removeItemFromLayout(currentLayout, itemId);
-		updateElementorSetting('products-layout', widgetId, 'mpl4e_custom_layout', newLayoutJson);
+		removeGridItem({
+			isEditMode,
+			widgetType: 'products-layout',
+			widgetId,
+			settingKey: 'mpl4e_custom_layout',
+			customLayoutData,
+			layoutData,
+			itemId,
+		});
 	};
 
 	if (isLoading) {
@@ -578,6 +509,8 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 																	sku: matchedProduct.sku || '',
 																	permalink: matchedProduct.permalink,
 																	addToCart: matchedProduct.addToCart,
+																	isInStock: matchedProduct.isInStock,
+																	isPurchasable: matchedProduct.isPurchasable,
 																}}
 															/>
 														</div>

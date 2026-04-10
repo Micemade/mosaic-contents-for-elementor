@@ -208,7 +208,7 @@ class CategoriesLayout extends Widget_Base {
 			'layout_section',
 			array(
 				'label' => __( 'Layout', 'mosaic-product-layouts-for-elementor' ),
-				'tab'   => Controls_Manager::TAB_CONTENT,
+				'tab'   => Controls_Manager::TAB_LAYOUT,
 			)
 		);
 
@@ -386,28 +386,22 @@ class CategoriesLayout extends Widget_Base {
 
 		$this->end_controls_section();
 
-		// Element Ordering Section.
+		// ── Element Ordering Section ───────────────────────────────────────
 		$this->register_element_ordering_controls(
 			'mpl4e_cat_element_ordering',
 			__( 'Element Order & Visibility', 'mosaic-product-layouts-for-elementor' ),
 			array(
-				array(
-					'element_label'   => __( 'Title', 'mosaic-product-layouts-for-elementor' ),
-					'visible_desktop' => 'yes',
-					'visible_tablet'  => 'yes',
-					'visible_mobile'  => 'yes',
+				$this->default_elements_visibility(
+					__( 'Title', 'mosaic-product-layouts-for-elementor' ),
+					array(true, true, true, true, true )
 				),
-				array(
-					'element_label'   => __( 'Count', 'mosaic-product-layouts-for-elementor' ),
-					'visible_desktop' => 'yes',
-					'visible_tablet'  => 'yes',
-					'visible_mobile'  => 'yes',
+				$this->default_elements_visibility(
+					__( 'Count', 'mosaic-product-layouts-for-elementor' ),
+					array(true, true, true, true, true )
 				),
-				array(
-					'element_label'   => __( 'Description', 'mosaic-product-layouts-for-elementor' ),
-					'visible_desktop' => 'yes',
-					'visible_tablet'  => 'yes',
-					'visible_mobile'  => 'yes',
+				$this->default_elements_visibility(
+					__( 'Description', 'mosaic-product-layouts-for-elementor' ),
+					array(true, true, true, true, true )
 				),
 			)
 		);

@@ -42,19 +42,29 @@ src/
 │   │   ├── RatingStars.jsx      # WooCommerce star ratings
 │   │   ├── AddToCartButton.jsx  # Store API cart integration
 │   │   ├── ZIndexControls.jsx   # Per-item z-index editor controls
+│   │   ├── GridHelper.jsx       # Shared grid sizing helpers
+│   │   ├── ItemControls.jsx     # Shared in-canvas item controls
+│   │   ├── Pagination.jsx       # Shared pagination component
 │   │   └── utils/events.js      # Custom DOM event helpers
 │   ├── utils/
 │   │   ├── hooks.js             # useCssVariables(), useGridSettings()
 │   │   ├── addItem.js           # Grid item add/remove logic
+│   │   ├── alignmentUtils.js    # Shared alignment variable helpers
+│   │   ├── dataLoading.js       # Shared cached loading helper
 │   │   ├── layoutUtils.js       # Layout computation helpers
+│   │   ├── layoutEditing.js     # Shared layout edit helpers
 │   │   ├── elementOrdering.js   # Element order/visibility parser
 │   │   ├── LRUCache.js          # LRU cache (editor) / plain object (frontend)
+│   │   ├── fetchHelpers.js      # Shared REST helper functions
 │   │   ├── productUtils.js      # WooCommerce data helpers
+│   │   ├── transformationUtils.js # Shared snake_case -> camelCase mapper
+│   │   ├── visibleLayout.js     # Visibility-aware layout resolver
 │   │   └── generalUtils.js      # General helpers (decode, etc.)
 │   └── assets/
 │       ├── _gridLayout.scss
+│       ├── _itemControls.scss
 │       ├── _productElements.scss
-│       └── _zindexControls.scss
+│       └── (shared partials imported by widget styles)
 └── controls/
     ├── focal-point-control.jsx      # Image focal-point picker React component
     ├── FocalPointControlView.jsx    # Elementor BaseData view extension
@@ -97,7 +107,7 @@ Each widget has a `react-settings.json` that is the single source of truth for:
 ## ✅ Functionality
 
 ### Custom Layout Saving ✓
-Drag/resize → `onLayoutChange` → `updateElementorSetting()` → `widgetManager.updateModelSetting()` → `model.setSetting()` → auto-save
+Drag/resize → `onLayoutChange` → `updateElementorSetting()` → `widgetManager.updateModelSetting()` → preferred `$e.run('document/elements/settings', ...)` (fallback `model.setSetting()`) → auto-save/history entry
 
 ### Layout Reset ✓
 Reset button → `mosaic:resetLayout` channel event → `editor-hooks.js` clears `custom_layout` → React re-renders with predefined layout

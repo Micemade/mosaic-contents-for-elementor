@@ -79,24 +79,12 @@ class ProductsLayout extends Widget_Base {
 		return $categories;
 	}
 
-	private function default_elements_visibility( $element_label, $devices=array() ) {
-
-		return array(
-			'element_label'        => $element_label,
-			'visible_desktop'      => $devices[0] ? 'yes' : 'no',
-			'visible_widescreen'   => $devices[1] ? 'yes' : 'no',
-			'visible_tablet'       => $devices[2] ? 'yes' : 'no',
-			'visible_mobile_extra' => $devices[3] ? 'yes' : 'no',
-			'visible_mobile'       => $devices[4] ? 'yes' : 'no',
-		);
-	}
-
 	/**
 	 * Register widget controls.
 	 */
 	public function register_controls() {
 
-		// Content Section - Query Settings.
+		// ── Content Section - Query Settings ──────────────────────────────
 		$this->start_controls_section(
 			'query_section',
 			array(
@@ -184,7 +172,7 @@ class ProductsLayout extends Widget_Base {
 
 		$this->end_controls_section();
 
-		// Layout Section.
+		// ── Layout Section ────────────────────────────────────────────────
 		$this->start_controls_section(
 			'layout_section',
 			array(
@@ -347,7 +335,7 @@ class ProductsLayout extends Widget_Base {
 
 		$this->end_controls_section();
 
-		// Saved Setups Section.
+		// ── Saved Setups Section ──────────────────────────────────────────
 		$this->start_controls_section(
 			'saved_setups_section',
 			array(
@@ -368,7 +356,7 @@ class ProductsLayout extends Widget_Base {
 
 		$this->end_controls_section();
 
-		// Element Ordering Section.
+		// ── Element Ordering Section ───────────────────────────────────────
 		$this->register_element_ordering_controls(
 			'mpl4e_element_ordering',
 			__( 'Element Order & Visibility', 'mosaic-product-layouts-for-elementor' ),
@@ -400,7 +388,7 @@ class ProductsLayout extends Widget_Base {
 			)
 		);
 
-		// Style Section.
+		// ── Style Section ────────────────────────────────────────────────
 		$this->start_controls_section(
 			'product_style_settings_section',
 			[

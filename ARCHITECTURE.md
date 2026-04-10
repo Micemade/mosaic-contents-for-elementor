@@ -4,11 +4,12 @@
 
 The codebase has been refactored to support multiple widget types using a shared generic architecture. This allows easy addition of new widgets (categories-layout, single-product-layout, etc.) without code duplication.
 
-The architecture uses **two separate build outputs** plus **two custom control bundles**:
+The architecture uses **two separate build outputs** plus **three custom control bundles**:
 - **Frontend Bundle** (`main-frontend.jsx`) - Lightweight, display-only for published pages
 - **Editor Bundle** (`main-editor.jsx`) - Full-featured with drag/resize, add/remove items, and live settings sync for Elementor editor
 - **Focal Point Control** (`focal-point-control.jsx`) - Custom image focal-point picker for the editor panel
 - **Saved Setups Control** (`saved-setups-control.jsx`) - Save/load/delete layout+style presets via the editor panel
+- **Product Select Control** (`product-select-control.jsx`) - Searchable single-product picker for the editor panel
 
 ## Dual-Bundle Strategy
 
@@ -127,7 +128,8 @@ Helper functions for React components to interact with Elementor.
 
 **Key functions:**
 - `updateElementorSetting()` - Update Elementor model from React
-- `getActiveBreakpoints()` - Get responsive breakpoints from Elementor config
+- `getActiveBreakpointNames()` - Get responsive breakpoint names from Elementor config
+- `getElementorGridBreakpoints()` - Get breakpoint min-width values for `react-grid-layout`
 - `injectBreakpointStylesheet()` - Inject dynamic breakpoint CSS
 - `isElementorEditor()` - Check if running in editor context
 
@@ -166,9 +168,9 @@ User drags/resizes grid item
   → onLayoutChange callback 
   → updateElementorSetting() 
   → widgetManager.updateModelSetting() 
-  → Elementor model.setSetting() 
-  → Auto-save triggered 
-  → elementor.saver.setFlagEditorChange(true)
+    → Preferred: `$e.run('document/elements/settings', { container, settings })`
+    → Fallback: `model.setSetting()`
+    → Auto-save/dirty flag handled by Elementor APIs
 ```
 
 ### WooCommerce Products: Store API → React
@@ -227,6 +229,9 @@ src/
 │   ├── layouts.json                 # Predefined grid layouts (products/categories)
 │   ├── components/
 │   │   ├── GridLayout.jsx           # react-grid-layout wrapper
+│   │   ├── GridHelper.jsx           # Shared grid sizing helpers
+│   │   ├── ItemControls.jsx         # Shared per-item controls UI
+│   │   ├── Pagination.jsx           # Shared pagination UI
 │   │   ├── ProductImage.jsx         # Image with focal-point support
 │   │   ├── RatingStars.jsx          # WooCommerce star ratings
 │   │   ├── AddToCartButton.jsx      # Store API cart integration
@@ -236,15 +241,22 @@ src/
 │   ├── utils/
 │   │   ├── hooks.js                # useCssVariables(), useGridSettings()
 │   │   ├── addItem.js              # Grid item add/remove logic
+│   │   ├── alignmentUtils.js       # Shared alignment variable helpers
+│   │   ├── dataLoading.js          # Shared cached loading flow helper
 │   │   ├── layoutUtils.js          # Layout computation utilities
+│   │   ├── layoutEditing.js        # Shared Elementor model layout edits
 │   │   ├── elementOrdering.js      # Element order/visibility parser
 │   │   ├── LRUCache.js             # LRU cache (editor) / plain object (frontend)
+│   │   ├── fetchHelpers.js         # Shared REST nonce + JSON parsing helpers
 │   │   ├── productUtils.js         # WooCommerce product helpers
+│   │   ├── transformationUtils.js  # Shared snake_case → camelCase mapping
+│   │   ├── visibleLayout.js        # Visibility-aware layout resolver
 │   │   └── generalUtils.js         # General helper functions
 │   └── assets/
 │       ├── _gridLayout.scss        # Shared grid styles
+│       ├── _itemControls.scss      # Shared item-control styles
 │       ├── _productElements.scss   # Shared product element styles
-│       └── _zindexControls.scss    # Z-index control overlay styles
+│       └── (shared partials imported in widget styles)
 └── controls/
     ├── focal-point-control.jsx      # Focal point picker React component
     ├── FocalPointControlView.jsx    # Elementor BaseData view extension
@@ -440,7 +452,7 @@ Custom controls follow a PHP + React pattern: a PHP class provides the Elementor
 |---------|-----------|-----------|----------|
 | Focal Point | `Focal_Point` | `mpl4e_focal_point` | Image focal-point picker |
 | Product Select | `Product_Select` | `mpl4e_product_select` | Single-product selector with search |
-| Element Sorting | `Element_Sorting` | `mpl4e_element_sorting` | Drag-to-reorder element visibility list |
+| Element Sorting | `Element_Sorting` | `mpl4e_sorter_label` | Drag-to-reorder element visibility list |
 | Saved Setups | `Saved_Setups` | `mpl4e_saved_setups` | Save/load/delete layout+style presets |
 
 ### React Control Components (`src/controls/*.jsx`)
@@ -648,7 +660,7 @@ window.MPL4E.placeholderImg = 'plugins/.../woocommerce-placeholder-300x300.png';
 
 ### Vite Multi-Entry Setup
 
-The project uses Vite with a custom multi-entry configuration that builds four separate bundles:
+The project uses Vite with a custom multi-entry configuration that builds five separate bundles:
 
 | Entry Point | Environment Variable | Output Directory | Purpose |
 |-------------|---------------------|------------------|---------|
@@ -656,6 +668,7 @@ The project uses Vite with a custom multi-entry configuration that builds four s
 | `src/main-editor.jsx` | `BUILD_ENTRY=main-editor` | `assets/admin/` | Editor preview |
 | `src/controls/focal-point-control.jsx` | `BUILD_ENTRY=focal-point-control` | `assets/admin/` | Focal point control |
 | `src/controls/saved-setups-control.jsx` | `BUILD_ENTRY=saved-setups-control` | `assets/admin/` | Saved setups control |
+| `src/controls/product-select-control.jsx` | `BUILD_ENTRY=product-select-control` | `assets/admin/` | Product select control |
 
 ### Build Commands
 
@@ -671,6 +684,7 @@ npm run watch              # Watch frontend bundle only (recommended)
 npm run watch:editor       # Watch editor bundle only
 npm run watch:control      # Watch focal point control only
 npm run watch:setups       # Watch saved setups control only
+npm run watch:product-select # Watch product select control only
 npm run watch:all          # Watch all bundles (resource intensive)
 ```
 
@@ -711,10 +725,12 @@ assets/
     ├── js/
     │   ├── main-editor.js           # ~175KB (gzipped ~52KB)
     │   ├── focal-point-control.js   # ~5KB
+    │   ├── product-select-control.js
     │   └── saved-setups-control.js  # ~7KB
     └── css/
         ├── main-editor.css
         ├── focal-point-control.css
+        ├── product-select-control.css
         └── saved-setups-control.css
 ```
 
@@ -761,6 +777,9 @@ assets/
    
    # Terminal 3: Watch control
    npm run watch:control
+
+    # Terminal 4: Watch product select control
+    npm run watch:product-select
    ```
 
 ### File Watching

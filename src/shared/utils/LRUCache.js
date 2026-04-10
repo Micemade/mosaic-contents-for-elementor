@@ -54,3 +54,30 @@ export class LRUCache {
  */
 export const createCache = (maxSize = 20) =>
 	isElementorEditor() ? new LRUCache(maxSize) : {};
+
+/**
+ * Read a cached value from either LRUCache or plain object cache.
+ *
+ * @param {LRUCache|Object} cache
+ * @param {string} key
+ * @returns {*}
+ */
+export const getCacheEntry = (cache, key) =>
+	cache instanceof LRUCache ? cache.get(key) : cache[key];
+
+/**
+ * Write a cached value to either LRUCache or plain object cache.
+ *
+ * @param {LRUCache|Object} cache
+ * @param {string} key
+ * @param {*} value
+ * @returns {void}
+ */
+export const setCacheEntry = (cache, key, value) => {
+	if (cache instanceof LRUCache) {
+		cache.set(key, value);
+		return;
+	}
+
+	cache[key] = value;
+};

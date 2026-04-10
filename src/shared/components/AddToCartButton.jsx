@@ -136,6 +136,8 @@ const AddToCartButton = ({
 		type: productType = 'simple',
 		sku: productSku = '',
 		addToCart: addToCartData = {},
+		isInStock = true,
+		isPurchasable = true,
 	} = product;
 
 	// Get add to cart text and URL from product data
@@ -192,7 +194,7 @@ const AddToCartButton = ({
 	}, [productId, status]);
 
 	// Check if product is purchasable (simple products can use AJAX)
-	const isSimpleProduct = productType === 'simple';
+	const isSimpleProduct = productType === 'simple' && isPurchasable && isInStock;
 
 	// Button classes following WooCommerce's pattern
 	const buttonClasses = [

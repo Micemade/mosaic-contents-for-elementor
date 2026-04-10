@@ -23,19 +23,19 @@
 │                     Mosaic Product Layouts Plugin                       │
 └─────────────────────────────────────────────────────────────────────────┘
                                     │
-                ┌───────────────────┴───────────────────┐
-                │                                       │
+                ┌───────────────────┴──────────────────┐
+                │                                      │
         ┌───────▼────────┐                    ┌────────▼─────────┐
         │   PHP Layer    │                    │   React Layer    │
         │   (Elementor)  │                    │   (UI Render)    │
-        └───────┬────────┘                    └────────┬─────────┘
-                │                                      │
-    ┌───────────┼──────────────┐          ┌───────────┼──────────────┐
-    │           │              │          │           │              │
-┌───▼───┐  ┌───▼────┐  ┌──────▼──┐  ┌───▼──────┐ ┌──▼─────┐ ┌──────▼──────┐
-│Widget │  │Control │  │ Script  │  │ Frontend │ │ Editor │ │ WooCommerce │
-│Classes│  │Classes │  │Enqueuing│  │  Bundle  │ │ Bundle │ │  Store API  │
-└───────┘  └────────┘  └─────────┘  └──────────┘ └────────┘ └─────────────┘
+        └──────┬─────────┘                    └────────┬─────────┘
+               │                                       │
+    ┌──────────┼────────────┐          ┌───────────────┼──────────────┐
+    │          │            │          │               │              │
+┌───▼───┐  ┌───▼────┐  ┌────▼────┐  ┌─────▼────┐ ┌─────▼─────┐ ┌──────▼──────┐
+│Widget │  │Control │  │ Script  │  │ Frontend │ │   Editor  │ │ WooCommerce │
+│Classes│  │Classes │  │Enqueuing│  │  Bundle  │ │   Bundle  │ │  Store API  │
+└───────┘  └────────┘  └─────────┘  └──────────┘ └───────────┘ └─────────────┘
                     │
                 ┌───▼────────────────────────────────────────┐
                 │ Custom Controls (Panel)                    │
@@ -330,8 +330,14 @@
            │
            ▼
 ┌─────────────────────────────┐
-│ model.setSetting()          │
-│ Updates Elementor model     │
+│ $e.run('document/elements/  │
+│ settings', { container,     │
+│ settings })                 │
+└──────────┬──────────────────┘
+           │
+           ▼
+┌─────────────────────────────┐
+│ Fallback: model.setSetting()│
 └──────────┬──────────────────┘
            │
            ▼
@@ -479,15 +485,21 @@ src/
 │  ├─ utils/                           │
 │  │  ├─ hooks.js  ◄───────────────────┤ useCssVariables(), useGridSettings()
 │  │  ├─ addItem.js                    │
+│  │  ├─ alignmentUtils.js             │
+│  │  ├─ dataLoading.js                │
 │  │  ├─ layoutUtils.js                │
+│  │  ├─ layoutEditing.js              │
 │  │  ├─ elementOrdering.js            │
 │  │  ├─ LRUCache.js                   │
+│  │  ├─ fetchHelpers.js               │
 │  │  ├─ productUtils.js               │
+│  │  ├─ transformationUtils.js        │
+│  │  ├─ visibleLayout.js              │
 │  │  └─ generalUtils.js               │
 │  └─ assets/                          │
 │     ├─ _gridLayout.scss              │
 │     ├─ _productElements.scss         │
-│     └─ _zindexControls.scss          │
+│     └─ _itemControls.scss            │
 │                                       │
 └─ controls/ ◄──────────────────────────┤ Custom Controls
    ├─ focal-point-control.jsx          │
@@ -763,7 +775,7 @@ External Dependencies (Not Bundled)
            │
            ▼
 ┌─────────────────────────────────┐
-│ getActiveBreakpoints()          │
+│ getActiveBreakpointNames()      │
 │ Returns: ['desktop', 'tablet',  │
 │           'mobile']             │
 └──────────┬──────────────────────┘

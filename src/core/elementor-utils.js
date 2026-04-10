@@ -48,6 +48,38 @@ export const getActiveBreakpointNames = () => {
 };
 
 /**
+ * Get Elementor breakpoint values formatted for react-grid-layout min-width map.
+ *
+ * @returns {{desktop:number, tablet:number, mobile:number}}
+ */
+export const getElementorGridBreakpoints = () => {
+	if (typeof elementorFrontend !== 'undefined' && elementorFrontend.config?.responsive?.activeBreakpoints) {
+		const activeBreakpoints = elementorFrontend.config.responsive.activeBreakpoints;
+		const result = { mobile: 0 };
+
+		Object.keys(activeBreakpoints).forEach((key) => {
+			if (activeBreakpoints[key].value) {
+				// Elementor uses max-width values; RGL uses min-width breakpoints.
+				result[key] = activeBreakpoints[key].value + 1;
+			}
+		});
+
+		// Desktop is always above tablet max width.
+		const tabletValue = result.tablet || 767;
+		result.desktop = tabletValue + 1;
+
+		return result;
+	}
+
+	// Fallback defaults.
+	return {
+		desktop: 1025,
+		tablet: 767,
+		mobile: 0,
+	};
+};
+
+/**
  * Check if currently in Elementor editor mode
  * 
  * @returns {boolean} True if in editor mode
@@ -180,7 +212,6 @@ ${mq} {
  * @param {string} [tab='style'] - Tab name: 'content' | 'style' | 'advanced'
  */
 export const openPanelSection = (sectionId, tab = 'style') => {
-	console.log(sectionId, tab);
 
 	if (typeof elementor === 'undefined') return;
 	try {

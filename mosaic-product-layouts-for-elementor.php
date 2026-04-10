@@ -41,7 +41,6 @@ if ( ! defined( 'MPL4E_PLUGIN_URL' ) ) {
 
 final class MosaicProductLayoutsElementor {
 
-	const VERSION                   = '0.1.0';
 	const ELEMENTOR_MINIMUM_VERSION = '3.0.0';
 	const PHP_MINIMUM_VERSION       = '7.0';
 

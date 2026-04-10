@@ -17,6 +17,10 @@
  */
 const GridHelper = ({ gridSettings, device, cols, type, width }) => {
 
+	if (type === 'none') {
+		return null;
+	}
+
 	const { itemsMargin: gap = 0, rowHeight = 0 } = gridSettings || {};
 
 	/**
@@ -37,10 +41,6 @@ const GridHelper = ({ gridSettings, device, cols, type, width }) => {
 		width: `calc(100% + ${gap}px)`,
 		marginTop: `-${gap}px`,
 		height: `calc(100% + ${gap}px)`,
-	}
-
-	if (type === 'none') {
-		return null;
 	}
 
 	return (

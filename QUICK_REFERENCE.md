@@ -16,12 +16,14 @@ Frontend Bundle (main-frontend.jsx)          Editor Bundle (main-editor.jsx)
 ## Build Commands
 
 ```bash
-npm run build           # Build all 4 entries (dev, with sourcemaps)
-npm run build:prod      # Build all 4 entries (production, no sourcemaps)
+npm run build           # Build all 5 entries (dev, with sourcemaps)
+npm run build:prod      # Build all 5 entries (production, no sourcemaps)
 npm run watch           # Watch frontend bundle (recommended)
 npm run watch:editor    # Watch editor bundle
+npm run watch:control   # Watch focal-point-control
 npm run watch:setups    # Watch saved-setups-control
-npm run watch:all       # Watch all 4 bundles (resource intensive)
+npm run watch:product-select # Watch product-select-control
+npm run watch:all       # Watch all 5 bundles (resource intensive)
 ```
 
 ## Data Flow Diagrams
@@ -114,9 +116,9 @@ updateElementorSetting('products-layout', widgetId, 'custom_layout', JSON.string
   ↓
 widgetManager.updateModelSetting(widgetType, widgetId, settingName, value)
   ↓
-model.setSetting('custom_layout', value)
+$e.run('document/elements/settings', { container, settings })
   ↓
-elementor.saver.setFlagEditorChange(true)
+fallback: model.setSetting('custom_layout', value)
   ↓
 Elementor enables Update/Publish button
   ↓
@@ -263,7 +265,8 @@ widgetManager.getModel(widgetType, widgetId)
 ```javascript
 updateElementorSetting(widgetType, widgetId, settingName, value)
 isElementorEditor()
-getActiveBreakpoints()  // ['desktop', 'tablet', 'mobile']
+getActiveBreakpointNames()  // ['desktop', 'tablet', 'mobile']
+getElementorGridBreakpoints()
 injectBreakpointStylesheet()  // Inject responsive CSS
 ```
 
@@ -490,15 +493,22 @@ src/
 │   ├── utils/
 │   │   ├── hooks.js              # useCssVariables(), useGridSettings()
 │   │   ├── addItem.js
+│   │   ├── alignmentUtils.js
+│   │   ├── dataLoading.js
 │   │   ├── layoutUtils.js
+│   │   ├── layoutEditing.js
 │   │   ├── elementOrdering.js
 │   │   ├── LRUCache.js
+│   │   ├── fetchHelpers.js
 │   │   ├── productUtils.js
+│   │   ├── transformationUtils.js
+│   │   ├── visibleLayout.js
 │   │   └── generalUtils.js
 │   └── assets/
 │       ├── _gridLayout.scss
+│       ├── _itemControls.scss
 │       ├── _productElements.scss
-│       └── _zindexControls.scss
+│       └── (shared partials)
 └── controls/
     ├── focal-point-control.jsx
     ├── FocalPointControlView.jsx

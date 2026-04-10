@@ -28,6 +28,7 @@ import GridHelper from '../../shared/components/GridHelper.jsx';
 import GroupElement from './GroupElement.jsx';
 
 import { decode } from '../../shared/utils/generalUtils.js';
+import { mapKeysToCamelCase } from '../../shared/utils/transformationUtils.js';
 import { updateElementorSetting, openPanelSection } from '../../core/elementor-utils';
 import { addItemToLayout, removeItemFromLayout } from '../../shared/utils/addItem.js';
 import { LRUCache, createCache } from '../../shared/utils/LRUCache.js';
@@ -130,14 +131,7 @@ async function fetchProduct(productId) {
 
 	const item = await response.json();
 
-	// Convert snake_case to camelCase.
-	return Object.keys(item).reduce((acc, key) => {
-		const camelCaseKey = key.replace(/_([a-z])/g, (match, letter) =>
-			letter.toUpperCase()
-		);
-		acc[camelCaseKey] = item[key];
-		return acc;
-	}, {});
+	return mapKeysToCamelCase(item);
 }
 
 // ── Component ───────────────────────────────────────────────────────────
@@ -199,15 +193,7 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 		[layoutId, customLayoutData]
 	);
 
-	// TODO: TEMP – remove after debugging
-	// console.log('[SPL] layoutId:', layoutId);
-	// console.log('[SPL] "value" (copy-paste into JSON):\n' + JSON.stringify({
-	// 	desktop: layoutData.desktop,
-	// 	tablet: layoutData.tablet,
-	// 	mobile: layoutData.mobile,
-	// }));
-	// console.log('[SPL] "zindex" (copy-paste into JSON):\n' + JSON.stringify(layoutData.zindex || {}));
-
+	// Track hidden items in editor mode (those that are toggled off but not removed from layout).
 	const hiddenItems = useMemo(() => new Set(layoutData.hidden || []), [layoutData.hidden]);
 
 	// ── Group data (derived from layout JSON) ────────────────────────
@@ -1150,6 +1136,8 @@ function renderElement(elementId, product, styles) {
 								sku: product.sku || '',
 								permalink: product.permalink,
 								addToCart: product.addToCart,
+								isInStock: product.isInStock,
+								isPurchasable: product.isPurchasable,
 							}}
 						/>
 					</div>

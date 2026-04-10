@@ -68,12 +68,18 @@
 
 		&:hover {
 			filter: contrast(1.1);
+			cursor: grab;
+			&.react-draggable-dragging {
+				cursor: grabbing;
+				// Hide item controls while dragging to prevent interference
+				.mpl4e-item-controls {
+					opacity: 0;
+				}
+			}
 			.react-resizable-handle {
 				opacity: 1;
 			}
-			.item-controls {
-				opacity: 1;
-			}
+			
 		}
 		> .react-resizable-handle {
 			position: absolute;
