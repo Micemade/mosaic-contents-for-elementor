@@ -177,7 +177,7 @@ trait WidgetHelpers {
 	 */
 	protected static function get_settings_definitions( $widget_name ) {
 		if ( ! isset( self::$settings_cache[ $widget_name ] ) ) {
-			$json_file = plugin_dir_path( __DIR__ ) . "src/widgets/{$widget_name}/react-settings.json";
+			$json_file = plugin_dir_path( __DIR__ ) . "widgets/{$widget_name}/react-settings.json";
 			if ( file_exists( $json_file ) ) {
 				$json_content = file_get_contents( $json_file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 				self::$settings_cache[ $widget_name ] = json_decode( $json_content, true );
@@ -390,7 +390,8 @@ trait WidgetHelpers {
 		$widget_id      = $this->get_id();
 		$widget_name    = $this->get_name();
 		?>
-<div class="<?php echo esc_attr( $widget_name ); ?>-wrapper" data-widget-id="<?php echo esc_attr( $widget_id ); ?>">
+<div id="mpl4e-<?php echo esc_attr( $widget_id ); ?>" class="<?php echo esc_attr( $widget_name ); ?>-wrapper"
+	data-widget-id="<?php echo esc_attr( $widget_id ); ?>">
 	<input type="hidden" class="elementor-settings-data" value="<?php echo esc_attr( $json_data ); ?>" />
 	<div class="<?php echo esc_attr( $widget_name ); ?>-react-root"></div>
 </div>
@@ -456,7 +457,8 @@ trait WidgetHelpers {
 <# const widgetId=view.model.id; const data={
 	<?php echo $js_settings_code; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> }; const
 	jsonData=JSON.stringify(data); #>
-	<div class="<?php echo esc_attr( $widget_name ); ?>-wrapper" data-widget-id="{{ widgetId }}">
+	<div id="mpl4e-{{ widgetId }}" class="<?php echo esc_attr( $widget_name ); ?>-wrapper"
+		data-widget-id="{{ widgetId }}">
 		<input type="hidden" class="elementor-settings-data" value="{{ jsonData }}" />
 		<div class="<?php echo esc_attr( $widget_name ); ?>-react-root"></div>
 	</div>

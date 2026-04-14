@@ -451,7 +451,7 @@ class CategoriesLayout extends Widget_Base {
 				),
 				'range' => self::get_range(),
 				'selectors' => array(
-					'{{WRAPPER}} .item-wrapper .name' => 'font-size: {{SIZE}}{{UNIT}};',
+					'#mpl4e-{{ID}} .item-wrapper .flex-wrapper .name' => 'font-size: {{SIZE}}{{UNIT}};',
 				),
 			)
 		);
@@ -476,7 +476,7 @@ class CategoriesLayout extends Widget_Base {
 				),
 				'range' => self::get_range(),
 				'selectors' => array(
-					'{{WRAPPER}} .item-wrapper .cat-count' => 'font-size: {{SIZE}}{{UNIT}};',
+					'#mpl4e-{{ID}} .item-wrapper .flex-wrapper .cat-count' => 'font-size: {{SIZE}}{{UNIT}};',
 				),
 			)
 		);
@@ -501,7 +501,7 @@ class CategoriesLayout extends Widget_Base {
 				),
 				'range'     => self::get_range(),
 				'selectors' => array(
-					'{{WRAPPER}} .item-wrapper .cat-description' => 'font-size: {{SIZE}}{{UNIT}};',
+					'#mpl4e-{{ID}} .item-wrapper .flex-wrapper .cat-description' => 'font-size: {{SIZE}}{{UNIT}};',
 				),
 			)
 		);

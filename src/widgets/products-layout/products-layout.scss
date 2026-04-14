@@ -129,7 +129,7 @@
 			justify-content: center;
 			align-items: center;
 			box-sizing: content-box;
-			margin: 0; 
+			margin: 0 !important;
 			word-wrap: break-word;
 			flex-wrap: wrap;
 		}
@@ -137,10 +137,17 @@
 			line-height: 1.2;
 		}
 
+		.price {
+			.woocommerce-Price-amount.amount {
+				font-size: inherit;
+			}
+		}
+
 		.add_to_cart_button {
 			cursor: pointer;
 			display: flex;
 			flex-direction: column;
+			margin: 0;
 		}
 		.micemade-add-to-cart:not(.components-button):not(.wp-block-navigation *):not(.pswp__button):not(.wc-block-mini-cart__button):not(.wc-block-components-quantity-selector__button):not([id*=mceu]):not(.wc-block-cart-item__remove-link) {
 			display: flex;

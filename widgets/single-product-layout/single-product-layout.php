@@ -111,7 +111,7 @@ class SingleProductLayout extends Widget_Base {
 	 */
 	private function register_element_style_controls( $element_id, $css_class ) {
 		
-		$selector = "{{WRAPPER}} .{$css_class} .elements-wrapper";
+		$selector = "#mpl4e-{{ID}} .{$css_class} .elements-wrapper";
 
 		// Omit text size control for rating since it uses stars 
 		// instead of text and font-size would not apply well.
@@ -134,17 +134,19 @@ class SingleProductLayout extends Widget_Base {
 		}
 		
 		// Text color.
-		$this->add_control(
-			"mpl4e_sp_{$element_id}_text_color",
-			array(
-				'label'     => esc_html__( 'Text Color', 'mosaic-product-layouts-for-elementor' ),
-				'type'      => Controls_Manager::COLOR,
-				'selectors' => array(
-					$selector => 'color: {{VALUE}};',
-					"{{WRAPPER}} .sp-element.{$css_class} .elements-wrapper .rated-perc .stars .star" => 'background: {{VALUE}};',
-				),
-			)
-		);
+		if( $element_id !== 'addtocart' ) {
+			$this->add_control(
+				"mpl4e_sp_{$element_id}_text_color",
+				array(
+					'label'     => esc_html__( 'Text Color', 'mosaic-product-layouts-for-elementor' ),
+					'type'      => Controls_Manager::COLOR,
+					'selectors' => array(
+						$selector => 'color: {{VALUE}};',
+						"#mpl4e-{{ID}} .sp-element.{$css_class} .elements-wrapper .rated-perc .stars .star" => 'background: {{VALUE}};',
+					),
+				)
+			);
+		}
 
 		// Background.
 		$this->add_group_control(

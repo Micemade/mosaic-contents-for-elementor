@@ -30,7 +30,7 @@ const EXCLUDE = [
 	'package-lock.json',
 	'docker-compose.yml',
 	'zip.mjs',
-	'**/*.map',
+	// '**/*.map',
 	'**/*.md'
 ];
 

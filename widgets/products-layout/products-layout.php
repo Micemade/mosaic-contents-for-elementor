@@ -456,7 +456,7 @@ class ProductsLayout extends Widget_Base {
 				],
 				'range'     => self::get_range(),
 				'selectors' => array(
-					'{{WRAPPER}} .product-elements .name' => 'font-size:{{SIZE}}{{UNIT}};',
+					'#mpl4e-{{ID}} .flex-wrapper .product-elements .name' => 'font-size:{{SIZE}}{{UNIT}};',
 				),
 			)
 		);
@@ -481,7 +481,7 @@ class ProductsLayout extends Widget_Base {
 				],
 				'range'     => self::get_range(),
 				'selectors' => array(
-					'{{WRAPPER}} .product-elements .price' => 'font-size:{{SIZE}}{{UNIT}};',
+					'#mpl4e-{{ID}} .flex-wrapper .product-elements .price' => 'font-size:{{SIZE}}{{UNIT}};',
 				),
 			)
 		);
@@ -506,7 +506,7 @@ class ProductsLayout extends Widget_Base {
 				],
 				'range'     => self::get_range(),
 				'selectors' => array(
-					'{{WRAPPER}} .product-elements .add_to_cart_button' => 'font-size:{{SIZE}}{{UNIT}};',
+					'#mpl4e-{{ID}} .flex-wrapper .product-elements .add_to_cart_button' => 'font-size:{{SIZE}}{{UNIT}} !important;',
 				),
 			)
 		);
@@ -529,9 +529,9 @@ class ProductsLayout extends Widget_Base {
 					'size' => 12,
 					'unit' => 'px',
 				],
-				'range'     => self::get_range(),
+				'range'     => self::get_range(), 
 				'selectors' => array(
-					'{{WRAPPER}} .product-elements .taxonomy .tax-link' => 'font-size:{{SIZE}}{{UNIT}};',
+					'#mpl4e-{{ID}} .flex-wrapper .product-elements .taxonomy' => 'font-size:{{SIZE}}{{UNIT}};',
 				),
 			)
 		);
