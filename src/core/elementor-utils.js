@@ -129,7 +129,7 @@ export const injectBreakpointStylesheet = () => {
 			}
 		});
 
-		// build ordered ranges from max breakpoints
+		// Build ordered ranges from max breakpoints.
 		maxItems.sort((a, b) => a.max - b.max);
 		const queries = [];
 		let prevMax = -1;
@@ -144,7 +144,7 @@ export const injectBreakpointStylesheet = () => {
 		});
 
 		if (prevMax >= 0) {
-			// desktop starts where the last "max" range ends.  We used to
+			// Desktop starts where the last "max" range ends.  We used to
 			// add +1 to avoid overlapping, but Elementor's preview width
 			// often equals that value (e.g. 1366px).  Allow overlap so that
 			// selecting "desktop" in the editor immediately triggers the
@@ -152,7 +152,7 @@ export const injectBreakpointStylesheet = () => {
 			queries.push({ name: 'desktop', mq: `@media (min-width: ${prevMax}px)` });
 		}
 
-		// now append explicit min-width breakpoints
+		// Now append explicit min-width breakpoints
 		minItems.sort((a, b) => a.min - b.min);
 		minItems.forEach(entry => {
 			queries.push({ name: entry.name, mq: `@media (min-width: ${entry.min}px)` });
@@ -215,30 +215,44 @@ export const openPanelSection = (sectionId, tab = 'style') => {
 
 	if (typeof elementor === 'undefined') return;
 	try {
-		// The panel lives in the parent frame; use its jQuery to query the DOM.
-		const $parent = window.parent?.jQuery;
-		if (!$parent) return;
+		// The panel lives in the parent frame.
+		const parentWindow = window.parent;
+		const parentDocument = parentWindow?.document;
+		if (!parentDocument) return;
+
+		const panel = parentDocument.querySelector('#elementor-panel');
+		if (!panel) return;
+
+		const clickElement = (element) => {
+			if (!element) return;
+			element.dispatchEvent(new parentWindow.MouseEvent('click', {
+				bubbles: true,
+				cancelable: true,
+				view: parentWindow,
+			}));
+		};
 
 		const expandSection = () => {
-			const $section = $parent(`#elementor-panel .elementor-control-${sectionId}`);
-			if (!$section.length) return;
+			const sectionClassName = `elementor-control-${sectionId}`;
+			const section = panel.getElementsByClassName(sectionClassName)[0];
+			if (!section) return;
 
 			// Elementor toggles sections by clicking .elementor-section-toggle.
-			if (!$section.hasClass('elementor-open')) {
-				$section.find('.elementor-section-toggle').trigger('click');
+			if (!section.classList.contains('elementor-open')) {
+				clickElement(section.querySelector('.elementor-section-toggle'));
 			}
 
 			// Scroll after accordion animation starts.
 			setTimeout(() => {
-				$section[0]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+				section.scrollIntoView({ behavior: 'smooth', block: 'start' });
 			}, 80);
 		};
 
-		const $navTab = $parent(`#elementor-panel .elementor-panel-navigation [data-tab="${tab}"]`);
-		const isActive = $navTab.hasClass('elementor-active');
+		const navTab = panel.querySelector(`.elementor-panel-navigation [data-tab="${tab}"]`);
+		const isActive = navTab?.classList.contains('elementor-active');
 
-		if (!isActive && $navTab.length) {
-			$navTab.trigger('click');
+		if (!isActive && navTab) {
+			clickElement(navTab);
 			// Wait for Elementor to re-render the tab controls before expanding.
 			setTimeout(expandSection, 200);
 		} else {

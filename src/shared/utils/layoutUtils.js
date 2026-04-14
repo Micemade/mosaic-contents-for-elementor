@@ -4,7 +4,7 @@
  * Shared functions for working with grid layouts.
  */
 
-import Layouts from '../layouts.json';
+import Layouts from '../../../assets/presets/layouts.json';
 
 /**
  * Get layout from predefined layouts.
@@ -12,18 +12,18 @@ import Layouts from '../layouts.json';
  * Parses the layout JSON and converts PascalCase breakpoint keys to lowercase.
  * Layout item IDs (item-0, item-1, etc.) are preserved for product mapping.
  *
- * @param {string} layoutId - ID of the layout to use (e.g., 'layout-1')
+ * @param {string} layoutId - ID of the layout to use (e.g., 'layout-5')
  * @param {number} itemCount - Number of items in the layout (for fallback selection)
  * @returns {Object} Parsed layouts object with desktop, tablet, mobile arrays
  */
-export function getLayout(layoutId = 'layout-1', itemCount = 3) {
+export function getLayout(layoutId = 'default', itemCount = 3) {
 	// Find layout by ID
 	let layoutData = Layouts.find((l) => l.id === layoutId);
 
 	// Fallback: find layout matching item count
 	if (!layoutData) {
 		if (itemCount <= 3) {
-			layoutData = Layouts.find((l) => l.id === 'layout-1');
+			layoutData = Layouts.find((l) => l.id === 'default');
 		} else if (itemCount <= 4) {
 			layoutData = Layouts.find((l) => l.id === 'layout-10');
 		} else {
@@ -56,7 +56,7 @@ export function getLayout(layoutId = 'layout-1', itemCount = 3) {
  * @param {number} itemCount - Number of items for fallback
  * @returns {Object} Parsed layouts object
  */
-export function getComputedLayout(customLayoutData, layoutId = 'layout-1', itemCount = 10) {
+export function getComputedLayout(customLayoutData, layoutId = 'default', itemCount = 10) {
 	if (customLayoutData) {
 		try {
 			return JSON.parse(customLayoutData);

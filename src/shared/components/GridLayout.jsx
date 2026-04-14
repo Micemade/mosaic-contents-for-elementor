@@ -20,10 +20,36 @@ import 'react-grid-layout/css/styles.css';
 
 const ELEMENTOR_BREAKPOINTS = getElementorGridBreakpoints();
 
+/**
+ * Check whether the current runtime context is Elementor editor mode.
+ *
+ * @returns {boolean} True when running in Elementor edit mode.
+ */
 const isEditorMode = () => {
 	return typeof elementorFrontend !== 'undefined' && elementorFrontend.isEditMode();
 };
 
+/**
+ * Render a responsive grid wrapper around widget children.
+ *
+ * @param {Object} props - Grid layout properties.
+ * @param {Object} props.layouts - Layout map keyed by breakpoint.
+ * @param {Object} [props.columns] - Column counts per breakpoint.
+ * @param {number} [props.itemsMargin=15] - Horizontal/vertical grid margin in pixels.
+ * @param {number} [props.rowHeight=5] - Base row height used by react-grid-layout.
+ * @param {boolean} [props.allowOverlap=false] - Whether grid items can overlap.
+ * @param {('vertical'|'horizontal'|null)} [props.compactionType='vertical'] - Grid compaction strategy.
+ * @param {('edit'|'frontend')} [props.context] - Rendering context.
+ * @param {boolean} [props.isDraggable] - Whether dragging is enabled.
+ * @param {boolean} [props.isResizable] - Whether resizing is enabled.
+ * @param {Function} [props.onLayoutChange] - Callback fired after drag/resize updates.
+ * @param {string} [props.draggableCancel=''] - Selector for child elements that should not trigger drag.
+ * @param {Object} [props.size] - Size info injected by react-sizeme HOC.
+ * @param {number} [props.size.width] - Current container width.
+ * @param {import('react').ReactNode} props.children - Grid item children.
+ * @param {Function} [props.selectWidget] - Callback to focus/select the current Elementor widget.
+ * @returns {import('react').JSX.Element} Responsive grid element.
+ */
 function GridLayout(props) {
 	const {
 		layouts,
@@ -67,6 +93,11 @@ function GridLayout(props) {
 	const { width } = size || {};
 
 	// Detect current breakpoint based on window width
+	/**
+	 * Resolve the current breakpoint name from viewport width.
+	 *
+	 * @returns {('desktop'|'tablet'|'mobile')} Current breakpoint key.
+	 */
 	const getBreakpointFromWidth = () => {
 		const windowWidth = window.innerWidth;
 		if (windowWidth < ELEMENTOR_BREAKPOINTS.mobile) {
@@ -103,6 +134,13 @@ function GridLayout(props) {
 		}
 	}, [layouts]);
 
+	/**
+	 * Handle react-grid-layout breakpoint changes.
+	 *
+	 * @param {string} newBreakpoint - New active breakpoint key.
+	 * @param {number} newCols - Column count for the active breakpoint.
+	 * @returns {void}
+	 */
 	const onBreakpointChange = (newBreakpoint, newCols) => {
 		setBreakpoint(newBreakpoint);
 	};
@@ -110,6 +148,13 @@ function GridLayout(props) {
 	/**
 	 * Prevent Elementor widget drag when interacting with grid items.
 	 * Stops event propagation so parent drag handlers don't interfere.
+	 *
+	 * @param {Array} layout - Current layout for the active breakpoint.
+	 * @param {Object} oldItem - Item state before drag starts.
+	 * @param {Object} newItem - Item state when drag starts.
+	 * @param {Object} placeholder - Placeholder item used during drag.
+	 * @param {Event} e - Native/React drag start event.
+	 * @returns {void}
 	 */
 	const onDragStart = (layout, oldItem, newItem, placeholder, e) => {
 		if (e && e.nativeEvent) {
@@ -121,6 +166,16 @@ function GridLayout(props) {
 		selectWidget();
 	};
 
+	/**
+	 * Prevent Elementor parent drag handling when resize starts.
+	 *
+	 * @param {Array} layout - Current layout for the active breakpoint.
+	 * @param {Object} oldItem - Item state before resize starts.
+	 * @param {Object} newItem - Item state when resize starts.
+	 * @param {Object} placeholder - Placeholder item used during resize.
+	 * @param {Event} e - Native/React resize start event.
+	 * @returns {void}
+	 */
 	const onResizeStart = (layout, oldItem, newItem, placeholder, e) => {
 		if (e && e.nativeEvent) {
 			e.nativeEvent.stopImmediatePropagation();
@@ -131,6 +186,14 @@ function GridLayout(props) {
 		selectWidget();
 	};
 
+	/**
+	 * Handle drag completion and emit layout changes in breakpoint-map format.
+	 *
+	 * @param {Array} layout - Updated layout items for the active breakpoint.
+	 * @param {Object} oldItem - Item state before drag.
+	 * @param {Object} newItem - Item state after drag.
+	 * @returns {void}
+	 */
 	const onDragStop = (layout, oldItem, newItem) => {
 		if (onLayoutChange) {
 			// Convert layout to breakpoint format
@@ -142,6 +205,14 @@ function GridLayout(props) {
 		}
 	};
 
+	/**
+	 * Handle resize completion and emit layout changes in breakpoint-map format.
+	 *
+	 * @param {Array} layout - Updated layout items for the active breakpoint.
+	 * @param {Object} oldItem - Item state before resize.
+	 * @param {Object} newItem - Item state after resize.
+	 * @returns {void}
+	 */
 	const onResizeStop = (layout, oldItem, newItem) => {
 		if (onLayoutChange) {
 			// Convert layout to breakpoint format

@@ -13,9 +13,9 @@ import CategoriesLayoutWidget from '../widgets/categories-layout/categories-layo
 import SingleProductLayoutWidget from '../widgets/single-product-layout/single-product-layout';
 
 // Settings definitions for each widget React component (imported from JSON files generated from PHP)
-import productsSettingsDef from '../widgets/products-layout/react-settings.json';
-import categoriesSettingsDef from '../widgets/categories-layout/react-settings.json';
-import singleProductSettingsDef from '../widgets/single-product-layout/react-settings.json';
+import productsSettingsDef from '../../widgets/products-layout/react-settings.json';
+import categoriesSettingsDef from '../../widgets/categories-layout/react-settings.json';
+import singleProductSettingsDef from '../../widgets/single-product-layout/react-settings.json';
 
 // Registry mapping widget types to their configurations
 export const WIDGET_REGISTRY = {

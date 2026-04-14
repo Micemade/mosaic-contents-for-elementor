@@ -1,0 +1,98 @@
+{
+	"mpl4e_orderby": {
+		"type": "string",
+		"default": "date"
+	},
+	"mpl4e_order": {
+		"type": "string",
+		"default": "desc"
+	},
+	"mpl4e_category": {
+		"type": "array",
+		"default": []
+	},
+	"mpl4e_on_sale": {
+		"type": "boolean",
+		"default": false
+	},
+	"mpl4e_featured": {
+		"type": "boolean",
+		"default": false
+	},
+	"mpl4e_enable_pagination": {
+		"type": "boolean",
+		"default": false
+	},
+	"mpl4e_layout": {
+		"type": "string",
+		"default": "grid"
+	},
+	"mpl4e_custom_layout": {
+		"type": "string",
+		"default": ""
+	},
+	"mpl4e_items_margin": {
+		"type": "number",
+		"default": 15
+	},
+	"mpl4e_row_height": {
+		"type": "number",
+		"default": 5
+	},
+	"mpl4e_allow_overlap": {
+		"type": "boolean",
+		"default": false
+	},
+	"mpl4e_compaction_type": {
+		"type": "string",
+		"default": "vertical"
+	},
+	"mpl4e_helper_grid": {
+		"type": "string",
+		"default": "none"
+	},
+	"mpl4e_style_preset": {
+		"type": "string",
+		"default": ""
+	},
+	"mpl4e_product_layout": {
+		"type": "string",
+		"default": "vertical"
+	},
+	"mpl4e_product_align": {
+		"type": "responsive",
+		"default": ""
+	},
+
+	"mpl4e_sale_badge_position": {
+		"type": "object",
+		"default": {
+			"x": 10,
+			"y": 10
+		}
+	},
+	"mpl4e_featured_image_size": {
+		"type": "string",
+		"default": "automatic"
+	},
+	"mpl4e_featured_image_position": {
+		"type": "object",
+		"default": {
+			"x": 50,
+			"y": 50
+		}
+	},
+	"mpl4e_image_fit": {
+		"type": "string",
+		"default": "cover"
+	},
+	"mpl4e_element_ordering": {
+		"type": "array",
+		"default": [
+			{ "element_label": "Title", "visible_desktop": "yes", "visible_tablet": "yes", "visible_mobile": "yes" },
+			{ "element_label": "Price", "visible_desktop": "yes", "visible_tablet": "yes", "visible_mobile": "yes" },
+			{ "element_label": "Rating", "visible_desktop": "yes", "visible_tablet": "yes", "visible_mobile": "yes" },
+			{ "element_label": "Add to Cart", "visible_desktop": "yes", "visible_tablet": "yes", "visible_mobile": "yes" }
+		]
+	}
+}

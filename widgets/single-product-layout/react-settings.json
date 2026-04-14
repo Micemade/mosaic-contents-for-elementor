@@ -1,0 +1,71 @@
+{
+	"mpl4e_sp_product_id": {
+		"type": "string",
+		"default": ""
+	},
+	"mpl4e_sp_style_preset": {
+		"type": "string",
+		"default": ""
+	},
+	"mpl4e_sp_layout": {
+		"type": "string",
+		"default": "default"
+	},
+	"mpl4e_sp_custom_layout": {
+		"type": "string",
+		"default": ""
+	},
+	"mpl4e_sp_items_margin": {
+		"type": "number",
+		"default": {
+			"size": 5,
+			"unit": "px"
+		}
+	},
+	"mpl4e_sp_row_height": {
+		"type": "number",
+		"default": {
+			"size": 10,
+			"unit": "px"
+		}
+	},
+	"mpl4e_sp_allow_overlap": {
+		"type": "boolean",
+		"default": true
+	},
+	"mpl4e_sp_compaction_type": {
+		"type": "string",
+		"default": "none"
+	},
+	"mpl4e_sp_helper_grid": {
+		"type": "string",
+		"default": "none"
+	},
+	"mpl4e_sp_helper_outline_labels": {
+		"type": "string",
+		"default": "none"
+	},
+	"mpl4e_sp_excerpt_truncate": {
+		"type": "boolean",
+		"default": true
+	},
+	"mpl4e_sp_featured_image_size": {
+		"type": "string",
+		"default": "automatic"
+	},
+	"mpl4e_sp_image_fit": {
+		"type": "string",
+		"default": "cover"
+	},
+	"mpl4e_sp_image_position": {
+		"type": "object",
+		"default": {
+			"x": 50,
+			"y": 50
+		}
+	},
+	"mpl4e_sp_group_styles": {
+		"type": "array",
+		"default": []
+	}
+}

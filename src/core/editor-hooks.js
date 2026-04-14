@@ -11,9 +11,12 @@ import widgetManager from './widget-manager';
 import { getActiveBreakpointNames } from './elementor-utils';
 import { addItemToLayout } from '../shared/utils/addItem';
 import { getComputedLayout } from '../shared/utils/layoutUtils';
-import productsStylePresets from '../widgets/products-layout/style-presets.json';
-import categoriesStylePresets from '../widgets/categories-layout/style-presets.json';
-import singleProductStylePresets from '../widgets/single-product-layout/style-presets.json';
+
+// Style presets for applying batch style changes from the Saved Setups control
+import productsStylePresets from '../../assets/presets/products-layout/style-presets.json';
+import categoriesStylePresets from '../../assets/presets/categories-layout/style-presets.json';
+import singleProductStylePresets from '../../assets/presets/single-product-layout/style-presets.json';
+
 
 const PRODUCTS_STYLE_PRESET_MAP = productsStylePresets.reduce((acc, preset) => {
 	if (preset?.id && preset?.settings) {
@@ -555,7 +558,7 @@ export const registerEditorHooks = () => {
 
 						try {
 							const customLayoutData = model.getSetting(wKeys.customLayoutKey) || '';
-							const layoutId = model.getSetting(wKeys.layoutKey) || 'layout-1';
+							const layoutId = model.getSetting(wKeys.layoutKey) || 'default';
 
 							// Get the actual layout data (from custom or predefined)
 							const currentLayoutData = getComputedLayout(customLayoutData, layoutId);

@@ -156,7 +156,7 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 	}, [widgetData?.mpl4e_product_align]);
 
 	// Extract settings with defaults
-	const layoutId = widgetData?.mpl4e_layout || 'layout-1';
+	const layoutId = widgetData?.mpl4e_layout || 'default';
 	const customLayoutData = widgetData?.mpl4e_custom_layout || '';
 	const productLayout = widgetData?.mpl4e_product_layout || 'vertical';
 	const saleBadgePosition = widgetData?.mpl4e_sale_badge_position || { x: 10, y: 10 };
@@ -373,39 +373,65 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 	}
 
 	return (
-		<><div
-			className="products-layout mosaic-product-layouts-widgets micemade-widgets"
-			data-widget-id={widgetId}
-			style={{ ...cssVariables, ...alignTextVars }}
-		>
-			{isFetching && (
-				<p className="layout-loading">Fetching products...</p>
-			)}
-			<GridLayout
-			layouts={visibleLayoutData}
-			columns={gridSettings.columns}
-			itemsMargin={gridSettings.itemsMargin}
-			rowHeight={gridSettings.rowHeight}
-			allowOverlap={widgetData?.mpl4e_allow_overlap || false}
-			compactionType={widgetData?.mpl4e_compaction_type || 'vertical'}
-			context={isEditMode ? 'edit' : 'frontend'}
-			isDraggable={isEditMode}
-			isResizable={isEditMode}
-			onLayoutChange={isEditMode ? handleLayoutChange : undefined}
-			selectWidget={selectWidget}
-			draggableCancel=".mpl4e-item-controls"
-		>
-			{/* Map over visible layout items only — items without a matching product are hidden */}
-			{visibleLayoutData.mobile.map((layoutItem) => {
-					const matchedProduct = productsData.find((p) => p.i === layoutItem.i);
-					const zIndex = layoutData.zindex?.[layoutItem.i] || 0;
+		<>
+			<div
+				className="products-layout mosaic-product-layouts-widgets mosaic-product-layouts"
+				data-widget-id={widgetId}
+				style={{ ...cssVariables, ...alignTextVars }}
+			>
+				{isFetching && (
+					<p className="layout-loading">Fetching products...</p>
+				)}
+				<GridLayout
+					layouts={visibleLayoutData}
+					columns={gridSettings.columns}
+					itemsMargin={gridSettings.itemsMargin}
+					rowHeight={gridSettings.rowHeight}
+					allowOverlap={widgetData?.mpl4e_allow_overlap || false}
+					compactionType={widgetData?.mpl4e_compaction_type || 'vertical'}
+					context={isEditMode ? 'edit' : 'frontend'}
+					isDraggable={isEditMode}
+					isResizable={isEditMode}
+					onLayoutChange={isEditMode ? handleLayoutChange : undefined}
+					selectWidget={selectWidget}
+					draggableCancel=".mpl4e-item-controls"
+				>
+					{/* Map over visible layout items only — items without a matching product are hidden */}
+					{visibleLayoutData.mobile.map((layoutItem) => {
+						const matchedProduct = productsData.find((p) => p.i === layoutItem.i);
+						const zIndex = layoutData.zindex?.[layoutItem.i] || 0;
 
-					// Skip empty items (no product assigned)
-					if (!matchedProduct || matchedProduct.empty) {
+						// Skip empty items (no product assigned)
+						if (!matchedProduct || matchedProduct.empty) {
+							return (
+								<div
+									key={layoutItem.i}
+									className="product-item product-item--empty"
+								>
+									{/* Editor-only item controls */}
+									{isEditMode && (
+										<ItemControls
+											settingKey={`mpl4e_custom_layout`}
+											itemId={layoutItem.i}
+											layoutData={layoutData}
+											customLayoutData={customLayoutData}
+											widgetId={widgetId}
+											widgetType='products-layout'
+											onRemove={handleRemoveItem}
+										/>
+									)}
+									<div className="item-wrapper empty">
+										<p>No product</p>
+									</div>
+								</div>
+							);
+						}
+
 						return (
 							<div
 								key={layoutItem.i}
-								className="product-item product-item--empty"
+								className="product-item"
+								style={{ zIndex }}
 							>
 								{/* Editor-only item controls */}
 								{isEditMode && (
@@ -419,171 +445,145 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 										onRemove={handleRemoveItem}
 									/>
 								)}
-								<div className="item-wrapper empty">
-									<p>No product</p>
+								{matchedProduct.onSale && (
+									<div
+										className='sale-badge-wrapper'
+										style={{
+											left: `${saleBadgePosition.x}%`,
+											top: `${saleBadgePosition.y}%`,
+										}}
+									>
+										<span className="product-badge sale-badge rounded">Sale</span>
+									</div>
+								)}
+
+								<div className={`item-wrapper ${productLayout}`}>
+
+									<figure className="product-image product-featured-image gradient-preloader">
+										<ProductImage
+											productId={matchedProduct.id}
+											name={matchedProduct.name}
+											images={matchedProduct.images}
+											featuredImageSize={featuredImageSize}
+											style={{
+												'object-position': `${featuredImagePosition.x}% ${featuredImagePosition.y}%`,
+												'object-fit': featuredImageFit,
+											}}
+										/>
+
+									</figure>
+
+									<div className='flex-wrapper'>
+										<div className="product-info product-elements">
+
+											{elementOrdering.map((el) => {
+												const elClasses = el.hideClasses ? ` ${el.hideClasses}` : '';
+												switch (el.key) {
+													case 'title':
+														return (
+															<h3 key={el.key} className={`name${elClasses}`}>
+																<a href={matchedProduct.permalink}>{decode(matchedProduct.name)}</a>
+															</h3>
+														);
+													case 'price':
+														return matchedProduct.priceHtml ? (
+															<div
+																key={el.key}
+																className={`price${elClasses}`}
+																dangerouslySetInnerHTML={{ __html: Sanitizer(matchedProduct.priceHtml) }}
+															/>
+														) : null;
+													case 'rating':
+														return matchedProduct.averageRating && matchedProduct.averageRating !== '0' ? (
+															<div key={el.key} className={`rating-wrapper${elClasses}`}>
+																<RatingStars rating={Number(matchedProduct.averageRating)} reviewCount={matchedProduct.reviewCount} />
+															</div>
+														) : null;
+													case 'add_to_cart':
+														return (
+															<div key={el.key} className={`add-to-cart-wrapper${elClasses}`}>
+																<AddToCartButton
+																	product={{
+																		id: matchedProduct.id,
+																		name: matchedProduct.name,
+																		type: matchedProduct.type || 'simple',
+																		sku: matchedProduct.sku || '',
+																		permalink: matchedProduct.permalink,
+																		addToCart: matchedProduct.addToCart,
+																		isInStock: matchedProduct.isInStock,
+																		isPurchasable: matchedProduct.isPurchasable,
+																	}}
+																/>
+															</div>
+														);
+													case 'categories':
+														return matchedProduct.categories && matchedProduct.categories.length > 0 ? (
+															<div key={el.key} className={`taxonomy categories${elClasses}`}>
+																{matchedProduct.categories.flatMap((cat, index) => [
+																	...(index > 0 ? [', '] : []),
+																	<a
+																		key={cat.id}
+																		href={cat.link || '#'}
+																		className="tax-link"
+																	>
+																		{decode(cat.name)}
+																	</a>
+																])}
+															</div>
+														) : null;
+													case 'brands':
+														return matchedProduct.brands && matchedProduct.brands.length > 0 ? (
+															<div key={el.key} className={`taxonomy brands${elClasses}`}>
+																{matchedProduct.brands.flatMap((brand, index) => [
+																	...(index > 0 ? [', '] : []),
+																	<a
+																		key={brand.id}
+																		href={brand.link || '#'}
+																		className="tax-link"
+																	>
+																		{decode(brand.name)}
+																	</a>
+																])}
+
+															</div>
+														) : null;
+													default:
+														return null;
+												}
+											})}
+
+										</div>
+									</div>
+
 								</div>
 							</div>
 						);
-					}
+					})}
+				</GridLayout>
 
-					return (
-						<div
-							key={layoutItem.i}
-							className="product-item"
-							style={{ zIndex }}
-						>
-							{/* Editor-only item controls */}
-							{isEditMode && (
-								<ItemControls
-									settingKey={`mpl4e_custom_layout`}
-									itemId={layoutItem.i}
-									layoutData={layoutData}
-									customLayoutData={customLayoutData}
-									widgetId={widgetId}
-									widgetType='products-layout'
-									onRemove={handleRemoveItem}
-								/>
-							)}
-							{matchedProduct.onSale && (
-								<div
-									className='sale-badge-wrapper'
-									style={{
-										left: `${saleBadgePosition.x}%`,
-										top: `${saleBadgePosition.y}%`,
-									}}
-								>
-									<span className="product-badge sale-badge rounded">Sale</span>
-								</div>
-							)}
 
-							<div className={`item-wrapper ${productLayout}`}>
-
-								<figure className="product-image product-featured-image gradient-preloader">
-									<ProductImage
-										productId={matchedProduct.id}
-										name={matchedProduct.name}
-										images={matchedProduct.images}
-										featuredImageSize={featuredImageSize}
-										style={{
-											'object-position': `${featuredImagePosition.x}% ${featuredImagePosition.y}%`,
-											'object-fit': featuredImageFit,
-										}}
-									/>
-
-								</figure>
-
-								<div className='flex-wrapper'>
-									<div className="product-info product-elements">
-
-										{elementOrdering.map((el) => {
-											const elClasses = el.hideClasses ? ` ${el.hideClasses}` : '';
-											switch (el.key) {
-												case 'title':
-													return (
-														<h3 key={el.key} className={`name${elClasses}`}>
-															<a href={matchedProduct.permalink}>{decode(matchedProduct.name)}</a>
-														</h3>
-													);
-												case 'price':
-													return matchedProduct.priceHtml ? (
-														<div
-															key={el.key}
-															className={`price${elClasses}`}
-															dangerouslySetInnerHTML={{ __html: Sanitizer(matchedProduct.priceHtml) }}
-														/>
-													) : null;
-												case 'rating':
-													return matchedProduct.averageRating && matchedProduct.averageRating !== '0' ? (
-														<div key={el.key} className={`rating-wrapper${elClasses}`}>
-															<RatingStars rating={Number(matchedProduct.averageRating)} reviewCount={matchedProduct.reviewCount} />
-														</div>
-													) : null;
-												case 'add_to_cart':
-													return (
-														<div key={el.key} className={`add-to-cart-wrapper${elClasses}`}>
-															<AddToCartButton
-																product={{
-																	id: matchedProduct.id,
-																	name: matchedProduct.name,
-																	type: matchedProduct.type || 'simple',
-																	sku: matchedProduct.sku || '',
-																	permalink: matchedProduct.permalink,
-																	addToCart: matchedProduct.addToCart,
-																	isInStock: matchedProduct.isInStock,
-																	isPurchasable: matchedProduct.isPurchasable,
-																}}
-															/>
-														</div>
-													);
-												case 'categories':
-													return matchedProduct.categories && matchedProduct.categories.length > 0 ? (
-														<div key={el.key} className={`taxonomy categories${elClasses}`}>
-															{matchedProduct.categories.flatMap((cat, index) => [
-																...(index > 0 ? [', '] : []),
-																<a
-																	key={cat.id}
-																	href={cat.link || '#'}
-																	className="tax-link"
-																>
-																	{decode(cat.name)}
-																</a>
-															])}
-														</div>
-													) : null;
-												case 'brands':
-													return matchedProduct.brands && matchedProduct.brands.length > 0 ? (
-														<div key={el.key} className={`taxonomy brands${elClasses}`}>
-															{matchedProduct.brands.flatMap((brand, index) => [
-																...(index > 0 ? [', '] : []),
-																<a
-																	key={brand.id}
-																	href={brand.link || '#'}
-																	className="tax-link"
-																>
-																	{decode(brand.name)}
-																</a>
-															])}
-
-														</div>
-													) : null;
-												default:
-													return null;
-											}
-										})}
-
-									</div>
-								</div>
-
-							</div>
+				{/* Editor-only floating toolbar */}
+				{isEditMode && (
+					<>
+						<div className="mpl4e-editor-toolbar">
+							<button
+								type="button"
+								className="mpl4e-toolbar-btn mpl4e-add-item-btn"
+								onClick={handleAddItem}
+								title="Add Item"
+							>
+								<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+									<line x1="12" y1="5" x2="12" y2="19"></line>
+									<line x1="5" y1="12" x2="19" y2="12"></line>
+								</svg>
+								<span>Add Item</span>
+							</button>
 						</div>
-					);
-				})}
-			</GridLayout>
 
-
-
-			{/* Editor-only floating toolbar */}
-			{isEditMode && (
-				<>
-					<div className="mpl4e-editor-toolbar">
-						<button
-							type="button"
-							className="mpl4e-toolbar-btn mpl4e-add-item-btn"
-							onClick={handleAddItem}
-							title="Add Item"
-						>
-							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-								<line x1="12" y1="5" x2="12" y2="19"></line>
-								<line x1="5" y1="12" x2="19" y2="12"></line>
-							</svg>
-							<span>Add Item</span>
-						</button>
-					</div>
-
-					<GridHelper gridSettings={gridSettings} device={deviceType} cols={gridSettings.columns} type={helperType} />
-				</>
-			)}
-		</div>
+						<GridHelper gridSettings={gridSettings} device={deviceType} cols={gridSettings.columns} type={helperType} />
+					</>
+				)}
+			</div>
 
 			{enablePagination && paginationMeta.totalPages > 1 && (
 				<Pagination

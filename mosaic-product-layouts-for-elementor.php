@@ -164,9 +164,10 @@ final class MosaicProductLayoutsElementor {
 
 		// Require shared trait and widget classes.
 		require_once __DIR__ . '/includes/trait-widget-helpers.php';
-		require_once __DIR__ . '/widgets/products-layout.php';
-		require_once __DIR__ . '/widgets/categories-layout.php';
-		require_once __DIR__ . '/widgets/single-product-layout.php';
+		// Require widget classes.
+		require_once __DIR__ . '/widgets/products-layout/products-layout.php';
+		require_once __DIR__ . '/widgets/categories-layout/categories-layout.php';
+		require_once __DIR__ . '/widgets/single-product-layout/single-product-layout.php';
 
 		// Register widgets with elementor.
 		$widgets_manager->register( new ProductsLayout() );
@@ -188,9 +189,9 @@ final class MosaicProductLayoutsElementor {
 	public function create_new_category( $elements_manager ) {
 
 		$elements_manager->add_category(
-			'micemade-widgets',
+			'mosaic-product-layouts',
 			array(
-				'title' => __( 'Micemade Widgets', 'mosaic-product-layouts-for-elementor' ),
+				'title' => __( 'Mosaic Product Layouts', 'mosaic-product-layouts-for-elementor' ),
 				'icon'  => 'fa fa-plug',
 			)
 		);

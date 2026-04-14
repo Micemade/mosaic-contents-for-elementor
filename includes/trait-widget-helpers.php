@@ -199,7 +199,7 @@ trait WidgetHelpers {
 			return self::$style_preset_options_cache[ $widget_name ];
 		}
 
-		$presets_file = plugin_dir_path( __DIR__ ) . "src/widgets/{$widget_name}/style-presets.json";
+		$presets_file = plugin_dir_path( __DIR__ ) . "assets/presets/{$widget_name}/style-presets.json";
 
 		if ( ! is_readable( $presets_file ) ) {
 			self::$style_preset_options_cache[ $widget_name ] = array();
@@ -245,6 +245,29 @@ trait WidgetHelpers {
 		self::$style_preset_options_cache[ $widget_name ] = $options;
 
 		return self::$style_preset_options_cache[ $widget_name ];
+	}
+
+	/**
+	 * Read layout presets from JSON and return as id => label options.
+	 *
+	 * @return array Associative array of layout_id => label.
+	 */
+	protected function get_layout_options( $widget_name ) {
+		$json_path = MPL4E_PLUGIN_DIR . 'assets/presets/layouts.json';
+		$layouts   = wp_json_file_decode( $json_path, array( 'associative' => true ) );
+
+		if ( empty( $layouts ) || ! is_array( $layouts ) ) {
+			return array( 'default' => __( 'Default', 'mosaic-product-layouts-for-elementor' ) );
+		}
+
+		$options = array();
+		foreach ( $layouts as $layout ) {
+			if ( isset( $layout['id'], $layout['label'] ) ) {
+				$options[ $layout['id'] ] = $layout['label'];
+			}
+		}
+
+		return $options;
 	}
 
 	/**

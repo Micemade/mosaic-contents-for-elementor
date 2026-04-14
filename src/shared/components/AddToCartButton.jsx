@@ -39,13 +39,6 @@ const getStoreApiNonce = () => {
 };
 
 /**
- * Get cart URL from localized settings or default
- */
-const getCartUrl = () => {
-	return window.MPL4E?.cartUrl || '/cart/';
-};
-
-/**
  * Add item to cart using WC Store API
  *
  * @param {number} productId - Product ID to add
@@ -124,7 +117,7 @@ const AddToCartButton = ({
 }) => {
 	const [status, setStatus] = useState('idle'); // idle, loading, added, error
 	const [errorMessage, setErrorMessage] = useState('');
-	const cartUrl = getCartUrl();
+	const cartUrl = window.MPL4E?.cartUrl || '/cart/';
 
 	if (!product || !product.id) {
 		return null;

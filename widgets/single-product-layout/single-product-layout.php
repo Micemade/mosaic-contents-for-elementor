@@ -47,7 +47,7 @@ class SingleProductLayout extends Widget_Base {
 	}
 
 	public function get_categories() {
-		return array( 'micemade-widgets' );
+		return array( 'mosaic-product-layouts' );
 	}
 
 	/**
@@ -86,7 +86,7 @@ class SingleProductLayout extends Widget_Base {
 	 * @return array Associative array of layout_id => label.
 	 */
 	private function get_sp_layout_options() {
-		$json_path = MPL4E_PLUGIN_DIR . 'src/widgets/single-product-layout/utils/single-product-layouts.json';
+		$json_path = MPL4E_PLUGIN_DIR . 'assets/presets/single-product-layouts.json';
 		$layouts   = wp_json_file_decode( $json_path, array( 'associative' => true ) );
 
 		if ( empty( $layouts ) || ! is_array( $layouts ) ) {
@@ -289,15 +289,13 @@ class SingleProductLayout extends Widget_Base {
 			)
 		);
 
-		$layout_options = $this->get_sp_layout_options();
-
 		$this->add_control(
 			'mpl4e_sp_layout',
 			array(
 				'label'       => __( 'Predefined Layouts', 'mosaic-product-layouts-for-elementor' ),
 				'type'        => Controls_Manager::SELECT,
 				'default'     => 'default',
-				'options'     => $layout_options,
+				'options'     => $this->get_sp_layout_options(),
 				'description' => __( 'Choose a predefined element arrangement.', 'mosaic-product-layouts-for-elementor' ),
 			)
 		);

@@ -37,11 +37,12 @@ export const registerFrontendHooks = () => {
  * @return void
  */
 export const initializeFrontendWidgets = () => {
-	if (typeof jQuery === 'undefined') return;
+	if (!document) return;
 
 	getRegisteredWidgets().forEach(widgetType => {
-		jQuery(`.elementor-widget-${widgetType}`).each(function () {
-			createWidgetInitializer(widgetType, 'display')(jQuery(this));
+		const selector = `.elementor-widget-${widgetType}`;
+		document.querySelectorAll(selector).forEach(element => {
+			createWidgetInitializer(widgetType, 'display')(element);
 		});
 	});
 };

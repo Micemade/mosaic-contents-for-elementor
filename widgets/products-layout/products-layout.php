@@ -11,12 +11,12 @@ use Elementor\Group_Control_Box_Shadow;
 use Micemade\MosaicProductLayoutsElementor\WidgetHelpers;
 
 /**
- * Categories Layout Widget for Elementor.
+ * Products Layout Widget for Elementor.
  *
- * Displays WooCommerce product categories using React rendering with WC Store API.
+ * Displays WooCommerce products using React rendering with WC Store API.
  * Query settings are passed to React via content_template hidden input.
  */
-class CategoriesLayout extends Widget_Base {
+class ProductsLayout extends Widget_Base {
 
 	use WidgetHelpers;
 
@@ -33,59 +33,29 @@ class CategoriesLayout extends Widget_Base {
 	}
 
 	public function get_name() {
-		return 'categories-layout';
+		return 'products-layout';
 	}
 
 	public function get_title() {
-		return __( 'Categories Layout', 'mosaic-product-layouts-for-elementor' );
+		return __( 'Products Layout', 'mosaic-product-layouts-for-elementor' );
 	}
 
 	public function get_icon() {
-		return 'eicon-product-categories';
+		return 'eicon-products';
 	}
 
 	public function get_categories() {
-		return array( 'micemade-widgets' );
+		return array( 'mosaic-product-layouts' );
 	}
 
+
+
 	/**
-	 * Get product categories for the parent filter select control.
+	 * Get product categories for select control.
 	 *
 	 * @return array Associative array of term_id => name.
 	 */
 	private function get_product_categories() {
-		$categories = array(
-			'' => __( 'All (no filter)', 'mosaic-product-layouts-for-elementor' ),
-		);
-
-		if ( ! taxonomy_exists( 'product_cat' ) ) {
-			return $categories;
-		}
-
-		$terms = get_terms(
-			array(
-				'taxonomy'   => 'product_cat',
-				'hide_empty' => false,
-				'parent'     => 0,
-			)
-		);
-
-		if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
-			foreach ( $terms as $term ) {
-				$categories[ (string) $term->term_id ] = $term->name;
-			}
-		}
-
-		return $categories;
-	}
-
-	/**
-	 * Get all product categories for multi-select (SELECT2) control.
-	 * Returns all categories including subcategories, with hierarchy indication.
-	 *
-	 * @return array Associative array of term_id => name.
-	 */
-	private function get_all_product_categories() {
 		$categories = array();
 
 		if ( ! taxonomy_exists( 'product_cat' ) ) {
@@ -95,17 +65,14 @@ class CategoriesLayout extends Widget_Base {
 		$terms = get_terms(
 			array(
 				'taxonomy'   => 'product_cat',
-				'hide_empty' => false,
-				'orderby'    => 'name',
-				'order'      => 'ASC',
+				'hide_empty' => true,
 			)
 		);
 
 		if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
 			foreach ( $terms as $term ) {
 				// SELECT2 requires string keys.
-				$prefix = $term->parent ? '— ' : '';
-				$categories[ (string) $term->term_id ] = $prefix . $term->name;
+				$categories[ (string) $term->term_id ] = $term->name;
 			}
 		}
 
@@ -127,77 +94,79 @@ class CategoriesLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'mpl4e_cat_per_page',
-			array(
-				'label'   => __( 'Categories Per Page', 'mosaic-product-layouts-for-elementor' ),
-				'type'    => Controls_Manager::NUMBER,
-				'min'     => 1,
-				'max'     => 100,
-				'default' => 10,
-			)
-		);
-
-		$this->add_control(
-			'mpl4e_cat_orderby',
+			'mpl4e_orderby',
 			array(
 				'label'   => __( 'Order By', 'mosaic-product-layouts-for-elementor' ),
 				'type'    => Controls_Manager::SELECT,
-				'default' => 'name',
+				'default' => 'date',
 				'options' => array(
-					'name'  => __( 'Name', 'mosaic-product-layouts-for-elementor' ),
-					'id'    => __( 'ID', 'mosaic-product-layouts-for-elementor' ),
-					'slug'  => __( 'Slug', 'mosaic-product-layouts-for-elementor' ),
-					'count' => __( 'Product Count', 'mosaic-product-layouts-for-elementor' ),
+					'date'       => __( 'Date', 'mosaic-product-layouts-for-elementor' ),
+					'title'      => __( 'Title', 'mosaic-product-layouts-for-elementor' ),
+					'price'      => __( 'Price', 'mosaic-product-layouts-for-elementor' ),
+					'popularity' => __( 'Popularity', 'mosaic-product-layouts-for-elementor' ),
+					'rating'     => __( 'Rating', 'mosaic-product-layouts-for-elementor' ),
 				),
 			)
 		);
 
 		$this->add_control(
-			'mpl4e_cat_order',
+			'mpl4e_order',
 			array(
 				'label'   => __( 'Order', 'mosaic-product-layouts-for-elementor' ),
 				'type'    => Controls_Manager::SELECT,
-				'default' => 'asc',
+				'default' => 'desc',
 				'options' => array(
-					'asc'  => __( 'Ascending', 'mosaic-product-layouts-for-elementor' ),
 					'desc' => __( 'Descending', 'mosaic-product-layouts-for-elementor' ),
+					'asc'  => __( 'Ascending', 'mosaic-product-layouts-for-elementor' ),
 				),
 			)
 		);
 
 		$this->add_control(
-			'mpl4e_cat_hide_empty',
+			'mpl4e_category',
 			array(
-				'label'        => __( 'Hide Empty Categories', 'mosaic-product-layouts-for-elementor' ),
+				'label'       => __( 'Categories', 'mosaic-product-layouts-for-elementor' ),
+				'type'        => Controls_Manager::SELECT2,
+				'default'     => array(),
+				'options'     => $this->get_product_categories(),
+				'multiple'    => true,
+				'label_block' => true,
+			)
+		);
+
+		$this->add_control(
+			'mpl4e_on_sale',
+			array(
+				'label'        => __( 'On Sale Only', 'mosaic-product-layouts-for-elementor' ),
 				'type'         => Controls_Manager::SWITCHER,
 				'label_on'     => __( 'Yes', 'mosaic-product-layouts-for-elementor' ),
 				'label_off'    => __( 'No', 'mosaic-product-layouts-for-elementor' ),
 				'return_value' => 'yes',
-				'default'      => 'yes',
+				'default'      => '',
 			)
 		);
 
 		$this->add_control(
-			'mpl4e_cat_parent',
+			'mpl4e_featured',
 			array(
-				'label'       => __( 'Parent Category', 'mosaic-product-layouts-for-elementor' ),
-				'description' => __( 'Show only subcategories of the selected parent. Leave empty for all.', 'mosaic-product-layouts-for-elementor' ),
-				'type'        => Controls_Manager::SELECT,
-				'default'     => '',
-				'options'     => $this->get_product_categories(),
+				'label'        => __( 'Featured Only', 'mosaic-product-layouts-for-elementor' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'label_on'     => __( 'Yes', 'mosaic-product-layouts-for-elementor' ),
+				'label_off'    => __( 'No', 'mosaic-product-layouts-for-elementor' ),
+				'return_value' => 'yes',
+				'default'      => '',
 			)
 		);
 
 		$this->add_control(
-			'mpl4e_cat_include',
+			'mpl4e_enable_pagination',
 			array(
-				'label'       => __( 'Include Categories', 'mosaic-product-layouts-for-elementor' ),
-				'description' => __( 'Select specific categories to display. Leave empty to use query settings above.', 'mosaic-product-layouts-for-elementor' ),
-				'type'        => Controls_Manager::SELECT2,
-				'default'     => array(),
-				'options'     => $this->get_all_product_categories(),
-				'multiple'    => true,
-				'label_block' => true,
+				'label'        => __( 'Enable Pagination', 'mosaic-product-layouts-for-elementor' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'label_on'     => __( 'Yes', 'mosaic-product-layouts-for-elementor' ),
+				'label_off'    => __( 'No', 'mosaic-product-layouts-for-elementor' ),
+				'return_value' => 'yes',
+				'default'      => '',
 			)
 		);
 
@@ -213,33 +182,18 @@ class CategoriesLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'mpl4e_cat_layout',
+			'mpl4e_layout',
 			array(
 				'label'       => __( 'Predefined Layouts', 'mosaic-product-layouts-for-elementor' ),
 				'type'        => Controls_Manager::SELECT,
-				'default'     => 'layout-1',
-				'options'     => array(
-					'layout-1'  => __( 'Layout 1 (3 items - Equal)', 'mosaic-product-layouts-for-elementor' ),
-					'layout-2'  => __( 'Layout 2 (3 items - Staggered)', 'mosaic-product-layouts-for-elementor' ),
-					'layout-3'  => __( 'Layout 3 (3 items - Featured Left)', 'mosaic-product-layouts-for-elementor' ),
-					'layout-4'  => __( 'Layout 4 (3 items - Asymmetric)', 'mosaic-product-layouts-for-elementor' ),
-					'layout-5'  => __( 'Layout 5 (3 items - Overlap)', 'mosaic-product-layouts-for-elementor' ),
-					'layout-6'  => __( 'Layout 6 (3 items - Compact)', 'mosaic-product-layouts-for-elementor' ),
-					'layout-7'  => __( 'Layout 7 (3 items - Hero Left)', 'mosaic-product-layouts-for-elementor' ),
-					'layout-8'  => __( 'Layout 8 (3 items - Variable Width)', 'mosaic-product-layouts-for-elementor' ),
-					'layout-9'  => __( 'Layout 9 (3 items - Mixed)', 'mosaic-product-layouts-for-elementor' ),
-					'layout-10' => __( 'Layout 10 (4 items - Equal Grid)', 'mosaic-product-layouts-for-elementor' ),
-					'layout-11' => __( 'Layout 11 (4 items - Featured)', 'mosaic-product-layouts-for-elementor' ),
-					'layout-12' => __( 'Layout 12 (4 items - Mosaic)', 'mosaic-product-layouts-for-elementor' ),
-					'layout-13' => __( 'Layout 13 (4 items - Banner Bottom)', 'mosaic-product-layouts-for-elementor' ),
-					'layout-14' => __( 'Layout 14 (4 items - Sidebar)', 'mosaic-product-layouts-for-elementor' ),
-				),
-				'description' => __( 'Choose a predefined layout for the category grid.', 'mosaic-product-layouts-for-elementor' ),
+				'default'     => 'default',
+				'options'     => $this->get_layout_options( 'products-layout' ),
+				'description' => __( 'Choose a predefined layout for the product grid. Layouts 1-9 display 3 items, Layouts 10-14 display 4 items.', 'mosaic-product-layouts-for-elementor' ),
 			)
 		);
 
 		$this->add_control(
-			'mpl4e_cat_custom_layout',
+			'mpl4e_custom_layout',
 			array(
 				'label'       => __( 'Custom Layout', 'mosaic-product-layouts-for-elementor' ),
 				'type'        => Controls_Manager::HIDDEN,
@@ -249,29 +203,29 @@ class CategoriesLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'mpl4e_cat_reset_layout',
+			'mpl4e_reset_layout',
 			array(
 				'label'        => __( 'Reset to Predefined Layout', 'mosaic-product-layouts-for-elementor' ),
 				'type'         => Controls_Manager::BUTTON,
 				'text'         => __( 'Reset Layout', 'mosaic-product-layouts-for-elementor' ),
 				'description'  => __( 'Clear layout modifications and restore the selected predefined layout.', 'mosaic-product-layouts-for-elementor' ),
-				'event'        => 'mosaic:catResetLayout',
+				'event'        => 'mosaic:resetLayout',
 			)
 		);
 
 		$this->add_control(
-			'mpl4e_cat_add_item',
+			'mpl4e_add_item',
 			array(
 				'label'        => __( 'Add Item', 'mosaic-product-layouts-for-elementor' ),
 				'type'         => Controls_Manager::BUTTON,
 				'text'         => __( 'Add Item', 'mosaic-product-layouts-for-elementor' ),
 				'description'  => __( 'Add a new item to the layout.', 'mosaic-product-layouts-for-elementor' ),
-				'event'        => 'mosaic:catAddItem',
+				'event'        => 'mosaic:addItem',
 			)
 		);
 
 		$this->add_control(
-			'mpl4e_cat_items_margin',
+			'mpl4e_items_margin',
 			array(
 				'label'   => __( 'Grid Gap', 'mosaic-product-layouts-for-elementor' ),
 				'type'    => Controls_Manager::SLIDER,
@@ -289,7 +243,7 @@ class CategoriesLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'mpl4e_cat_row_height',
+			'mpl4e_row_height',
 			array(
 				'label'   => __( 'Grid Row Height', 'mosaic-product-layouts-for-elementor' ),
 				'type'    => Controls_Manager::SLIDER,
@@ -307,7 +261,7 @@ class CategoriesLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'mpl4e_cat_allow_overlap',
+			'mpl4e_allow_overlap',
 			array(
 				'label'        => __( 'Allow Overlap', 'mosaic-product-layouts-for-elementor' ),
 				'type'         => Controls_Manager::SWITCHER,
@@ -320,7 +274,7 @@ class CategoriesLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'mpl4e_cat_compaction_type',
+			'mpl4e_compaction_type',
 			array(
 				'label'       => __( 'Compaction Type', 'mosaic-product-layouts-for-elementor' ),
 				'type'        => Controls_Manager::SELECT,
@@ -332,10 +286,11 @@ class CategoriesLayout extends Widget_Base {
 				),
 				'description' => __( 'How items compact when moved. "None" keeps items in place.', 'mosaic-product-layouts-for-elementor' ),
 				'condition'   => array(
-					'mpl4e_cat_allow_overlap!' => 'yes',
+					'mpl4e_allow_overlap!' => 'yes',
 				),
 			)
 		);
+
 
 		$this->add_control(
 			'mpl4e_helper_notice',
@@ -375,7 +330,7 @@ class CategoriesLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'mpl4e_cat_saved_setup',
+			'mpl4e_saved_setup',
 			array(
 				'label'       => __( 'Layout & Style Setups', 'mosaic-product-layouts-for-elementor' ),
 				'description' => __( 'Save, load, or delete layout and style configurations.', 'mosaic-product-layouts-for-elementor' ),
@@ -388,31 +343,43 @@ class CategoriesLayout extends Widget_Base {
 
 		// ── Element Ordering Section ───────────────────────────────────────
 		$this->register_element_ordering_controls(
-			'mpl4e_cat_element_ordering',
+			'mpl4e_element_ordering',
 			__( 'Element Order & Visibility', 'mosaic-product-layouts-for-elementor' ),
 			array(
 				$this->default_elements_visibility(
 					__( 'Title', 'mosaic-product-layouts-for-elementor' ),
-					array(true, true, true, true, true )
+					array( true, true, true, true, true )
 				),
 				$this->default_elements_visibility(
-					__( 'Count', 'mosaic-product-layouts-for-elementor' ),
-					array(true, true, true, true, true )
+					__( 'Price', 'mosaic-product-layouts-for-elementor' ),
+					array( true, true, true, true, true )
 				),
 				$this->default_elements_visibility(
-					__( 'Description', 'mosaic-product-layouts-for-elementor' ),
-					array(true, true, true, true, true )
+					__( 'Rating', 'mosaic-product-layouts-for-elementor' ),
+					array( true, true, true, true, true )
+				),
+				$this->default_elements_visibility(
+					__( 'Add to Cart', 'mosaic-product-layouts-for-elementor' ),
+					array( true, true, true, true, true )
+				),
+				$this->default_elements_visibility(
+					__( 'Categories', 'mosaic-product-layouts-for-elementor' ),
+					array( true, true, true, true, true )
+				),
+				$this->default_elements_visibility(
+					__( 'Brands', 'mosaic-product-layouts-for-elementor' ),
+					array( false, false, false, false, false )
 				),
 			)
 		);
 
-		// ── Style Section ─────────────────────────────────────────────────
+		// ── Style Section ────────────────────────────────────────────────
 		$this->start_controls_section(
-			'category_style_section',
-			array(
-				'label' => esc_html__( 'Category Card Style', 'mosaic-product-layouts-for-elementor' ),
-				'tab'   => Controls_Manager::TAB_STYLE,
-			)
+			'product_style_settings_section',
+			[
+				'label' => esc_html__( 'Product Card Style', 'mosaic-product-layouts-for-elementor' ),
+				'tab' => \Elementor\Controls_Manager::TAB_STYLE,
+			]
 		);
 
 		$this->add_control(
@@ -423,31 +390,54 @@ class CategoriesLayout extends Widget_Base {
 				'columns'     => 4,
 				'label_block' => true,
 				'default'     => '',
-				'options'     => $this->get_style_preset_options( 'categories-layout' ),
+				'options'     => $this->get_style_preset_options( 'products-layout' ),
 				'description' => esc_html__( 'Pick a preset to instantly apply a complete style pack.', 'mosaic-product-layouts-for-elementor' ),
 			)
 		);
 
 		$this->add_control(
-			'mpl4e_cat_style_preset_divider',
+			'mpl4e_style_preset_divider',
 			array(
 				'type' => Controls_Manager::DIVIDER,
 			)
 		);
+/* 
+		$this->add_control(
+			'popover-toggle-test',
+			[
+				'label' => esc_html__( 'Popover test', 'mosaic-product-layouts-for-elementor' ),
+				'type' => \Elementor\Controls_Manager::POPOVER_TOGGLE,
+				'label_off' => esc_html__( 'Default', 'mosaic-product-layouts-for-elementor' ),
+				'label_on' => esc_html__( 'Custom', 'mosaic-product-layouts-for-elementor' ),
+				'return_value' => 'yes',
+			]
+		);
+		$this->start_popover();
+		$this->add_control(
+				'popover_content',
+				array(
+					'type'            => Controls_Manager::RAW_HTML,
+					'raw'             =>  __( '<strong>JUST AN EMPTY POPOVER', 'mosaic-product-layouts-for-elementor' ) ,
+					'separator'       => 'after',
+					'content_classes' => 'elementor-panel-alert elementor-panel-alert-info',
+				)
+			);
+		$this->end_popover();
+		 */
 
-		// STYLE TABS: Text, Layout, Image, Colors, Borders.
-		$this->start_controls_tabs( 'category_styles' );
+		// ACTIVE, HOVER, INACTIVE.
+		$this->start_controls_tabs( 'product_styles' );
 
-		// ── Text Tab ──────────────────────────────────────────────────────
+		// Product text controls tab.
 		$this->start_controls_tab(
-			'category_text_tab',
+			'product_text_sizes_tab',
 			array(
 				'label' => esc_html__( 'Text', 'mosaic-product-layouts-for-elementor' ),
 			)
 		);
 
 		$this->add_responsive_control(
-			'mpl4e_cat_title_size',
+			'mpl4e_title_size',
 			array(
 				'label'     => esc_html__( 'Title size', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::SLIDER,
@@ -456,108 +446,132 @@ class CategoriesLayout extends Widget_Base {
 					'size' => 24,
 					'unit' => 'px',
 				),
-				'tablet_default' => array(
+				'tablet_default' => [
 					'size' => 22,
 					'unit' => 'px',
-				),
-				'mobile_default' => array(
+				],
+				'mobile_default' => [
 					'size' => 20,
 					'unit' => 'px',
-				),
-				'range' => self::get_range(),
+				],
+				'range'     => self::get_range(),
 				'selectors' => array(
-					'{{WRAPPER}} .item-wrapper .name' => 'font-size: {{SIZE}}{{UNIT}};',
+					'{{WRAPPER}} .product-elements .name' => 'font-size:{{SIZE}}{{UNIT}};',
 				),
 			)
 		);
 
 		$this->add_responsive_control(
-			'mpl4e_cat_count_size',
+			'mpl4e_price_size',
 			array(
-				'label'     => esc_html__( 'Count text size', 'mosaic-product-layouts-for-elementor' ),
+				'label'     => esc_html__( 'Price size', 'mosaic-product-layouts-for-elementor' ),
+				'type'      => Controls_Manager::SLIDER,
+				'size_units' => array( 'px', 'em', 'rem', 'vw', 'vh' ),
+				'default'   => array(
+					'size' => 20,
+					'unit' => 'px',
+				),
+				'tablet_default' => [
+					'size' => 18,
+					'unit' => 'px',
+				],
+				'mobile_default' => [
+					'size' => 18,
+					'unit' => 'px',
+				],
+				'range'     => self::get_range(),
+				'selectors' => array(
+					'{{WRAPPER}} .product-elements .price' => 'font-size:{{SIZE}}{{UNIT}};',
+				),
+			)
+		);
+
+		$this->add_responsive_control(
+			'mpl4e_button_size',
+			array(
+				'label'     => esc_html__( 'Button text size', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::SLIDER,
 				'size_units' => array( 'px', 'em', 'rem', 'vw', 'vh' ),
 				'default'   => array(
 					'size' => 16,
 					'unit' => 'px',
 				),
-				'tablet_default' => array(
+				'tablet_default' => [
 					'size' => 14,
 					'unit' => 'px',
-				),
-				'mobile_default' => array(
-					'size' => 14,
+				],
+				'mobile_default' => [
+					'size' => 12,
 					'unit' => 'px',
-				),
-				'range' => self::get_range(),
+				],
+				'range'     => self::get_range(),
 				'selectors' => array(
-					'{{WRAPPER}} .item-wrapper .cat-count' => 'font-size: {{SIZE}}{{UNIT}};',
+					'{{WRAPPER}} .product-elements .add_to_cart_button' => 'font-size:{{SIZE}}{{UNIT}};',
 				),
 			)
 		);
 
 		$this->add_responsive_control(
-			'mpl4e_cat_description_size',
+			'mpl4e_taxonomy_size',
 			array(
-				'label'     => esc_html__( 'Description text size', 'mosaic-product-layouts-for-elementor' ),
+				'label'     => esc_html__( 'Taxonomy text size', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::SLIDER,
 				'size_units' => array( 'px', 'em', 'rem', 'vw', 'vh' ),
 				'default'   => array(
 					'size' => 14,
 					'unit' => 'px',
 				),
-				'tablet_default' => array(
-					'size' => 13,
+				'tablet_default' => [
+					'size' => 14,
 					'unit' => 'px',
-				),
-				'mobile_default' => array(
+				],
+				'mobile_default' => [
 					'size' => 12,
 					'unit' => 'px',
-				),
+				],
 				'range'     => self::get_range(),
 				'selectors' => array(
-					'{{WRAPPER}} .item-wrapper .cat-description' => 'font-size: {{SIZE}}{{UNIT}};',
+					'{{WRAPPER}} .product-elements .taxonomy .tax-link' => 'font-size:{{SIZE}}{{UNIT}};',
 				),
 			)
 		);
-
 		$this->end_controls_tab();
 
-		// ── Layout Tab ────────────────────────────────────────────────────
+		
+		// Product layout tab.
 		$this->start_controls_tab(
-			'category_layout_tab',
+			'product_layout_tab',
 			array(
 				'label' => esc_html__( 'Layout', 'mosaic-product-layouts-for-elementor' ),
 			)
 		);
-
 		$this->add_control(
-			'mpl4e_cat_card_layout',
+			'mpl4e_product_layout',
 			array(
-				'label'   => __( 'Category Card Layout', 'mosaic-product-layouts-for-elementor' ),
-				'type'    => Controls_Manager::SELECT,
-				'default' => 'vertical',
-				'options' => array(
+				'label'       => __( 'Product Card Layout', 'mosaic-product-layouts-for-elementor' ),
+				'type'        => Controls_Manager::SELECT,
+				'default'     => 'vertical',
+				'options'     => array(
 					'image-background' => __( 'Image background', 'mosaic-product-layouts-for-elementor' ),
 					'horizontal'       => __( 'Image left', 'mosaic-product-layouts-for-elementor' ),
 					'horizontal-alt'   => __( 'Image right', 'mosaic-product-layouts-for-elementor' ),
 					'vertical'         => __( 'Image top', 'mosaic-product-layouts-for-elementor' ),
 					'vertical-alt'     => __( 'Image bottom', 'mosaic-product-layouts-for-elementor' ),
 				),
+				// 'description' => __( 'Select predefined layout for product display.', 'mosaic-product-layouts-for-elementor' ),
 			)
 		);
 
 		$this->add_control(
-			'hr_cat_layout_align',
-			array( 'type' => Controls_Manager::DIVIDER )
+			'hr_layout_align', [ 'type' => Controls_Manager::DIVIDER, ]
 		);
 
 		$this->add_responsive_control(
-			'mpl4e_cat_align',
+			'mpl4e_product_align',
 			array(
-				'label'     => esc_html__( 'Align', 'mosaic-product-layouts-for-elementor' ),
-				'type'      => Controls_Manager::CHOOSE,
-				'options'   => array(
+				'label'        => esc_html__( 'Align', 'mosaic-product-layouts-for-elementor' ),
+				'type'         => Controls_Manager::CHOOSE,
+				'options'      => array(
 					'flex-start'   => array(
 						'title' => __( 'Left', 'mosaic-product-layouts-for-elementor' ),
 						'icon'  => 'eicon-h-align-left',
@@ -570,21 +584,22 @@ class CategoriesLayout extends Widget_Base {
 						'title' => __( 'Right', 'mosaic-product-layouts-for-elementor' ),
 						'icon'  => 'eicon-h-align-right',
 					),
+
 				),
-				'default'   => '',
-				'selectors' => array(
-					'{{WRAPPER}} .item-wrapper .category-elements, {{WRAPPER}} .item-wrapper .category-elements *' => 'justify-content: {{VALUE}}; text-align: {{VALUE}};',
-					'{{WRAPPER}} .item-wrapper .flex-wrapper .name' => 'justify-content: {{VALUE}};',
+				'default'      => '',
+				'selectors'     => array(
+					'{{WRAPPER}} .item-wrapper .flex-wrapper .product-elements' => 'justify-content: {{VALUE}};',
+					'{{WRAPPER}} .item-wrapper .flex-wrapper .product-elements > *' => 'justify-content: {{VALUE}};',
 				),
 			)
 		);
 
 		$this->add_responsive_control(
-			'mpl4e_cat_vertical_align',
+			'mpl4e_product_vertical_align',
 			array(
-				'label'   => esc_html__( 'Vertical align', 'mosaic-product-layouts-for-elementor' ),
-				'type'    => Controls_Manager::CHOOSE,
-				'options' => array(
+				'label'     => esc_html__( 'Vertical align', 'mosaic-product-layouts-for-elementor' ),
+				'type'      => Controls_Manager::CHOOSE,
+				'options'   => array(
 					'flex-start' => array(
 						'title' => __( 'Top', 'mosaic-product-layouts-for-elementor' ),
 						'icon'  => 'eicon-v-align-top',
@@ -598,7 +613,7 @@ class CategoriesLayout extends Widget_Base {
 						'icon'  => 'eicon-v-align-bottom',
 					),
 				),
-				'default' => '',
+				'default'   => '',
 				'selectors' => array(
 					'{{WRAPPER}} .item-wrapper .flex-wrapper' => 'align-items: {{VALUE}};',
 				),
@@ -606,39 +621,37 @@ class CategoriesLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'hr_cat_layout_gap',
-			array( 'type' => Controls_Manager::DIVIDER )
+			'hr_layout_gap', [ 'type' => Controls_Manager::DIVIDER, ]
 		);
 
 		$this->add_responsive_control(
-			'mpl4e_cat_elements_gap',
+			'mpl4e_elements_gap',
 			array(
-				'label'      => esc_html__( 'Elements gap', 'mosaic-product-layouts-for-elementor' ),
-				'type'       => Controls_Manager::SLIDER,
+				'label'     => esc_html__( 'Elements gap', 'mosaic-product-layouts-for-elementor' ),
+				'type'      => Controls_Manager::SLIDER,
 				'size_units' => array( 'px', '%', 'em', 'rem', 'vw', 'vh' ),
-				'default'    => array(
+				'default'   => array(
 					'size' => 0.2,
 					'unit' => 'em',
 				),
-				'range'      => self::get_range(),
-				'selectors'  => array(
-					'{{WRAPPER}} .category-elements' => 'gap:{{SIZE}}{{UNIT}};',
+				'range'     => self::get_range(),
+				'selectors' => array(
+					'{{WRAPPER}} .product-elements' => 'gap:{{SIZE}}{{UNIT}};',
 				),
 			)
 		);
 
 		$this->add_control(
-			'hr_cat_layout_padding',
-			array( 'type' => Controls_Manager::DIVIDER )
+			'hr_layout_padding', [ 'type' => Controls_Manager::DIVIDER, ]
 		);
 
 		$this->add_responsive_control(
-			'mpl4e_cat_padding',
+			'mpl4e_padding',
 			array(
 				'label'      => __( 'Padding', 'mosaic-product-layouts-for-elementor' ),
 				'type'       => Controls_Manager::DIMENSIONS,
 				'size_units' => array( 'px', '%', 'em', 'rem', 'vw', 'vh' ),
-				'selectors'  => array(
+				'selectors' => array(
 					'{{WRAPPER}} .item-wrapper .flex-wrapper' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
 				),
 			)
@@ -646,24 +659,24 @@ class CategoriesLayout extends Widget_Base {
 
 		$this->end_controls_tab();
 
-		// ── Image Tab ─────────────────────────────────────────────────────
+		// Product image controls tab.
 		$this->start_controls_tab(
-			'category_image_tab',
+			'product_image_tab',
 			array(
 				'label' => esc_html__( 'Image', 'mosaic-product-layouts-for-elementor' ),
 			)
 		);
-
+		
 		$this->add_responsive_control(
-			'mpl4e_cat_image_size',
+			'mpl4e_image_size',
 			array(
-				'label'   => esc_html__( 'Image size', 'mosaic-product-layouts-for-elementor' ),
-				'type'    => Controls_Manager::SLIDER,
-				'default' => array(
+				'label'     => esc_html__( 'Image size', 'mosaic-product-layouts-for-elementor' ),
+				'type'      => Controls_Manager::SLIDER,
+				'default'   => array(
 					'size' => 50,
 					'unit' => '',
 				),
-				'range'     => array(
+				'range'       => array(
 					'em' => array(
 						'min'  => 1,
 						'max'  => 100,
@@ -671,17 +684,27 @@ class CategoriesLayout extends Widget_Base {
 					),
 				),
 				'selectors' => array(
-					'{{WRAPPER}} .item-wrapper .category-image' => 'flex-basis: {{size}}%;',
+					'{{WRAPPER}} .item-wrapper .product-image' => 'flex-basis: {{size}}%;',
 					'{{WRAPPER}} .item-wrapper .flex-wrapper' => 'flex-basis: calc(100% - {{size}}%);',
 				),
-				'condition' => array(
-					'mpl4e_cat_card_layout!' => 'image-background',
-				),
+				'condition'   => array(
+					'mpl4e_product_layout!' => 'image-background',
+				)
 			)
 		);
 
 		$this->add_control(
-			'mpl4e_cat_image_fit',
+			'mpl4e_featured_image_size',
+			array(
+				'label'       => esc_html__( 'Image resolution', 'mosaic-product-layouts-for-elementor' ),
+				'type'        => Controls_Manager::SELECT,
+				'default'     => 'automatic',
+				'options'     => $this->get_image_sizes(),
+			)
+		);
+
+		$this->add_control(
+			'mpl4e_image_fit',
 			array(
 				'label'   => esc_html__( 'Image fit', 'mosaic-product-layouts-for-elementor' ),
 				'type'    => Controls_Manager::SELECT,
@@ -697,10 +720,10 @@ class CategoriesLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'mpl4e_cat_image_position',
+			'mpl4e_featured_image_position',
 			array(
 				'label'       => esc_html__( 'Image position', 'mosaic-product-layouts-for-elementor' ),
-				'description' => esc_html__( 'Drag the focal point to position the image.', 'mosaic-product-layouts-for-elementor' ),
+				'description' => esc_html__( 'Drag the focal point to position the image within the product card.', 'mosaic-product-layouts-for-elementor' ),
 				'type'        => 'mpl4e_focal_point',
 				'default'     => array(
 					'x' => 50,
@@ -710,77 +733,77 @@ class CategoriesLayout extends Widget_Base {
 		);
 
 		$this->end_controls_tab();
-
-		// ── Colors Tab ────────────────────────────────────────────────────
+		
+		// Product colors tab.
 		$this->start_controls_tab(
-			'category_colors_tab',
+			'product_colors_tab',
 			array(
 				'label' => esc_html__( 'Colors', 'mosaic-product-layouts-for-elementor' ),
 			)
 		);
-
+		
 		$this->add_control(
-			'mpl4e_cat_text_color',
+			'mpl4e_text_color',
 			array(
 				'label'     => esc_html__( 'Text color', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::COLOR,
 				'default'   => '#333333',
 				'selectors' => array(
-					'{{WRAPPER}} .category-elements .cat-count, {{WRAPPER}} .category-elements .cat-description' => 'color: {{VALUE}};',
+					'{{WRAPPER}} .product-elements' => 'color: {{VALUE}};',
 				),
 			)
 		);
 
 		$this->add_control(
-			'mpl4e_cat_links_color',
+			'mpl4e_links_color',
 			array(
 				'label'     => esc_html__( 'Links color', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::COLOR,
 				'default'   => '#333333',
 				'selectors' => array(
-					'{{WRAPPER}} .category-elements .name a' => 'color: {{VALUE}};',
+					'{{WRAPPER}} .product-elements .name a, {{WRAPPER}} .product-elements .taxonomy a' => 'color: {{VALUE}};',
 				),
 			)
 		);
-
 		$this->add_group_control(
-			Group_Control_Background::get_type(),
+			\Elementor\Group_Control_Background::get_type(),
 			array(
-				'name'     => 'mpl4e_cat_background_color',
-				'label'    => esc_html__( 'Background', 'mosaic-product-layouts-for-elementor' ),
-				'types'    => array( 'classic', 'gradient' ),
+				'name'      => 'mpl4e_background_color',
+				'label'     => esc_html__( 'Background', 'mosaic-product-layouts-for-elementor' ),
+				'types'     => array( 'classic', 'gradient' ),
 				'selector' => '{{WRAPPER}} .item-wrapper .flex-wrapper',
-				'default'  => '#ffffff',
+				'default'   => '#ffffff',
 			)
 		);
 
+
+
 		$this->end_controls_tab();
 
-		// ── Borders Tab ───────────────────────────────────────────────────
+		// Product colors tab.
 		$this->start_controls_tab(
-			'category_border_tab',
+			'product_border_tab',
 			array(
 				'label' => esc_html__( 'Borders', 'mosaic-product-layouts-for-elementor' ),
 			)
 		);
-
 		$this->add_group_control(
 			Group_Control_Border::get_type(),
 			array(
-				'name'     => 'mpl4e_cat_border',
-				'label'    => __( 'Category border', 'mosaic-product-layouts-for-elementor' ),
-				'selector' => '{{WRAPPER}} .item-wrapper',
+				'name'      => 'mpl4e_product_border',
+				'label'     => __( 'Products border', 'mosaic-product-layouts-for-elementor' ),
+				'selector'  => '{{WRAPPER}} .item-wrapper',
 			)
 		);
 
 		$this->add_control(
-			'mpl4e_cat_border_radius',
+			'mpl4e_border_radius',
 			array(
 				'show_label' => true,
 				'label'      => __( 'Border Radius', 'mosaic-product-layouts-for-elementor' ),
 				'type'       => Controls_Manager::DIMENSIONS,
 				'size_units' => array( 'px', '%' ),
-				'selectors'  => array(
+				'selectors' => array(
 					'{{WRAPPER}} .item-wrapper' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
 				),
 			)
@@ -789,13 +812,120 @@ class CategoriesLayout extends Widget_Base {
 		$this->add_group_control(
 			Group_Control_Box_Shadow::get_type(),
 			array(
-				'name'     => 'mpl4e_cat_box_shadow',
-				'selector' => '{{WRAPPER}} .item-wrapper',
+				'name'      => 'mpl4e_box_shadow',
+				'selector'  => '{{WRAPPER}} .item-wrapper',
+			)
+		);
+		
+		$this->end_controls_tab();
+
+		$this->end_controls_tabs();
+
+		$this->add_control(
+			'special_elements_heading',
+			array(
+				'label' => esc_html__( 'Special Elements', 'mosaic-product-layouts-for-elementor' ),
+				'type' => Controls_Manager::HEADING,
+				'separator' => 'before',
+			)
+		);
+
+		// Additional Tabs.
+		$this->start_controls_tabs( 'additional_tabs' );
+
+		// Badges tab.
+		$this->start_controls_tab(
+			'badges_sale_tab',
+			array(
+				'label' => esc_html__( 'Badges', 'mosaic-product-layouts-for-elementor' ),
+			)
+		);
+
+		$this->add_responsive_control(
+			'mpl4e_sale_badge_size',
+			array(
+				'label'      => esc_html__( 'Sale badge text size', 'mosaic-product-layouts-for-elementor' ),
+				'type'       => Controls_Manager::SLIDER,
+				'size_units' => array( 'px', 'em', 'rem', 'vw', 'vh' ),
+				'range'      => self::get_range(),
+				'default'    => array(
+					'size' => 14,
+					'unit' => 'px',
+				),
+				'selectors'  => array(
+					'{{WRAPPER}} .sale-badge' => 'font-size: {{SIZE}}{{UNIT}};',
+				),
+			)
+		);
+
+		$this->add_control(
+			'mpl4e_sale_badge_color',
+			array(
+				'label'     => esc_html__( 'Sale badge text color', 'mosaic-product-layouts-for-elementor' ),
+				'type'      => Controls_Manager::COLOR,
+				'default'   => '#FFFFFF',
+				'selectors' => array(
+					'{{WRAPPER}} .sale-badge' => 'color: {{VALUE}};',
+				),
+			)
+		);
+
+		$this->add_control(
+			'mpl4e_sale_badge_backcolor',
+			array(
+				'label'     => esc_html__( 'Sale badge background color', 'mosaic-product-layouts-for-elementor' ),
+				'type'      => Controls_Manager::COLOR,
+				'default'   => '#CC0000',
+				'selectors' => array(
+					'{{WRAPPER}} .sale-badge' => 'background-color: {{VALUE}};',
+				),
+			)
+		);
+
+		$this->add_control(
+			'mpl4e_sale_badge_position',
+			array(
+				'label'       => esc_html__( 'Sale badge position', 'mosaic-product-layouts-for-elementor' ),
+				'description' => esc_html__( 'Drag the focal point to position the sale badge within the product card.', 'mosaic-product-layouts-for-elementor' ),
+				'type'        => 'mpl4e_focal_point',
+				'default'     => array(
+					'x' => 10,
+					'y' => 10,
+				),
 			)
 		);
 
 		$this->end_controls_tab();
-		$this->end_controls_tabs();
+
+		// Other.
+		$this->start_controls_tab(
+			'badges_other_tab',
+			array(
+				'label' => esc_html__( 'Other', 'mosaic-product-layouts-for-elementor' ),
+			)
+		);
+
+		$this->add_control(
+			'mpl4e_rating_size',
+			array(
+				'label'     => esc_html__( 'Rating stars size', 'mosaic-product-layouts-for-elementor' ),
+				'type'      => Controls_Manager::SLIDER,
+				'default'   => array('size' => 100, 'unit' => ''),
+				'range'       => array(
+					'em' => array(
+						'min'  => 1,
+						'max'  => 200,
+						'step' => 1,
+					),
+				),
+				'selectors' => array(
+					'{{WRAPPER}} .product-elements .rating-stars' => 'transform: scale(calc({{size}} / 100));',
+				),
+			)
+		);
+		$this->end_controls_tab();
+
+		$this->end_controls_tabs();// Additional Tabs end.
 
 		$this->end_controls_section();
 	}

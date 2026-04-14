@@ -139,7 +139,7 @@ const CategoriesLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'disp
 	}, [widgetData?.mpl4e_cat_align]);
 
 	// Extract settings with defaults
-	const layoutId = widgetData?.mpl4e_cat_layout || 'layout-1';
+	const layoutId = widgetData?.mpl4e_cat_layout || 'default';
 	const customLayoutData = widgetData?.mpl4e_cat_custom_layout || '';
 	const cardLayout = widgetData?.mpl4e_cat_card_layout || 'vertical';
 	const imageFit = widgetData?.mpl4e_cat_image_fit || 'cover';
@@ -344,7 +344,7 @@ const CategoriesLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'disp
 
 	return (
 		<div
-			className="categories-layout mosaic-product-layouts-widgets micemade-widgets"
+			className="categories-layout mosaic-product-layouts-widgets mosaic-product-layouts"
 			data-widget-id={widgetId}
 			style={{ ...cssVariables, ...alignTextVars }}
 		>
@@ -352,21 +352,21 @@ const CategoriesLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'disp
 				<p className="layout-loading">Fetching categories...</p>
 			)}
 			<GridLayout
-			layouts={visibleLayoutData}
-			columns={gridSettings.columns}
-			itemsMargin={gridSettings.itemsMargin}
-			rowHeight={gridSettings.rowHeight}
-			allowOverlap={widgetData?.mpl4e_cat_allow_overlap || false}
-			compactionType={widgetData?.mpl4e_cat_compaction_type || 'vertical'}
-			context={isEditMode ? 'edit' : 'frontend'}
-			isDraggable={isEditMode}
-			isResizable={isEditMode}
-			onLayoutChange={isEditMode ? handleLayoutChange : undefined}
-			selectWidget={selectWidget}
+				layouts={visibleLayoutData}
+				columns={gridSettings.columns}
+				itemsMargin={gridSettings.itemsMargin}
+				rowHeight={gridSettings.rowHeight}
+				allowOverlap={widgetData?.mpl4e_cat_allow_overlap || false}
+				compactionType={widgetData?.mpl4e_cat_compaction_type || 'vertical'}
+				context={isEditMode ? 'edit' : 'frontend'}
+				isDraggable={isEditMode}
+				isResizable={isEditMode}
+				onLayoutChange={isEditMode ? handleLayoutChange : undefined}
+				selectWidget={selectWidget}
 				draggableCancel=".mpl4e-item-controls"
-		>
-			{/* Map over visible layout items only — items without a matching category are hidden */}
-			{visibleLayoutData.mobile.map((layoutItem) => {
+			>
+				{/* Map over visible layout items only — items without a matching category are hidden */}
+				{visibleLayoutData.mobile.map((layoutItem) => {
 					const matchedCategory = categoriesData.find((c) => c.i === layoutItem.i);
 					const zIndex = layoutData.zindex?.[layoutItem.i] || 0;
 

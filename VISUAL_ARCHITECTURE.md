@@ -36,13 +36,13 @@
 │Widget │  │Control │  │ Script  │  │ Frontend │ │   Editor  │ │ WooCommerce │
 │Classes│  │Classes │  │Enqueuing│  │  Bundle  │ │   Bundle  │ │  Store API  │
 └───────┘  └────────┘  └─────────┘  └──────────┘ └───────────┘ └─────────────┘
-                    │
-                ┌───▼────────────────────────────────────────┐
-                │ Custom Controls (Panel)                    │
-                ├─────────────────┬──────────────────────────┤
-                │  Focal Point    │  Saved Setups            │
-                │  (image picker) │  (presets manager)       │
-                └─────────────────┴──────────────────────────┘
+                │
+            ┌───▼────────────────────────────────────────┐
+            │ Custom Controls (Panel)                    │
+            ├─────────────────┬──────────────────────────┤
+            │  Focal Point    │  Saved Setups            │
+            │  (image picker) │  (presets manager)       │
+            └─────────────────┴──────────────────────────┘
 ```
 
 ---
@@ -299,10 +299,10 @@
 ### Custom Layout Save (React → Elementor)
 
 ```
-┌─────────────────────┐
-│ User Drags Grid     │
-│ Item in Editor      │
-└──────────┬──────────┘
+┌──────────────────────────┐
+│ User Drags/Resizes Grid  │
+│ Item in Editor           │
+└──────────┬───────────────┘
            │
            ▼
 ┌───────────────────────────┐
@@ -360,20 +360,20 @@
 ### Instance State Machine
 
 ```
-                    ┌─────────────┐
-                    │   UNMOUNTED │
-                    └──────┬──────┘
-                           │
-              Widget added to page / drag & drop
-                           │
-                           ▼
-                ┌──────────────────┐
-                │   INITIALIZING   │
-                │  • Extract DOM   │
-                │  • Parse settings│
-                └──────┬───────────┘
-                       │
-                       ▼
+                  ┌─────────────┐
+                  │  UNMOUNTED  │
+                  └──────┬──────┘
+                         │
+        Widget added to page / drag & drop
+                         │
+                         ▼
+                ┌───────────────────┐
+                │   INITIALIZING    │
+                │  • Extract DOM    │
+                │  • Parse settings │
+                └───────┬───────────┘
+                        │
+                        ▼
             ┌────────────────────────┐
             │      MOUNTED           │
             │  • React root exists   │
@@ -386,14 +386,14 @@
          │ Change  │ Advanced│   Replaced │ Unload
          │         │  Change │            │
          ▼         ▼         ▼            ▼
-    ┌────────┐ ┌────────┐ ┌─────────┐ ┌────────┐
-    │UPDATE  │ │REMOUNT │ │RECREATE │ │UNMOUNT │
-    │(setState)│(Original│ │(New Root)│ │(GC)    │
-    └───┬────┘ renderOn│ └────┬────┘ └────────┘
-        │      Change) │      │
-        │      └───┬───┘      │
-        │          │          │
-        └──────────┴──────────┘
+    ┌────────┐ ┌────────┐ ┌──────────┐ ┌─────────┐
+    │UPDATE  │ │REMOUNT │ │ RECREATE │ │ UNMOUNT │
+    │(setState)│(Orig.  │ │(New Root)│ │ (GC)    │
+    └───┬────┘ │renderOn│ └─────┬────┘ └─────────┘
+        │      │Change) │       │
+        │      └───┬────┘       │
+        │          │            │
+        └──────────┴────────────┘
                    │
                    ▼
             ┌─────────────┐

@@ -34,7 +34,7 @@ import { addItemToLayout, removeItemFromLayout } from '../../shared/utils/addIte
 import { LRUCache, createCache } from '../../shared/utils/LRUCache.js';
 import { useGridSettings, useElementorDevice } from '../../shared/utils/hooks.js';
 
-import singleProductLayouts from './utils/single-product-layouts.json';
+import singleProductLayouts from '../../../assets/presets/single-product-layouts.json';
 import './single-product-layout.scss';
 
 const Sanitizer = DOMPurify.sanitize;
@@ -802,7 +802,7 @@ const SingleProductLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'd
 	// Use visible mobile layout as source of truth (hidden items excluded).
 	return (
 		<div
-			className={`single-product-layout mosaic-single-product-layout micemade-widgets ${outlineLabels && isEditMode ? outlineLabels : ''}`}
+			className={`single-product-layout mosaic-single-product-layout mosaic-product-layouts ${outlineLabels && isEditMode ? outlineLabels : ''}`}
 			data-widget-id={widgetId}
 			onMouseLeave={() => {
 				if (isElementsDropdownOpen) setIsElementsDropdownOpen(false);
