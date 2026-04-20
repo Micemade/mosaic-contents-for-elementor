@@ -9,14 +9,14 @@ const OUT = path.resolve('..', `${PLUGIN_SLUG}.zip`);
 
 // Files/dirs to exclude from the zip
 const EXCLUDE = [
-	'.git',
-	'.github',
 	'.agents',
 	'.claude',
 	'.clinde',
 	'.continue',
 	'.cursor',
+	'.github',
 	'.windsurf',
+	'.git',
 	'node_modules',
 	'node_modules/**',
 	'src',

@@ -21,14 +21,14 @@
 │                     Elementor Editor                        │
 ├─────────────────────────────────────────────────────────────┤
 │  PHP Widget                                                 │
-│  ├── register_controls() → Defines UI controls             │
-│  ├── render() → Frontend HTML (empty for React)            │
-│  └── content_template() → Editor template with React mount │
+│  ├── register_controls() → Defines UI controls              │
+│  ├── render() → Frontend HTML (empty for React)             │
+│  └── content_template() → Editor template with React mount  │
 ├─────────────────────────────────────────────────────────────┤
 │  React Bundle (main.js)                                     │
-│  ├── Listens for elementor/frontend/init                   │
-│  ├── Hooks into frontend/element_ready/{widget}.default    │
-│  └── Mounts React component into DOM wrapper               │
+│  ├── Listens for elementor/frontend/init                    │
+│  ├── Hooks into frontend/element_ready/{widget}.default     │
+│  └── Mounts React component into DOM wrapper                │
 └─────────────────────────────────────────────────────────────┘
 ```
 

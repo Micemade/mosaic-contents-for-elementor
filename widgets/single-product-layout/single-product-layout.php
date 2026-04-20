@@ -113,6 +113,8 @@ class SingleProductLayout extends Widget_Base {
 		
 		$selector = "#mpl4e-{{ID}} .{$css_class} .elements-wrapper";
 
+		$text_color_label = $element_id === 'rating' ? __( 'Rating stars color', 'mosaic-product-layouts-for-elementor' ) : __( 'Text color', 'mosaic-product-layouts-for-elementor' );
+
 		// Omit text size control for rating since it uses stars 
 		// instead of text and font-size would not apply well.
 		if( $element_id !== 'rating' ) {
@@ -121,7 +123,7 @@ class SingleProductLayout extends Widget_Base {
 			$this->add_responsive_control(
 				"mpl4e_sp_{$element_id}_text_size",
 				array(
-					'label'      => esc_html__( 'Text Size', 'mosaic-product-layouts-for-elementor' ),
+					'label'      => esc_html__( 'Text size', 'mosaic-product-layouts-for-elementor' ),
 					'type'       => Controls_Manager::SLIDER,
 					'size_units' => array( 'px', 'em', 'rem' ),
 					'range'      => self::get_range(),
@@ -138,7 +140,7 @@ class SingleProductLayout extends Widget_Base {
 			$this->add_control(
 				"mpl4e_sp_{$element_id}_text_color",
 				array(
-					'label'     => esc_html__( 'Text Color', 'mosaic-product-layouts-for-elementor' ),
+					'label'     => $text_color_label,
 					'type'      => Controls_Manager::COLOR,
 					'selectors' => array(
 						$selector => 'color: {{VALUE}};',
@@ -161,7 +163,7 @@ class SingleProductLayout extends Widget_Base {
 		$this->add_responsive_control(
 			"mpl4e_sp_{$element_id}_h_align",
 			array(
-				'label'     => esc_html__( 'Horizontal Align', 'mosaic-product-layouts-for-elementor' ),
+				'label'     => esc_html__( 'Horizontal align', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::CHOOSE,
 				'options'   => array(
 					'start'  => array(
@@ -187,7 +189,7 @@ class SingleProductLayout extends Widget_Base {
 		$this->add_responsive_control(
 			"mpl4e_sp_{$element_id}_v_align",
 			array(
-				'label'     => esc_html__( 'Vertical Align', 'mosaic-product-layouts-for-elementor' ),
+				'label'     => esc_html__( 'Vertical align', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::CHOOSE,
 				'options'   => array(
 					'start'  => array(
@@ -236,7 +238,7 @@ class SingleProductLayout extends Widget_Base {
 		$this->add_responsive_control(
 			"mpl4e_sp_{$element_id}_border_radius",
 			array(
-				'label'      => esc_html__( 'Border Radius', 'mosaic-product-layouts-for-elementor' ),
+				'label'      => esc_html__( 'Border radius', 'mosaic-product-layouts-for-elementor' ),
 				'type'       => Controls_Manager::DIMENSIONS,
 				'size_units' => array( 'px', '%' ),
 				'selectors'  => array(
@@ -264,7 +266,7 @@ class SingleProductLayout extends Widget_Base {
 		$this->start_controls_section(
 			'product_section',
 			array(
-				'label' => __( 'Product Selection', 'mosaic-product-layouts-for-elementor' ),
+				'label' => __( 'Product selection', 'mosaic-product-layouts-for-elementor' ),
 				'tab'   => Controls_Manager::TAB_CONTENT,
 			)
 		);
@@ -294,7 +296,7 @@ class SingleProductLayout extends Widget_Base {
 		$this->add_control(
 			'mpl4e_sp_layout',
 			array(
-				'label'       => __( 'Predefined Layouts', 'mosaic-product-layouts-for-elementor' ),
+				'label'       => __( 'Predefined layouts', 'mosaic-product-layouts-for-elementor' ),
 				'type'        => Controls_Manager::SELECT,
 				'default'     => 'default',
 				'options'     => $this->get_sp_layout_options(),
@@ -305,7 +307,7 @@ class SingleProductLayout extends Widget_Base {
 		$this->add_control(
 			'mpl4e_sp_custom_layout',
 			array(
-				'label'   => __( 'Custom Layout', 'mosaic-product-layouts-for-elementor' ),
+				'label'   => __( 'Custom layout', 'mosaic-product-layouts-for-elementor' ),
 				'type'    => Controls_Manager::HIDDEN,
 				'default' => '',
 			)
@@ -314,9 +316,9 @@ class SingleProductLayout extends Widget_Base {
 		$this->add_control(
 			'mpl4e_sp_reset_layout',
 			array(
-				'label' => __( 'Reset to Predefined Layout', 'mosaic-product-layouts-for-elementor' ),
+				'label' => __( 'Reset to predefined layout', 'mosaic-product-layouts-for-elementor' ),
 				'type'  => Controls_Manager::BUTTON,
-				'text'  => __( 'Reset Layout', 'mosaic-product-layouts-for-elementor' ),
+				'text'  => __( 'Reset layout', 'mosaic-product-layouts-for-elementor' ),
 				'event' => 'mosaic:spResetLayout',
 			)
 		);
@@ -324,7 +326,7 @@ class SingleProductLayout extends Widget_Base {
 		$this->add_control(
 			'mpl4e_sp_items_margin',
 			array(
-				'label'   => __( 'Grid Gap', 'mosaic-product-layouts-for-elementor' ),
+				'label'   => __( 'Grid gap', 'mosaic-product-layouts-for-elementor' ),
 				'type'    => Controls_Manager::SLIDER,
 				'range'   => array(
 					'px' => array(
@@ -342,7 +344,7 @@ class SingleProductLayout extends Widget_Base {
 		$this->add_control(
 			'mpl4e_sp_row_height',
 			array(
-				'label'   => __( 'Grid Row Height', 'mosaic-product-layouts-for-elementor' ),
+				'label'   => __( 'Grid row height', 'mosaic-product-layouts-for-elementor' ),
 				'type'    => Controls_Manager::SLIDER,
 				'range'   => array(
 					'px' => array(
@@ -360,7 +362,7 @@ class SingleProductLayout extends Widget_Base {
 		$this->add_control(
 			'mpl4e_sp_allow_overlap',
 			array(
-				'label'        => __( 'Allow Overlap', 'mosaic-product-layouts-for-elementor' ),
+				'label'        => __( 'Allow overlap', 'mosaic-product-layouts-for-elementor' ),
 				'type'         => Controls_Manager::SWITCHER,
 				'label_on'     => __( 'Yes', 'mosaic-product-layouts-for-elementor' ),
 				'label_off'    => __( 'No', 'mosaic-product-layouts-for-elementor' ),
@@ -372,7 +374,7 @@ class SingleProductLayout extends Widget_Base {
 		$this->add_control(
 			'mpl4e_sp_compaction_type',
 			array(
-				'label'     => __( 'Compaction Type', 'mosaic-product-layouts-for-elementor' ),
+				'label'     => __( 'Compaction type', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::SELECT,
 				'default'   => 'none',
 				'options'   => array(
@@ -400,7 +402,7 @@ class SingleProductLayout extends Widget_Base {
 		$this->add_control(
 			'mpl4e_sp_helper_grid',
 			array(
-				'label'        => __( 'Grid Visualization', 'mosaic-product-layouts-for-elementor' ),
+				'label'        => __( 'Grid visualization', 'mosaic-product-layouts-for-elementor' ),
 				'type'         => Controls_Manager::SELECT,
 				'default'      => 'none',
 				'options'      => array(
@@ -433,7 +435,7 @@ class SingleProductLayout extends Widget_Base {
 		$this->start_controls_section(
 			'saved_setups_section',
 			array(
-				'label' => __( 'Saved Setups', 'mosaic-product-layouts-for-elementor' ),
+				'label' => __( 'Saved setups', 'mosaic-product-layouts-for-elementor' ),
 				'tab'   => Controls_Manager::TAB_CONTENT,
 			)
 		);
@@ -441,7 +443,7 @@ class SingleProductLayout extends Widget_Base {
 		$this->add_control(
 			'mpl4e_sp_saved_setup',
 			array(
-				'label'       => __( 'Layout & Style Setups', 'mosaic-product-layouts-for-elementor' ),
+				'label'       => __( 'Layout & style setups', 'mosaic-product-layouts-for-elementor' ),
 				'description' => __( 'Save, load, or delete layout and style configurations.', 'mosaic-product-layouts-for-elementor' ),
 				'type'        => 'mpl4e_saved_setups',
 				'default'     => '',
@@ -458,7 +460,7 @@ class SingleProductLayout extends Widget_Base {
 		$this->start_controls_section(
 			'sp_style_preset_section',
 			array(
-				'label' => esc_html__( 'Style Presets', 'mosaic-product-layouts-for-elementor' ),
+				'label' => esc_html__( 'Style presets', 'mosaic-product-layouts-for-elementor' ),
 				'tab'   => Controls_Manager::TAB_STYLE,
 			)
 		);
@@ -466,7 +468,7 @@ class SingleProductLayout extends Widget_Base {
 		$this->add_control(
 			'mpl4e_sp_style_preset',
 			array(
-				'label'       => esc_html__( 'Style Preset', 'mosaic-product-layouts-for-elementor' ),
+				'label'       => esc_html__( 'Style preset', 'mosaic-product-layouts-for-elementor' ),
 				'type'        => Controls_Manager::VISUAL_CHOICE,
 				'columns'     => 4,
 				'label_block' => true,
@@ -482,7 +484,7 @@ class SingleProductLayout extends Widget_Base {
 		$this->start_controls_section(
 			'sp_global_styles_section',
 			array(
-				'label' => esc_html__( 'Global Element Styles', 'mosaic-product-layouts-for-elementor' ),
+				'label' => esc_html__( 'Global element styles', 'mosaic-product-layouts-for-elementor' ),
 				'tab'   => Controls_Manager::TAB_STYLE,
 			)
 		);
@@ -499,7 +501,7 @@ class SingleProductLayout extends Widget_Base {
 		$this->add_responsive_control(
 			'mpl4e_sp_global_h_align',
 			array(
-				'label'     => esc_html__( 'Horizontal Align', 'mosaic-product-layouts-for-elementor' ),
+				'label'     => esc_html__( 'Horizontal align', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::CHOOSE,
 				'options'   => array(
 					'start'  => array(
@@ -524,7 +526,7 @@ class SingleProductLayout extends Widget_Base {
 		$this->add_responsive_control(
 			'mpl4e_sp_global_v_align',
 			array(
-				'label'     => esc_html__( 'Vertical Align', 'mosaic-product-layouts-for-elementor' ),
+				'label'     => esc_html__( 'Vertical align', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::CHOOSE,
 				'options'   => array(
 					'start'  => array(
@@ -580,7 +582,7 @@ class SingleProductLayout extends Widget_Base {
 		$this->add_responsive_control(
 			'mpl4e_sp_global_border_radius',
 			array(
-				'label'      => esc_html__( 'Border Radius', 'mosaic-product-layouts-for-elementor' ),
+				'label'      => esc_html__( 'Border radius', 'mosaic-product-layouts-for-elementor' ),
 				'type'       => Controls_Manager::DIMENSIONS,
 				'size_units' => array( 'px', '%' ),
 				'selectors'  => array(
@@ -620,7 +622,7 @@ class SingleProductLayout extends Widget_Base {
 				"sp_{$element['id']}_style_section",
 				array(
 					/* translators: %s: element label */
-					'label' => sprintf( esc_html__( '%s Style', 'mosaic-product-layouts-for-elementor' ), $element['label'] ),
+					'label' => sprintf( esc_html__( '%s style', 'mosaic-product-layouts-for-elementor' ), $element['label'] ),
 					'tab'   => Controls_Manager::TAB_STYLE,
 				)
 			);
@@ -690,7 +692,7 @@ class SingleProductLayout extends Widget_Base {
 		$this->start_controls_section(
 			'sp_image_style_section',
 			array(
-				'label' => esc_html__( 'Image Style', 'mosaic-product-layouts-for-elementor' ),
+				'label' => esc_html__( 'Image style', 'mosaic-product-layouts-for-elementor' ),
 				'tab'   => Controls_Manager::TAB_STYLE,
 			)
 		);
@@ -748,7 +750,7 @@ class SingleProductLayout extends Widget_Base {
 		$this->add_responsive_control(
 			'mpl4e_sp_image_border_radius',
 			array(
-				'label'      => esc_html__( 'Border Radius', 'mosaic-product-layouts-for-elementor' ),
+				'label'      => esc_html__( 'Border radius', 'mosaic-product-layouts-for-elementor' ),
 				'type'       => Controls_Manager::DIMENSIONS,
 				'size_units' => array( 'px', '%' ),
 				'selectors'  => array(
@@ -771,7 +773,7 @@ class SingleProductLayout extends Widget_Base {
 		$this->start_controls_section(
 			'sp_group_styles_section',
 			array(
-				'label' => esc_html__( 'Group Styles', 'mosaic-product-layouts-for-elementor' ),
+				'label' => esc_html__( 'Group styles', 'mosaic-product-layouts-for-elementor' ),
 				'tab'   => Controls_Manager::TAB_STYLE,
 			)
 		);
@@ -808,7 +810,7 @@ class SingleProductLayout extends Widget_Base {
 		$group_repeater->add_control(
 			'group_align',
 			array(
-				'label'     => esc_html__( 'Horizontal Align', 'mosaic-product-layouts-for-elementor' ),
+				'label'     => esc_html__( 'Horizontal align', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::CHOOSE,
 				'default'   => 'center',
 				'options'   => array(
@@ -835,7 +837,7 @@ class SingleProductLayout extends Widget_Base {
 		$group_repeater->add_control(
 			'group_valign',
 			array(
-				'label'     => esc_html__( 'Vertical Align', 'mosaic-product-layouts-for-elementor' ),
+				'label'     => esc_html__( 'Vertical align', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::CHOOSE,
 				'default'   => 'center',
 				'options'   => array(
@@ -861,7 +863,7 @@ class SingleProductLayout extends Widget_Base {
 		$group_repeater->add_control(
 			'group_text_color',
 			array(
-				'label'     => esc_html__( 'Text Color', 'mosaic-product-layouts-for-elementor' ),
+				'label'     => esc_html__( 'Text color', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::COLOR,
 				'default'   => '#333333',
 				'selectors' => array(
@@ -874,7 +876,7 @@ class SingleProductLayout extends Widget_Base {
 		$group_repeater->add_control(
 			'group_links_color',
 			array(
-				'label'     => esc_html__( 'Links Color', 'mosaic-product-layouts-for-elementor' ),
+				'label'     => esc_html__( 'Links color', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::COLOR,
 				'default'   => '#333333',
 				'selectors' => array(
@@ -886,7 +888,7 @@ class SingleProductLayout extends Widget_Base {
 		$group_repeater->add_control(
 			'group_background',
 			array(
-				'label'     => esc_html__( 'Background Color', 'mosaic-product-layouts-for-elementor' ),
+				'label'     => esc_html__( 'Background color', 'mosaic-product-layouts-for-elementor' ),
 				'type'      => Controls_Manager::COLOR,
 				'default'   => '#ffffff',
 				'selectors' => array(
@@ -979,7 +981,7 @@ class SingleProductLayout extends Widget_Base {
 		$group_repeater->add_responsive_control(
 			'group_border_radius',
 			array(
-				'label'      => esc_html__( 'Border Radius', 'mosaic-product-layouts-for-elementor' ),
+				'label'      => esc_html__( 'Border radius', 'mosaic-product-layouts-for-elementor' ),
 				'type'       => Controls_Manager::DIMENSIONS,
 				'size_units' => array( 'px', '%' ),
 				'selectors'  => array(

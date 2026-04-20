@@ -12,7 +12,7 @@ Creative WooCommerce product, category, and single-product layouts for Elementor
 
 == Description ==
 
-Mosiac Product Layouts for Elementor adds custom Elementor widgets for WooCommerce:
+Mosiac Product Layouts for Elementor (MPL4E) adds custom Elementor widgets for WooCommerce:
 
 * Products Layout
 * Categories Layout
@@ -31,6 +31,10 @@ Key capabilities:
 2. Activate the plugin from the WordPress Plugins screen.
 3. Ensure Elementor and WooCommerce are installed and active.
 4. Edit a page with Elementor and use the widgets under the Micemade category.
+
+== Documentation ==
+
+For more detailed instructions on how to use MPL4E widgets consult the documentation in the docs/index.html.
 
 == Frequently Asked Questions ==
 
