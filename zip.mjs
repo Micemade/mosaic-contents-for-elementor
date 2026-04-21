@@ -29,6 +29,8 @@ const EXCLUDE = [
 	'package.json',
 	'package-lock.json',
 	'docker-compose.yml',
+	'marketing',
+	'marketing/**',
 	'zip.mjs',
 	// '**/*.map',
 	'**/*.md'
