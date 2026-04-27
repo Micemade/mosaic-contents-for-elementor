@@ -14,7 +14,7 @@ Creative WooCommerce product, category, and single-product layouts for Elementor
 
 Mosiac Product Layouts for Elementor adds custom Elementor widgets for WooCommerce:
 
-* Products Layout
+* Content Layout
 * Categories Layout
 * Single Product Layout
 

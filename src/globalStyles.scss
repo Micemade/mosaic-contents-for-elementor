@@ -4,7 +4,7 @@
  **/
 // @include shared.style;
 
-.mosaic-product-layouts-widgets {
+.mosaic-content-layouts-widgets {
 	
 	&:where([style*="border-width"]) {
 		border-style: none !important;
@@ -79,7 +79,7 @@
 
 		}
 
-		/* Global taxonomy styles (used in products-layout and single-product-layout) */
+		/* Global taxonomy styles (used in content-layout and single-product-layout) */
 		.taxonomy {
 
 			line-height: 1.2;

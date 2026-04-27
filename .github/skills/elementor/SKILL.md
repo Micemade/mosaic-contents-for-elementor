@@ -35,14 +35,14 @@ Settings pass through a hidden input pattern to avoid full re-renders:
 Elementor controls → content_template() → JSON in hidden input → React reads via initWidget()
 ```
 
-**PHP template pattern** (see `widgets/products-layout.php`):
+**PHP template pattern** (see `widgets/content-layout.php`):
 ```php
 protected function content_template() {
     ?>
     <# const data={ title: settings.widget_title }; const jsonData=JSON.stringify(data); #>
-    <div class="products-layout-wrapper" data-widget-id="{{ view.model.id }}">
+    <div class="content-layout-wrapper" data-widget-id="{{ view.model.id }}">
         <input type="hidden" class="elementor-settings-data" value="{{ jsonData }}" />
-        <div class="products-layout-react-root"></div>
+        <div class="content-layout-react-root"></div>
     </div>
     <?php
 }
@@ -50,12 +50,12 @@ protected function content_template() {
 
 ### React State Management
 
-The global `window.ProductsLayoutReact` registry in `src/main.jsx` manages widget instances to:
+The global `window.ContentLayoutReact` registry in `src/main.jsx` manages widget instances to:
 - Prevent duplicate React roots on Elementor re-renders
 - Enable external settings updates without remounting
 
 ```javascript
-window.ProductsLayoutReact = {
+window.ContentLayoutReact = {
     instances: {},
     init: function(widgetId, rootElement, initialSettings) { /* ... */ },
     updateInstance: function(widgetId, newSettings) { /* ... */ }

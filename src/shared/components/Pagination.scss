@@ -1,4 +1,4 @@
-.mpl4e-pagination {
+.ml4e-pagination {
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -28,11 +28,11 @@
 			cursor: not-allowed;
 		}
 
-		&.mpl4e-pagination-btn {
+		&.ml4e-pagination-btn {
 			padding: 7px 8px
 		}
 
-		&.mpl4e-pagination-page {
+		&.ml4e-pagination-page {
 			&.is-active {
 				background: #111827;
 				color: #fff;
@@ -45,14 +45,14 @@
 	}
 }
 
-.mpl4e-pagination-pages {
+.ml4e-pagination-pages {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
 	gap: 6px;
 }
 
-.mpl4e-pagination-break {
+.ml4e-pagination-break {
 	padding: 0 4px;
 	color: #6b7280;
 	font-size: 12px;
@@ -63,7 +63,7 @@
 }
 
 @media (max-width: 767px) {
-	.mpl4e-pagination-pages {
+	.ml4e-pagination-pages {
 		display: none;
 	}
 }

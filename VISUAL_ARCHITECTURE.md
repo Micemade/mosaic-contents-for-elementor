@@ -126,7 +126,7 @@
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
 │                          Widget Registry                             │
-│  { 'products-layout': { component, settingsMapper } }                │
+│  { 'content-layout': { component, settingsMapper } }                │
 └────────────────────────────┬─────────────────────────────────────────┘
                              │ Maps widget types
                              │
@@ -319,7 +319,7 @@
            ▼
 ┌───────────────────────────────────┐
 │ updateElementorSetting()          │
-│ ('products-layout', id,           │
+│ ('content-layout', id,           │
 │  'custom_layout', JSON)           │
 └──────────┬────────────────────────┘
            │
@@ -458,9 +458,9 @@ src/
 │                                       │
 ├─ widgets/ ◄───────────────────────────┤ Widget Components
 │  ├─ settings-mappers.js              │ createSettingsMapper() factory
-│  ├─ products-layout/                 │
-│  │  ├─ products-layout.jsx           │
-│  │  ├─ products-layout.scss          │
+│  ├─ content-layout/                 │
+│  │  ├─ content-layout.jsx           │
+│  │  ├─ content-layout.scss          │
 │  │  └─ react-settings.json ◄─────────┤ Settings source of truth
 │  ├─ categories-layout/               │
 │  │  ├─ categories-layout.jsx         │
@@ -515,7 +515,7 @@ src/
 PHP Files (Root Level)                  │
 │                                       │
 ├─ widgets/ ◄───────────────────────────┤ PHP Widgets
-│  ├─ products-layout.php              │
+│  ├─ content-layout.php              │
 │  ├─ categories-layout.php            │
 │  └─ single-product-layout.php        │
 │                                       │
@@ -724,7 +724,7 @@ External Dependencies (Not Bundled)
            ▼
 ┌─────────────────────────────┐
 │ wp_localize_script()        │
-│ window.MPL4E = {            │
+│ window.ML4E = {            │
 │   storeApiNonce: '...',     │
 │   cartUrl: '...',           │
 │   placeholderImg: '...'     │
@@ -734,14 +734,14 @@ External Dependencies (Not Bundled)
            ▼
 ┌─────────────────────────────┐
 │ React Component             │
-│ Reads window.MPL4E          │
+│ Reads window.ML4E          │
 └──────────┬──────────────────┘
            │
            ▼
 ┌─────────────────────────────┐
 │ Add to Request Headers      │
 │ {                           │
-│   'Nonce': window.MPL4E     │
+│   'Nonce': window.ML4E     │
 │            .storeApiNonce   │
 │ }                           │
 └──────────┬──────────────────┘
@@ -817,7 +817,7 @@ External Dependencies (Not Bundled)
 ┌─────────────────────────────────────────────────────────────┐
 │ PHP: controls/focal-point.php                               │
 │ class Focal_Point extends Base_Data_Control {               │
-│   get_type() { return 'mpl4e_focal_point'; }                │
+│   get_type() { return 'ml4e_focal_point'; }                │
 │   content_template() { /* Backbone template */ }            │
 │ }                                                            │
 └───────────────────────────┬─────────────────────────────────┘
@@ -857,7 +857,7 @@ External Dependencies (Not Bundled)
 ┌─────────────────────────────────────────────────────────────┐
 │ PHP: controls/saved-setups.php                              │
 │ class Saved_Setups extends Base_Data_Control {              │
-│   get_type() { return 'mpl4e_saved_setups'; }               │
+│   get_type() { return 'ml4e_saved_setups'; }               │
 │   content_template() { /* hidden input + React mount div */ }│
 │   enqueue() { /* loads saved-setups-control.js */ }          │
 │ }                                                            │
@@ -874,7 +874,7 @@ External Dependencies (Not Bundled)
 │ • SavedSetupsUI component (select, input, save/delete btns) │
 │ • captureSettingsFromModel() → reads all widget settings     │
 │ • applySettingsToModel() → triggers mosaic:applySetup event  │
-│ • wp.apiFetch → /wp/v2/settings (read/write mpl4e_...setups) │
+│ • wp.apiFetch → /wp/v2/settings (read/write ml4e_...setups) │
 └───────────────────────────┬─────────────────────────────────┘
                             │  On load setup:
                             │  elementor.channels.editor
@@ -883,7 +883,7 @@ External Dependencies (Not Bundled)
 ┌─────────────────────────────────────────────────────────────┐
 │ editor-hooks.js (preview iframe context)                    │
 │ 1. Disable renderOnChange                                   │
-│ 2. Disable change:mpl4e_layout listener                     │
+│ 2. Disable change:ml4e_layout listener                     │
 │ 3. settingsModel.set(setupSettings) ← atomic batch           │
 │ 4. Restore renderOnChange                                   │
 │ 5. Restore layout listener                                  │
@@ -942,7 +942,7 @@ External Dependencies (Not Bundled)
 ```
 widgetType + '_' + widgetId
     ↓
-'products-layout_abc123'
+'content-layout_abc123'
 
 Prevents collisions when:
 • Multiple widget types exist
@@ -987,7 +987,7 @@ window
 │  ├─ updateInstance()                 Update React state
 │  └─ getModel()                       Get Elementor model
 │
-├─ MPL4E ◄──────────────────────────── Localized PHP Data
+├─ ML4E ◄──────────────────────────── Localized PHP Data
 │  ├─ storeApiNonce                    WooCommerce auth
 │  ├─ cartUrl                          Cart page URL
 │  ├─ ajaxUrl                          AJAX endpoint

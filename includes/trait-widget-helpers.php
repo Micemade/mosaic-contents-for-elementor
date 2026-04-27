@@ -4,12 +4,12 @@
  *
  * Provides settings loading, breakpoints, image sizes, range config,
  * sanitization, render(), and content_template() used identically
- * by ProductsLayout, CategoriesLayout, and SingleProductLayout.
+ * by ContentLayout, CategoriesLayout, and SingleProductLayout.
  *
- * @package Micemade\MosaicProductLayoutsElementor
+ * @package Micemade\MosaicLayoutsElementor
  */
 
-namespace Micemade\MosaicProductLayoutsElementor;
+namespace Micemade\MosaicLayoutsElementor;
 
 use Elementor\Controls_Manager;
 
@@ -101,7 +101,7 @@ trait WidgetHelpers {
 	 * with per-breakpoint visibility switchers. Elements can be reordered via drag-and-drop,
 	 * but cannot be added, removed, or duplicated.
 	 *
-	 * @param string $control_key   Setting key for the repeater (e.g. 'mpl4e_element_ordering').
+	 * @param string $control_key   Setting key for the repeater (e.g. 'ml4e_element_ordering').
 	 * @param string $section_label Section label in the panel.
 	 * @param array  $elements      Default element list, each with 'element_label' key.
 	 */
@@ -123,7 +123,7 @@ trait WidgetHelpers {
 		$repeater->add_control(
 			'element_label',
 			array(
-				'type'        => 'mpl4e_sorter_label',
+				'type'        => 'ml4e_sorter_label',
 				'render_type' => 'none',
 			)
 		);
@@ -136,12 +136,12 @@ trait WidgetHelpers {
 				array(
 					'label'        => sprintf(
 						/* translators: %s: breakpoint name (Desktop, Tablet, Mobile) */
-						__( '%s visibility', 'mosaic-product-layouts-for-elementor' ),
+						__( '%s visibility', 'mosaic-layouts-for-elementor' ),
 						$bp_label
 					),
 					'type'         => Controls_Manager::SWITCHER,
-					'label_on'     => __( 'Show', 'mosaic-product-layouts-for-elementor' ),
-					'label_off'    => __( 'Hide', 'mosaic-product-layouts-for-elementor' ),
+					'label_on'     => __( 'Show', 'mosaic-layouts-for-elementor' ),
+					'label_off'    => __( 'Hide', 'mosaic-layouts-for-elementor' ),
 					'return_value' => 'yes',
 					'default'      => 'yes',
 					'render_type'  => 'none',
@@ -152,7 +152,7 @@ trait WidgetHelpers {
 		$this->add_control(
 			$control_key,
 			array(
-				'label'        => __( 'Element Order', 'mosaic-product-layouts-for-elementor' ),
+				'label'        => __( 'Element Order', 'mosaic-layouts-for-elementor' ),
 				'type'         => Controls_Manager::REPEATER,
 				'fields'       => $repeater->get_controls(),
 				'render_type'  => 'none',
@@ -172,7 +172,7 @@ trait WidgetHelpers {
 	/**
 	 * Get settings definitions from JSON file.
 	 *
-	 * @param string $widget_name Widget name (e.g. 'products-layout').
+	 * @param string $widget_name Widget name (e.g. 'content-layout').
 	 * @return array Settings definitions with defaults and types.
 	 */
 	protected static function get_settings_definitions( $widget_name ) {
@@ -223,7 +223,7 @@ trait WidgetHelpers {
 			return self::$style_preset_options_cache[ $widget_name ];
 		}
 
-		$image_base_url = plugins_url( 'assets/admin/images/style-presets/', defined( 'MPL4E_PLUGIN_FILE' ) ? MPL4E_PLUGIN_FILE : dirname( __DIR__ ) . '/mosaic-product-layouts-for-elementor.php' );
+		$image_base_url = plugins_url( 'assets/admin/images/style-presets/', defined( 'ML4E_PLUGIN_FILE' ) ? ML4E_PLUGIN_FILE : dirname( __DIR__ ) . '/mosaic-layouts-for-elementor.php' );
 		$options = array();
 
 		foreach ( $decoded_presets as $preset ) {
@@ -253,11 +253,11 @@ trait WidgetHelpers {
 	 * @return array Associative array of layout_id => label.
 	 */
 	protected function get_layout_options( $widget_name ) {
-		$json_path = MPL4E_PLUGIN_DIR . 'assets/presets/layouts.json';
+		$json_path = ML4E_PLUGIN_DIR . 'assets/presets/layouts.json';
 		$layouts   = wp_json_file_decode( $json_path, array( 'associative' => true ) );
 
 		if ( empty( $layouts ) || ! is_array( $layouts ) ) {
-			return array( 'default' => __( 'Default', 'mosaic-product-layouts-for-elementor' ) );
+			return array( 'default' => __( 'Default', 'mosaic-layouts-for-elementor' ) );
 		}
 
 		$options = array();
@@ -328,7 +328,7 @@ trait WidgetHelpers {
 	 */
 	protected function get_image_sizes() {
 		$sizes = array(
-			'automatic' => __( 'Automatic (from Store API)', 'mosaic-product-layouts-for-elementor' ),
+			'automatic' => __( 'Automatic (from Store API)', 'mosaic-layouts-for-elementor' ),
 		);
 
 		$registered_sizes = wp_get_registered_image_subsizes();
@@ -390,7 +390,7 @@ trait WidgetHelpers {
 		$widget_id      = $this->get_id();
 		$widget_name    = $this->get_name();
 		?>
-<div id="mpl4e-<?php echo esc_attr( $widget_id ); ?>" class="<?php echo esc_attr( $widget_name ); ?>-wrapper"
+<div id="ml4e-<?php echo esc_attr( $widget_id ); ?>" class="<?php echo esc_attr( $widget_name ); ?>-wrapper"
 	data-widget-id="<?php echo esc_attr( $widget_id ); ?>">
 	<input type="hidden" class="elementor-settings-data" value="<?php echo esc_attr( $json_data ); ?>" />
 	<div class="<?php echo esc_attr( $widget_name ); ?>-react-root"></div>
@@ -457,7 +457,7 @@ trait WidgetHelpers {
 <# const widgetId=view.model.id; const data={
 	<?php echo $js_settings_code; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> }; const
 	jsonData=JSON.stringify(data); #>
-	<div id="mpl4e-{{ widgetId }}" class="<?php echo esc_attr( $widget_name ); ?>-wrapper"
+	<div id="ml4e-{{ widgetId }}" class="<?php echo esc_attr( $widget_name ); ?>-wrapper"
 		data-widget-id="{{ widgetId }}">
 		<input type="hidden" class="elementor-settings-data" value="{{ jsonData }}" />
 		<div class="<?php echo esc_attr( $widget_name ); ?>-react-root"></div>

@@ -1,45 +1,43 @@
 <?php
 /**
- * Plugin Name: Mosiac Product Layouts for Elementor
- * Plugin URI: https://github.com/Micemade/mosaic-product-layouts-for-elementor
+ * Plugin Name: Mosaic Layouts for Elementor
+ * Plugin URI: https://github.com/Micemade/mosaic-layouts-for-elementor
  * Author: Micemade
- * Author URI: https://github.com/Micemade/mosaic-product-layouts-for-elementor
- * Description: A set of Elementor widgets to supercharge your WooCommerce online store with creative layouts.
+ * Author URI: https://github.com/Micemade/mosaic-layouts-for-elementor
+ * Description: A set of Elementor widgets for building general-purpose content layouts.
  * Version: 0.1.0
  * License: GPLv2 or later
  * License URL: http://www.gnu.org/licenses/gpl-2.0.txt
- * text-domain: mosaic-product-layouts-for-elementor
+ * text-domain: mosaic-layouts-for-elementor
  * Elementor tested up to: 3.43.1
  * Elementor Pro tested up to: 3.1.0
  */
 
-namespace Micemade\MosaicProductLayoutsElementor;
+namespace Micemade\MosaicLayoutsElementor;
 
-use Micemade\MosaicProductLayoutsElementor\Widgets\ProductsLayout;
-use Micemade\MosaicProductLayoutsElementor\Widgets\CategoriesLayout;
-use Micemade\MosaicProductLayoutsElementor\Widgets\SingleProductLayout;
+use Micemade\MosaicLayoutsElementor\Widgets\ContentLayout;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-if ( ! defined( 'MPL4E_VERSION' ) ) {
-	define( 'MPL4E_VERSION', '0.1.0' );
+if ( ! defined( 'ML4E_VERSION' ) ) {
+	define( 'ML4E_VERSION', '0.1.0' );
 }
 
-if ( ! defined( 'MPL4E_PLUGIN_FILE' ) ) {
-	define( 'MPL4E_PLUGIN_FILE', __FILE__ );
+if ( ! defined( 'ML4E_PLUGIN_FILE' ) ) {
+	define( 'ML4E_PLUGIN_FILE', __FILE__ );
 }
 
-if ( ! defined( 'MPL4E_PLUGIN_DIR' ) ) {
-	define( 'MPL4E_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+if ( ! defined( 'ML4E_PLUGIN_DIR' ) ) {
+	define( 'ML4E_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 }
 
-if ( ! defined( 'MPL4E_PLUGIN_URL' ) ) {
-	define( 'MPL4E_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+if ( ! defined( 'ML4E_PLUGIN_URL' ) ) {
+	define( 'ML4E_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 }
 
-final class MosaicProductLayoutsElementor {
+final class MosaicLayoutsElementor {
 
 	const ELEMENTOR_MINIMUM_VERSION = '3.0.0';
 	const PHP_MINIMUM_VERSION       = '7.0';
@@ -96,19 +94,19 @@ final class MosaicProductLayoutsElementor {
 		require_once __DIR__ . '/controls/focal-point.php';
 
 		// Register the focal point control.
-		$controls_manager->register( new \Micemade\MosaicProductLayoutsElementor\Controls\Focal_Point() );
+		$controls_manager->register( new \Micemade\MosaicLayoutsElementor\Controls\Focal_Point() );
 
 		// Require and register the saved setups control.
 		require_once __DIR__ . '/controls/saved-setups.php';
-		$controls_manager->register( new \Micemade\MosaicProductLayoutsElementor\Controls\Saved_Setups() );
+		$controls_manager->register( new \Micemade\MosaicLayoutsElementor\Controls\Saved_Setups() );
 
 		// Require and register the product select control.
 		require_once __DIR__ . '/controls/product-select.php';
-		$controls_manager->register( new \Micemade\MosaicProductLayoutsElementor\Controls\Product_Select() );
+		$controls_manager->register( new \Micemade\MosaicLayoutsElementor\Controls\Product_Select() );
 
 		// Require and register the element sorting control.
 		require_once __DIR__ . '/controls/element-sorting.php';
-		$controls_manager->register( new \Micemade\MosaicProductLayoutsElementor\Controls\Element_Sorting() );
+		$controls_manager->register( new \Micemade\MosaicLayoutsElementor\Controls\Element_Sorting() );
 	}
 
 	/**
@@ -120,11 +118,11 @@ final class MosaicProductLayoutsElementor {
 		wp_enqueue_script( 'react-dom' );
 
 		// Panel-only styles (parent window, not the preview iframe).
-		wp_register_style( 'mpl4e-editor-panel', false );
-		wp_enqueue_style( 'mpl4e-editor-panel' );
+		wp_register_style( 'ml4e-editor-panel', false );
+		wp_enqueue_style( 'ml4e-editor-panel' );
 		wp_add_inline_style(
-			'mpl4e-editor-panel',
-			'.elementor-control-mpl4e_sp_group_styles .elementor-repeater-row-tool.elementor-repeater-tool-duplicate{display:none!important}'
+			'ml4e-editor-panel',
+			'.elementor-control-ml4e_post_meta .elementor-repeater-row-tool.elementor-repeater-tool-duplicate{display:none!important}'
 		);
 
 		// The control script is enqueued by the control's enqueue() method
@@ -142,7 +140,7 @@ final class MosaicProductLayoutsElementor {
 
 		// Editor script (full functionality)
 		wp_enqueue_script(
-			'mpl4e-editor-js',
+			'ml4e-editor-js',
 			plugin_dir_url( __FILE__ ) . 'assets/admin/js/main-editor.js',
 			array( 'jquery', 'elementor-frontend', 'react', 'react-dom' ),
 			'1.0.0',
@@ -150,14 +148,13 @@ final class MosaicProductLayoutsElementor {
 		);
 
 		wp_enqueue_style(
-			'mpl4e-editor-css',
+			'ml4e-editor-css',
 			plugin_dir_url( __FILE__ ) . 'assets/admin/css/main-editor.css',
 			array(),
 			'1.0.0'
 		);
 
-		// Add WooCommerce Store API nonce for editor preview
-		$this->enqueue_store_api_nonce();
+		$this->enqueue_rest_config();
 	}
 
 	public function init_widgets( $widgets_manager ) {
@@ -165,14 +162,10 @@ final class MosaicProductLayoutsElementor {
 		// Require shared trait and widget classes.
 		require_once __DIR__ . '/includes/trait-widget-helpers.php';
 		// Require widget classes.
-		require_once __DIR__ . '/widgets/products-layout/products-layout.php';
-		require_once __DIR__ . '/widgets/categories-layout/categories-layout.php';
-		require_once __DIR__ . '/widgets/single-product-layout/single-product-layout.php';
+		require_once __DIR__ . '/widgets/content-layout/content-layout.php';
 
 		// Register widgets with elementor.
-		$widgets_manager->register( new ProductsLayout() );
-		$widgets_manager->register( new CategoriesLayout() );
-		$widgets_manager->register( new SingleProductLayout() );
+		$widgets_manager->register( new ContentLayout() );
 
 	}
 
@@ -189,9 +182,9 @@ final class MosaicProductLayoutsElementor {
 	public function create_new_category( $elements_manager ) {
 
 		$elements_manager->add_category(
-			'mosaic-product-layouts',
+			'mosaic-layouts',
 			array(
-				'title' => __( 'Mosaic Product Layouts', 'mosaic-product-layouts-for-elementor' ),
+				'title' => __( 'Mosaic Layouts', 'mosaic-layouts-for-elementor' ),
 				'icon'  => 'fa fa-plug',
 			)
 		);
@@ -221,7 +214,7 @@ final class MosaicProductLayoutsElementor {
 		
 		// Frontend-only script (lightweight, no editor features)
 		wp_enqueue_script(
-			'mpl4e-frontend-js',
+			'ml4e-frontend-js',
 			plugin_dir_url( __FILE__ ) . 'assets/js/main-frontend.js',
 			array( 'jquery', 'elementor-frontend', 'react', 'react-dom' ),
 			'1.0.0',
@@ -229,57 +222,35 @@ final class MosaicProductLayoutsElementor {
 		);
 
 		wp_enqueue_style(
-			'mpl4e-css',
+			'ml4e-css',
 			plugin_dir_url( __FILE__ ) . 'assets/css/main-frontend.css',
 			array(),
 			'1.0.0'
 		);
 
-		// Add WooCommerce Store API nonce for AJAX cart operations
-		$this->enqueue_store_api_nonce();
+		$this->enqueue_rest_config();
 	}
 
 	/**
-	 * Enqueue WooCommerce Store API nonce for AJAX add-to-cart functionality.
-	 * This allows our React components to interact with the WC Store API.
+	 * Localize runtime data required by widget scripts.
 	 */
-	private function enqueue_store_api_nonce() {
-		// Only proceed if WooCommerce is active
-		if ( ! class_exists( 'WooCommerce' ) ) {
-			return;
-		}
-
-		// Get the Store API nonce
-		$nonce = '';
-		if ( class_exists( '\Automattic\WooCommerce\StoreApi\StoreApi' ) ) {
-			// WooCommerce 8.3+
-			$nonce = wp_create_nonce( 'wc_store_api' );
-		} elseif ( function_exists( 'wc_store_api_nonce' ) ) {
-			// Fallback for older versions
-			$nonce = wc_store_api_nonce();
-		} else {
-			// Generate nonce manually
-			$nonce = wp_create_nonce( 'wc_store_api' );
-		}
-
+	private function enqueue_rest_config() {
 		$localize_data = array(
-			'storeApiNonce'   => $nonce,
-			'restNonce'       => wp_create_nonce( 'wp_rest' ),
-			'cartUrl'         => wc_get_cart_url(),
-			'ajaxUrl'         => admin_url( 'admin-ajax.php' ),
-			'placeholderImg'  => plugins_url( 'assets/images/woocommerce-placeholder-300x300.png', __FILE__ ),
+			'restRoot'       => esc_url_raw( rest_url() ),
+			'restNonce'      => wp_create_nonce( 'wp_rest' ),
+			'ajaxUrl'        => admin_url( 'admin-ajax.php' ),
+			'placeholderImg' => plugins_url( 'assets/images/woocommerce-placeholder-300x300.png', __FILE__ ),
 		);
 
-		// Localize scripts with Store API configuration
-		wp_localize_script( 'mpl4e-frontend-js', 'MPL4E', $localize_data );
-		wp_localize_script( 'mpl4e-editor-js', 'MPL4E', $localize_data );
+		wp_localize_script( 'ml4e-frontend-js', 'ML4E', $localize_data );
+		wp_localize_script( 'ml4e-editor-js', 'ML4E', $localize_data );
 
 	}
 
 	/**
 	 * Register plugin settings for saved setups.
 	 *
-	 * Registers WP option 'mpl4e_products_layout_setups' with show_in_rest
+	 * Registers WP option 'ml4e_content_layout_setups' with show_in_rest
 	 * so it can be read/written via wp.apiFetch({ path: '/wp/v2/settings' }).
 	 */
 	public function register_settings() {
@@ -294,9 +265,7 @@ final class MosaicProductLayoutsElementor {
 			'default'           => '',
 		);
 
-		register_setting( 'options', 'mpl4e_products_layout_setups', $setting_args );
-		register_setting( 'options', 'mpl4e_categories_layout_setups', $setting_args );
-		register_setting( 'options', 'mpl4e_single_product_layout_setups', $setting_args );
+		register_setting( 'options', 'ml4e_content_layout_setups', $setting_args );
 	}
 
 	/**
@@ -313,13 +282,13 @@ final class MosaicProductLayoutsElementor {
 	public function admin_notice_missing_elementor() {
 		$message = sprintf(
 			/* translators: 1: Plugin name 2: Elementor */
-			__( '"%1$s" requires "%2$s" to be installed and activated.', 'mosaic-product-layouts-for-elementor' ),
-			'<strong>' . __( 'Mosaic Product Layouts for Elementor', 'mosaic-product-layouts-for-elementor' ) . '</strong>',
-			'<strong>' . __( 'Elementor', 'mosaic-product-layouts-for-elementor' ) . '</strong>'
+			__( '"%1$s" requires "%2$s" to be installed and activated.', 'mosaic-layouts-for-elementor' ),
+			'<strong>' . __( 'Mosaic Layouts for Elementor', 'mosaic-layouts-for-elementor' ) . '</strong>',
+			'<strong>' . __( 'Elementor', 'mosaic-layouts-for-elementor' ) . '</strong>'
 		);
 
 		printf( '<div class="notice notice-warning is-dismissible"><p>%1$s</p></div>', wp_kses_post( $message ) );
 	}
 }
 
-MosaicProductLayoutsElementor::get_instance();
+MosaicLayoutsElementor::get_instance();

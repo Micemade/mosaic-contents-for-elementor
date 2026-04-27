@@ -22,7 +22,7 @@ const { __ } = wp.i18n;
  *
  * @type {string}
  */
-const PRODUCTS_ENDPOINT = '/mpl4e/v1/products';
+const PRODUCTS_ENDPOINT = '/ml4e/v1/products';
 
 /**
  * Default number of products to load initially.
@@ -118,7 +118,7 @@ const ProductSelectView = ({ initialValue, onChange }) => {
 					}
 				}
 			} catch (error) {
-				console.error('MPL4E: Failed to fetch initial products:', error);
+				console.error('ML4E: Failed to fetch initial products:', error);
 				setDefaultOptions([]);
 			} finally {
 				setIsLoading(false);
@@ -164,7 +164,7 @@ const ProductSelectView = ({ initialValue, onChange }) => {
 						});
 						resolve(response);
 					} catch (error) {
-						console.error('MPL4E: Product search failed:', error);
+						console.error('ML4E: Product search failed:', error);
 						resolve([]);
 					}
 				}, DEBOUNCE_DELAY);
@@ -196,9 +196,9 @@ const ProductSelectView = ({ initialValue, onChange }) => {
 	 */
 	const noOptionsMessage = useCallback(({ inputValue }) => {
 		if (!inputValue || inputValue.length < MIN_SEARCH_LENGTH) {
-			return __('Type to search…', 'mosaic-product-layouts-for-elementor');
+			return __('Type to search…', 'mosaic-layouts-for-elementor');
 		}
-		return __('No products found', 'mosaic-product-layouts-for-elementor');
+		return __('No products found', 'mosaic-layouts-for-elementor');
 	}, []);
 
 	/**
@@ -207,7 +207,7 @@ const ProductSelectView = ({ initialValue, onChange }) => {
 	 * @returns {string} Loading message.
 	 */
 	const loadingMessage = useCallback(
-		() => __('Searching…', 'mosaic-product-layouts-for-elementor'),
+		() => __('Searching…', 'mosaic-layouts-for-elementor'),
 		[]
 	);
 
@@ -219,17 +219,17 @@ const ProductSelectView = ({ initialValue, onChange }) => {
 	 */
 	const formatOptionLabel = useCallback((option) => {
 		return (
-			<div className="mpl4e-product-option">
-				<span className="mpl4e-product-option__label">{option.label}</span>
-				<span className="mpl4e-product-option__id">#{option.value}</span>
+			<div className="ml4e-product-option">
+				<span className="ml4e-product-option__label">{option.label}</span>
+				<span className="ml4e-product-option__id">#{option.value}</span>
 			</div>
 		);
 	}, []);
 
 	return (
-		<div className="mpl4e-product-select-wrapper">
+		<div className="ml4e-product-select-wrapper">
 			<AsyncSelect
-				classNamePrefix="mpl4e-ps"
+				classNamePrefix="ml4e-ps"
 				closeMenuOnSelect={true}
 				defaultOptions={defaultOptions}
 				loadOptions={loadOptions}
@@ -243,7 +243,7 @@ const ProductSelectView = ({ initialValue, onChange }) => {
 				isLoading={isLoading}
 				placeholder={__(
 					'Select or type to search…',
-					'mosaic-product-layouts-for-elementor'
+					'mosaic-layouts-for-elementor'
 				)}
 				cacheOptions={false}
 				formatOptionLabel={formatOptionLabel}

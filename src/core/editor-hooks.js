@@ -13,9 +13,7 @@ import { addItemToLayout } from '../shared/utils/addItem';
 import { getComputedLayout } from '../shared/utils/layoutUtils';
 
 // Style presets for applying batch style changes from the Saved Setups control
-import productsStylePresets from '../../assets/presets/products-layout/style-presets.json';
-import categoriesStylePresets from '../../assets/presets/categories-layout/style-presets.json';
-import singleProductStylePresets from '../../assets/presets/single-product-layout/style-presets.json';
+import productsStylePresets from '../../assets/presets/content-layout/style-presets.json';
 
 
 const PRODUCTS_STYLE_PRESET_MAP = productsStylePresets.reduce((acc, preset) => {
@@ -36,42 +34,6 @@ const PRODUCTS_STYLE_PRESET_SETTING_KEYS = Array.from(
 	)
 );
 
-const CATEGORIES_STYLE_PRESET_MAP = categoriesStylePresets.reduce((acc, preset) => {
-	if (preset?.id && preset?.settings) {
-		acc[preset.id] = preset.settings;
-	}
-	return acc;
-}, {});
-
-const CATEGORIES_STYLE_PRESET_SETTING_KEYS = Array.from(
-	new Set(
-		categoriesStylePresets.flatMap((preset) => {
-			if (!preset?.settings || typeof preset.settings !== 'object') {
-				return [];
-			}
-			return Object.keys(preset.settings);
-		})
-	)
-);
-
-const SP_STYLE_PRESET_MAP = singleProductStylePresets.reduce((acc, preset) => {
-	if (preset?.id && preset?.settings) {
-		acc[preset.id] = preset.settings;
-	}
-	return acc;
-}, {});
-
-const SP_STYLE_PRESET_SETTING_KEYS = Array.from(
-	new Set(
-		singleProductStylePresets.flatMap((preset) => {
-			if (!preset?.settings || typeof preset.settings !== 'object') {
-				return [];
-			}
-			return Object.keys(preset.settings);
-		})
-	)
-);
-
 /**
  * Widget-specific settings key mapping.
  *
@@ -79,50 +41,188 @@ const SP_STYLE_PRESET_SETTING_KEYS = Array.from(
  * This allows the generic editor hooks to work with any registered widget.
  */
 const WIDGET_KEYS = {
-	'products-layout': {
-		layoutKey: 'mpl4e_layout',
-		customLayoutKey: 'mpl4e_custom_layout',
-		savedSetupKey: 'mpl4e_saved_setup',
-		stylePresetKey: 'mpl4e_style_preset',
+	'content-layout': {
+		layoutKey: 'ml4e_layout',
+		customLayoutKey: 'ml4e_custom_layout',
+		savedSetupKey: 'ml4e_saved_setup',
+		stylePresetKey: 'ml4e_style_preset',
 		presetSettingKeys: PRODUCTS_STYLE_PRESET_SETTING_KEYS,
 		stylePresetMap: PRODUCTS_STYLE_PRESET_MAP,
 		resetEvent: 'mosaic:resetLayout',
 		applySetupEvent: 'mosaic:applySetup',
 		addItemEvent: 'mosaic:addItem',
 		gridColumns: { desktop: 48, tablet: 24, mobile: 12 },
-		repeaterKeys: ['mpl4e_element_ordering'],
-	},
-	'categories-layout': {
-		layoutKey: 'mpl4e_cat_layout',
-		customLayoutKey: 'mpl4e_cat_custom_layout',
-		savedSetupKey: 'mpl4e_cat_saved_setup',
-		stylePresetKey: 'mpl4e_style_preset',
-		presetSettingKeys: CATEGORIES_STYLE_PRESET_SETTING_KEYS,
-		stylePresetMap: CATEGORIES_STYLE_PRESET_MAP,
-		resetEvent: 'mosaic:catResetLayout',
-		applySetupEvent: 'mosaic:catApplySetup',
-		addItemEvent: 'mosaic:catAddItem',
-		gridColumns: { desktop: 48, tablet: 24, mobile: 12 },
-		repeaterKeys: ['mpl4e_cat_element_ordering'],
-	},
-	'single-product-layout': {
-		layoutKey: 'mpl4e_sp_layout',
-		customLayoutKey: 'mpl4e_sp_custom_layout',
-		savedSetupKey: 'mpl4e_sp_saved_setup',
-		stylePresetKey: 'mpl4e_sp_style_preset',
-		presetSettingKeys: SP_STYLE_PRESET_SETTING_KEYS,
-		stylePresetMap: SP_STYLE_PRESET_MAP,
-		resetEvent: 'mosaic:spResetLayout',
-		applySetupEvent: 'mosaic:spApplySetup',
-		addItemEvent: 'mosaic:spAddItem',
-		gridColumns: { desktop: 56, tablet: 48, mobile: 36 },
-		repeaterKeys: ['mpl4e_sp_group_styles'],
+		repeaterKeys: ['ml4e_element_ordering'],
 	},
 };
 
 // Keep one active channel handler per event to avoid stacked callbacks
 // when the same widget panel is opened multiple times.
 const CHANNEL_EVENT_HANDLERS = {};
+const POST_TYPE_META_CACHE = new Map();
+const TAXONOMY_TERMS_OPTIONS_CACHE = new Map();
+
+const getRestRoot = () => {
+	const localizedRoot = window?.ML4E?.restRoot;
+	const wpApiRoot = window?.wpApiSettings?.root;
+	const fallback = '/wp-json/';
+	const root = localizedRoot || wpApiRoot || fallback;
+
+	return root.endsWith('/') ? root : `${root}/`;
+};
+
+const fetchPostTypeMeta = async (postType) => {
+	if (!postType) {
+		return null;
+	}
+
+	if (POST_TYPE_META_CACHE.has(postType)) {
+		return POST_TYPE_META_CACHE.get(postType);
+	}
+
+	try {
+		const response = await fetch(`${getRestRoot()}ml4e/v1/post-types`);
+		if (!response.ok) {
+			return null;
+		}
+
+		const postTypes = await response.json();
+		if (Array.isArray(postTypes)) {
+			postTypes.forEach((typeObj) => {
+				if (typeObj?.name) {
+					POST_TYPE_META_CACHE.set(typeObj.name, typeObj);
+				}
+			});
+		}
+	} catch (error) {
+		console.warn('Failed to load post type metadata for dependent controls.', error);
+	}
+
+	return POST_TYPE_META_CACHE.get(postType) || null;
+};
+
+const collectControlViews = (rootView, collector = []) => {
+	if (!rootView || collector.includes(rootView)) {
+		return collector;
+	}
+
+	collector.push(rootView);
+
+	const children = rootView.children;
+	if (children?._views) {
+		Object.values(children._views).forEach((childView) => collectControlViews(childView, collector));
+	}
+
+	if (Array.isArray(rootView._childViews)) {
+		rootView._childViews.forEach((childView) => collectControlViews(childView, collector));
+	}
+
+	return collector;
+};
+
+const getActivePanelView = () => {
+	try {
+		return elementor.getPanelView()?.getCurrentPageView() || null;
+	} catch (_) {
+		return null;
+	}
+};
+
+const updateControlOptions = (controlName, options) => {
+	const panelView = getActivePanelView();
+	if (!panelView) {
+		return;
+	}
+
+	const allViews = collectControlViews(panelView);
+	const controlView = allViews.find((view) => view?.model?.get?.('name') === controlName);
+
+	if (!controlView) {
+		return;
+	}
+
+	controlView.model.set('options', options || {});
+
+	if (typeof controlView.render === 'function') {
+		controlView.render();
+	}
+};
+
+const fetchTaxonomyTermsOptions = async (taxonomy) => {
+	if (!taxonomy) {
+		return {};
+	}
+
+	if (TAXONOMY_TERMS_OPTIONS_CACHE.has(taxonomy)) {
+		return TAXONOMY_TERMS_OPTIONS_CACHE.get(taxonomy);
+	}
+
+	try {
+		const url = `${getRestRoot()}ml4e/v1/taxonomy-terms?taxonomy=${encodeURIComponent(taxonomy)}`;
+		const response = await fetch(url);
+		if (!response.ok) {
+			return {};
+		}
+
+		const options = await response.json();
+		const normalized = options && typeof options === 'object' ? options : {};
+		TAXONOMY_TERMS_OPTIONS_CACHE.set(taxonomy, normalized);
+		return normalized;
+	} catch (error) {
+		console.warn('Failed to load taxonomy terms for dependent controls.', error);
+		return {};
+	}
+};
+
+const syncTermsOptionsForTaxonomy = async (model, taxonomy) => {
+	const termsOptions = await fetchTaxonomyTermsOptions(taxonomy);
+	updateControlOptions('ml4e_terms', termsOptions);
+
+	const selectedTerms = model.getSetting('ml4e_terms');
+	if (Array.isArray(selectedTerms)) {
+		const filteredTerms = selectedTerms.filter((term) => (
+			typeof term === 'string' && taxonomy && term.startsWith(`${taxonomy}:`) && termsOptions[term]
+		));
+
+		if (filteredTerms.length !== selectedTerms.length) {
+			model.setSetting('ml4e_terms', filteredTerms);
+		}
+	}
+};
+
+const syncTaxonomyOptionsForPostType = async (model, postType, forceResetTaxonomy = false) => {
+	const postTypeMeta = await fetchPostTypeMeta(postType);
+	if (!postTypeMeta) {
+		updateControlOptions('ml4e_taxonomy', {});
+		updateControlOptions('ml4e_terms', {});
+		model.setSetting('ml4e_taxonomy', '');
+		model.setSetting('ml4e_terms', []);
+		return;
+	}
+
+	const taxonomyNames = Array.isArray(postTypeMeta.taxonomies)
+		? postTypeMeta.taxonomies
+		: [];
+	const taxonomyLabels = postTypeMeta.taxonomy_labels && typeof postTypeMeta.taxonomy_labels === 'object'
+		? postTypeMeta.taxonomy_labels
+		: {};
+
+	const taxonomyOptions = taxonomyNames.reduce((acc, taxonomyName) => {
+		acc[taxonomyName] = taxonomyLabels[taxonomyName] || taxonomyName;
+		return acc;
+	}, {});
+
+	updateControlOptions('ml4e_taxonomy', taxonomyOptions);
+
+	const currentTaxonomy = model.getSetting('ml4e_taxonomy');
+	const fallbackTaxonomy = Object.keys(taxonomyOptions)[0] || '';
+	if (forceResetTaxonomy || !taxonomyOptions[currentTaxonomy]) {
+		model.setSetting('ml4e_taxonomy', fallbackTaxonomy);
+	}
+
+	const activeTaxonomy = model.getSetting('ml4e_taxonomy');
+	await syncTermsOptionsForTaxonomy(model, activeTaxonomy);
+};
 
 const bindEditorChannelHandler = (eventName, handler) => {
 	if (!eventName || typeof handler !== 'function') {
@@ -135,6 +235,22 @@ const bindEditorChannelHandler = (eventName, handler) => {
 
 	elementor.channels.editor.on(eventName, handler);
 	CHANNEL_EVENT_HANDLERS[eventName] = handler;
+};
+
+const markDocumentModified = (status = true) => {
+	const $e = window.$e || window.parent?.$e;
+	if ($e?.internal) {
+		try {
+			$e.internal('document/save/set-is-modified', { status });
+			return;
+		} catch (error) {
+			console.warn('Elementor internal save state command failed, falling back:', error);
+		}
+	}
+
+	if (elementor?.saver) {
+		elementor.saver.setFlagEditorChange(status);
+	}
 };
 
 const setWidgetSettingWithHistory = (model, widgetId, settingName, value) => {
@@ -157,9 +273,7 @@ const setWidgetSettingWithHistory = (model, widgetId, settingName, value) => {
 	}
 
 	model.setSetting(settingName, value);
-	if (elementor?.saver) {
-		elementor.saver.setFlagEditorChange(true);
-	}
+	markDocumentModified(true);
 };
 
 const createRepeaterUpdateScheduler = (widgetType, widgetId, getSettingsFromModel) => {
@@ -184,11 +298,11 @@ const patchRepeaterCollection = (collection, widgetId, scheduleRepeaterUpdate) =
 
 	// Skip if this exact collection instance was already patched
 	// (e.g. Elementor updated in-place rather than replacing it).
-	if (collection.__mpl4ePatched === widgetId) {
+	if (collection.__ml4ePatched === widgetId) {
 		return;
 	}
 
-	collection.__mpl4ePatched = widgetId;
+	collection.__ml4ePatched = widgetId;
 
 	['add', 'remove', 'reset', 'sort'].forEach((method) => {
 		const original = collection[method];
@@ -265,6 +379,7 @@ export const registerEditorHooks = () => {
 			const modelKey = `${widgetType}_${widgetId}`;
 			const widgetConfig = getWidgetConfig(widgetType);
 			const getSettingsFromModel = () => widgetConfig.settingsMapper(model);
+			const panelView = panel || getActivePanelView();
 
 			// Register the editor view with the widget manager so the
 			// manager can consult it when deciding whether to remount
@@ -400,6 +515,37 @@ export const registerEditorHooks = () => {
 			if (wKeys) {
 				let isApplyingStylePreset = false;
 				let isApplyingSetupBatch = false;
+				let taxonomySyncSeq = 0;
+
+				if (widgetType === 'content-layout') {
+					const selectedPostType = model.getSetting('ml4e_post_type') || 'post';
+					const runTaxonomySync = async (nextPostType) => {
+						taxonomySyncSeq += 1;
+						const seq = taxonomySyncSeq;
+						await syncTaxonomyOptionsForPostType(model, nextPostType || 'post', false);
+						if (seq !== taxonomySyncSeq) {
+							return;
+						}
+					};
+
+					void runTaxonomySync(selectedPostType);
+					model.get('settings').on('change:ml4e_post_type', (settingsModel, nextPostType) => {
+						void settingsModel;
+						taxonomySyncSeq += 1;
+						const seq = taxonomySyncSeq;
+						void (async () => {
+							await syncTaxonomyOptionsForPostType(model, nextPostType || 'post', true);
+							if (seq !== taxonomySyncSeq) {
+								return;
+							}
+						})();
+					});
+
+					model.get('settings').on('change:ml4e_taxonomy', (settingsModel, nextTaxonomy) => {
+						void settingsModel;
+						void syncTermsOptionsForTaxonomy(model, nextTaxonomy || '');
+					});
+				}
 
 				if (wKeys.stylePresetKey && wKeys.applySetupEvent) {
 					model.get('settings').on(`change:${wKeys.stylePresetKey}`, (settingsModel, presetId) => {
@@ -491,9 +637,9 @@ export const registerEditorHooks = () => {
 						// 3c. Apply group styles template to existing repeater rows.
 						// The template defines visual style (colors, borders, etc.)
 						// without overwriting group_id/group_label associations.
-						const groupTemplate = setupSettings.mpl4e_sp_group_styles_template;
+						const groupTemplate = setupSettings.ml4e_sp_group_styles_template;
 						if (groupTemplate && typeof groupTemplate === 'object') {
-							const repeaterCollection = settingsModel.get('mpl4e_sp_group_styles');
+							const repeaterCollection = settingsModel.get('ml4e_sp_group_styles');
 							if (repeaterCollection && typeof repeaterCollection.each === 'function') {
 								repeaterCollection.each((rowModel) => {
 									Object.entries(groupTemplate).forEach(([key, value]) => {
@@ -504,7 +650,7 @@ export const registerEditorHooks = () => {
 							}
 							// Remove the transient template key from settings so
 							// it is not persisted as an unknown Elementor control.
-							settingsModel.unset('mpl4e_sp_group_styles_template', { silent: true });
+							settingsModel.unset('ml4e_sp_group_styles_template', { silent: true });
 						}
 					} finally {
 						isApplyingSetupBatch = false;
@@ -540,9 +686,7 @@ export const registerEditorHooks = () => {
 					}
 
 					// 8. Mark document as changed.
-					if (elementor.saver) {
-						elementor.saver.setFlagEditorChange(true);
-					}
+					markDocumentModified(true);
 				});
 
 				// Listen for 'add grid item' event from panel button
@@ -551,10 +695,10 @@ export const registerEditorHooks = () => {
 					// Only add if this widget is currently open in the panel
 					if (elementor.getPanelView().getCurrentPageView().model.id === widgetId) {
 						// Guard against duplicate firing in the same tick.
-						if (model.__mpl4eAddItemInProgress) {
+						if (model.__ml4eAddItemInProgress) {
 							return;
 						}
-						model.__mpl4eAddItemInProgress = true;
+						model.__ml4eAddItemInProgress = true;
 
 						try {
 							const customLayoutData = model.getSetting(wKeys.customLayoutKey) || '';
@@ -566,7 +710,7 @@ export const registerEditorHooks = () => {
 							setWidgetSettingWithHistory(model, widgetId, wKeys.customLayoutKey, newLayoutJson);
 						} finally {
 							setTimeout(() => {
-								model.__mpl4eAddItemInProgress = false;
+								model.__ml4eAddItemInProgress = false;
 							}, 0);
 						}
 					}

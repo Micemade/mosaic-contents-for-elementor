@@ -83,10 +83,10 @@ const Pagination = ( {
 	}
 
 	return (
-		<nav className="mpl4e-pagination" aria-label="Products pagination">
+		<nav className="ml4e-pagination" aria-label="Products pagination">
 			<button
 				type="button"
-				className="mpl4e-pagination-btn"
+				className="ml4e-pagination-btn"
 				onClick={ () => goToPage( currentPage - 1 ) }
 				disabled={currentPage <= 1}
 				title='Previous'
@@ -95,12 +95,12 @@ const Pagination = ( {
 			</button>
 
 			{ showPageNumbers && (
-				<div className="mpl4e-pagination-pages" role="group" aria-label="Page numbers">
+				<div className="ml4e-pagination-pages" role="group" aria-label="Page numbers">
 					{ pageList.map( ( page, index ) =>
 						page === BREAK ? (
 							<span
 								key={ `break-${ index }` }
-								className="mpl4e-pagination-break"
+								className="ml4e-pagination-break"
 								aria-hidden="true"
 							>
 								&hellip;
@@ -109,7 +109,7 @@ const Pagination = ( {
 							<button
 								type="button"
 								key={ page }
-								className={ `mpl4e-pagination-page${ page === currentPage ? ' is-active' : '' }` }
+								className={ `ml4e-pagination-page${ page === currentPage ? ' is-active' : '' }` }
 								onClick={ () => goToPage( page ) }
 								aria-current={ page === currentPage ? 'page' : undefined }
 							>
@@ -122,7 +122,7 @@ const Pagination = ( {
 
 			<button
 				type="button"
-				className="mpl4e-pagination-btn"
+				className="ml4e-pagination-btn"
 				onClick={ () => goToPage( currentPage + 1 ) }
 				disabled={ currentPage >= totalPages }
 				title='Next'

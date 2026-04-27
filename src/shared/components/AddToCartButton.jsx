@@ -21,8 +21,8 @@ import './AddToCartButton.scss';
  */
 const getStoreApiNonce = () => {
 	// Our plugin's localized nonce (primary source)
-	if (window.MPL4E?.storeApiNonce) {
-		return window.MPL4E.storeApiNonce;
+	if (window.ML4E?.storeApiNonce) {
+		return window.ML4E.storeApiNonce;
 	}
 	// WooCommerce Blocks middleware config
 	if (window.wcBlocksMiddlewareConfig?.storeApiNonce) {
@@ -117,7 +117,7 @@ const AddToCartButton = ({
 }) => {
 	const [status, setStatus] = useState('idle'); // idle, loading, added, error
 	const [errorMessage, setErrorMessage] = useState('');
-	const cartUrl = window.MPL4E?.cartUrl || '/cart/';
+	const cartUrl = window.ML4E?.cartUrl || '/cart/';
 
 	if (!product || !product.id) {
 		return null;

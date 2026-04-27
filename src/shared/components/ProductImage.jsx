@@ -8,7 +8,7 @@ import PropTypes from 'prop-types';
 import placeholderImgForBuild from '../woocommerce-placeholder-300x300.png';
 
 // Get placeholder image URL from localized script data
-const placeholderImg = window.MPL4E?.placeholderImg || '';
+const placeholderImg = window.ML4E?.placeholderImg || '';
 
 /**
  * Internal dependencies.
@@ -27,7 +27,7 @@ const getImageProperties = (images) => {
 	};
 };
 
-const ProductImage = ({ productId, name, images, featuredImageSize, style = {} }) => {
+const ProductImage = ({ productId, postType = 'post', name, images, featuredImageSize, style = {} }) => {
 
 	// No productId, no image.
 	if (!productId) return null;
@@ -36,7 +36,7 @@ const ProductImage = ({ productId, name, images, featuredImageSize, style = {} }
 	const fallback = (
 		<img
 			src={typeof wc === 'object' ? wc?.wcSettings?.PLACEHOLDER_IMG_SRC : placeholderImg}
-			alt={__('Product has no featured image', 'mosaic-product-layouts-for-elementor')}
+			alt={__('Content item has no featured image', 'mosaic-layouts-for-elementor')}
 		/>
 	);
 
@@ -44,11 +44,13 @@ const ProductImage = ({ productId, name, images, featuredImageSize, style = {} }
 	const isAuto = featuredImageSize === 'automatic';
 
 	// Fallback for image alt attribute.
-	const altFallback = __('Product image', 'mosaic-product-layouts-for-elementor');
+	const altFallback = __('Product image', 'mosaic-layouts-for-elementor');
 
 	// Get featured image using custom hook
 	// (only if not in 'automatic' mode, otherwise we get srcset and sizes from "images" prop)
-	const { loadingFeaturedImg, featuredImage } = isAuto ? { loadingFeaturedImg: false, featuredImage: null } : getFeaturedImage(productId, featuredImageSize);
+	const { loadingFeaturedImg, featuredImage } = isAuto
+		? { loadingFeaturedImg: false, featuredImage: null }
+		: getFeaturedImage(productId, featuredImageSize, postType);
 
 	// if (loadingFeaturedImg) {
 	// 	return <div className='gradient-preloader' />;
@@ -56,11 +58,12 @@ const ProductImage = ({ productId, name, images, featuredImageSize, style = {} }
 
 	// Get image properties only if in 'automatic' mode
 	const { srcset, src, sizes } = isAuto ? getImageProperties(images) : {};
+	const explicitImageSrc = !isAuto ? (images?.[0]?.sizesByName?.[featuredImageSize] || featuredImage) : null;
 
 	return (images.length) ? (
 		<img
 			{...(isAuto && srcset && { srcSet: srcset })}
-			src={isAuto ? src : featuredImage}
+			src={isAuto ? src : explicitImageSrc}
 			alt={(name || altFallback)}
 			style={style}
 			{...(sizes && isAuto && { sizes: sizes })}
@@ -73,6 +76,8 @@ const ProductImage = ({ productId, name, images, featuredImageSize, style = {} }
 };
 
 ProductImage.propTypes = {
+	postType: PropTypes.string,
+
 	// Required props
 	productId: PropTypes.oneOfType([
 		PropTypes.string,
@@ -100,6 +105,7 @@ ProductImage.propTypes = {
 // Default props (optional)
 ProductImage.defaultProps = {
 	images: [],
+	postType: 'post',
 	featuredImageSize: 'automatic',
 	style: {}
 };

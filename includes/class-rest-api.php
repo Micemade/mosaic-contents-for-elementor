@@ -1,15 +1,15 @@
 <?php
 /**
- * REST API endpoints for the Mosaic Product Layouts for Elementor plugin.
+ * REST API endpoints for the Mosaic Layouts for Elementor plugin.
  *
  * Provides lightweight endpoints for fetching products with search support
  * for scalable selection in the Elementor editor.
  *
- * @package Micemade\MosaicProductLayoutsElementor
+ * @package Micemade\MosaicLayoutsElementor
  * @since 1.0.0
  */
 
-namespace Micemade\MosaicProductLayoutsElementor;
+namespace Micemade\MosaicLayoutsElementor;
 
 use WP_REST_Request;
 use WP_REST_Response;
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * REST API class for Mosaic Product Layouts for Elementor.
+ * REST API class for Mosaic Layouts for Elementor.
  *
  * Registers custom REST endpoints for products that return lightweight data
  * optimized for the Elementor editor async select control.
@@ -34,7 +34,7 @@ class RestAPI {
 	 *
 	 * @var string
 	 */
-	private const NAMESPACE = 'mpl4e/v1';
+	private const NAMESPACE = 'ml4e/v1';
 
 	/**
 	 * Default number of items to return.
@@ -70,26 +70,53 @@ class RestAPI {
 			)
 		);
 
-		// Product category image assignment endpoint.
 		register_rest_route(
 			self::NAMESPACE,
-			'/categories/(?P<id>\d+)/image',
+			'/post-types',
 			array(
-				'methods'             => 'POST',
-				'callback'            => array( $this, 'set_category_image' ),
-				'permission_callback' => array( $this, 'check_category_image_permission' ),
+				'methods'             => 'GET',
+				'callback'            => array( $this, 'get_post_types' ),
+				'permission_callback' => '__return_true',
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE,
+			'/post-meta',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( $this, 'get_post_meta_values' ),
+				'permission_callback' => '__return_true',
 				'args'                => array(
-					'id'           => array(
-						'description'       => __( 'Product category term ID.', 'mosaic-product-layouts-for-elementor' ),
-						'type'              => 'integer',
+					'post_ids' => array(
+						'description'       => __( 'Comma-separated post IDs.', 'mosaic-layouts-for-elementor' ),
+						'type'              => 'string',
 						'required'          => true,
-						'sanitize_callback' => 'absint',
+						'sanitize_callback' => 'sanitize_text_field',
 					),
-					'attachmentId' => array(
-						'description'       => __( 'Attachment ID to assign (0 to remove).', 'mosaic-product-layouts-for-elementor' ),
-						'type'              => 'integer',
+					'meta_keys' => array(
+						'description'       => __( 'Comma-separated meta keys.', 'mosaic-layouts-for-elementor' ),
+						'type'              => 'string',
 						'required'          => true,
-						'sanitize_callback' => 'absint',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE,
+			'/taxonomy-terms',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( $this, 'get_taxonomy_terms' ),
+				'permission_callback' => '__return_true',
+				'args'                => array(
+					'taxonomy' => array(
+						'description'       => __( 'Taxonomy slug.', 'mosaic-layouts-for-elementor' ),
+						'type'              => 'string',
+						'required'          => true,
+						'sanitize_callback' => 'sanitize_key',
 					),
 				),
 			)
@@ -106,22 +133,6 @@ class RestAPI {
 	}
 
 	/**
-	 * Check if the current user can update product category images.
-	 *
-	 * @return bool True if user can manage product categories.
-	 */
-	public function check_category_image_permission(): bool {
-		$taxonomy = get_taxonomy( 'product_cat' );
-		if ( ! $taxonomy ) {
-			return false;
-		}
-
-		$manage_terms_cap = $taxonomy->cap->manage_terms ?? 'manage_categories';
-
-		return current_user_can( $manage_terms_cap ) || current_user_can( 'manage_woocommerce' );
-	}
-
-	/**
 	 * Get collection parameters for endpoints.
 	 *
 	 * @return array Array of parameter definitions.
@@ -129,13 +140,13 @@ class RestAPI {
 	private function get_collection_params(): array {
 		return array(
 			'search'   => array(
-				'description'       => __( 'Search term to filter results.', 'mosaic-product-layouts-for-elementor' ),
+				'description'       => __( 'Search term to filter results.', 'mosaic-layouts-for-elementor' ),
 				'type'              => 'string',
 				'required'          => false,
 				'sanitize_callback' => 'sanitize_text_field',
 			),
 			'per_page' => array(
-				'description'       => __( 'Maximum number of items to return.', 'mosaic-product-layouts-for-elementor' ),
+				'description'       => __( 'Maximum number of items to return.', 'mosaic-layouts-for-elementor' ),
 				'type'              => 'integer',
 				'default'           => self::DEFAULT_PER_PAGE,
 				'minimum'           => 1,
@@ -162,7 +173,7 @@ class RestAPI {
 		if ( ! function_exists( 'wc_get_products' ) ) {
 			return new WP_Error(
 				'woocommerce_not_active',
-				__( 'WooCommerce is not active.', 'mosaic-product-layouts-for-elementor' ),
+				__( 'WooCommerce is not active.', 'mosaic-layouts-for-elementor' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -197,92 +208,114 @@ class RestAPI {
 	}
 
 	/**
-	 * Set or remove product category image.
+	 * Get all public REST-enabled post types.
 	 *
-	 * @param WP_REST_Request $request Full details about the request.
-	 * @return WP_REST_Response|WP_Error
+	 * @return WP_REST_Response
 	 */
-	public function set_category_image( WP_REST_Request $request ) {
-		$category_id   = absint( $request->get_param( 'id' ) );
-		$attachment_id = absint( $request->get_param( 'attachmentId' ) );
-
-		if ( ! taxonomy_exists( 'product_cat' ) ) {
-			return new WP_Error(
-				'product_cat_missing',
-				__( 'Product category taxonomy is not available.', 'mosaic-product-layouts-for-elementor' ),
-				array( 'status' => 400 )
-			);
-		}
-
-		$term = get_term( $category_id, 'product_cat' );
-		if ( ! $term || is_wp_error( $term ) ) {
-			return new WP_Error(
-				'category_not_found',
-				__( 'Product category not found.', 'mosaic-product-layouts-for-elementor' ),
-				array( 'status' => 404 )
-			);
-		}
-
-		if ( $attachment_id > 0 ) {
-			$attachment = get_post( $attachment_id );
-			if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
-				return new WP_Error(
-					'invalid_attachment',
-					__( 'Attachment not found.', 'mosaic-product-layouts-for-elementor' ),
-					array( 'status' => 400 )
-				);
-			}
-
-			$mime_type = get_post_mime_type( $attachment_id );
-			if ( ! $mime_type || 0 !== strpos( $mime_type, 'image/' ) ) {
-				return new WP_Error(
-					'invalid_attachment_type',
-					__( 'Attachment must be an image.', 'mosaic-product-layouts-for-elementor' ),
-					array( 'status' => 400 )
-				);
-			}
-
-			update_term_meta( $category_id, 'thumbnail_id', $attachment_id );
-		} else {
-			delete_term_meta( $category_id, 'thumbnail_id' );
-		}
-
-		clean_term_cache( $category_id, 'product_cat' );
-
-		$updated_attachment_id = absint( get_term_meta( $category_id, 'thumbnail_id', true ) );
-
-		return rest_ensure_response(
+	public function get_post_types(): WP_REST_Response {
+		$post_types = get_post_types(
 			array(
-				'id'    => $category_id,
-				'name'  => $term->name,
-				'image' => $this->get_attachment_image_payload( $updated_attachment_id ),
-			)
+				'public'       => true,
+				'publicly_queryable' => true,
+				'show_in_rest' => true,
+			),
+			'objects'
 		);
+
+		$data = array();
+
+		foreach ( $post_types as $post_type ) {
+			$post_type_taxonomies = get_object_taxonomies( $post_type->name, 'objects' );
+			$taxonomies           = array();
+			$taxonomy_labels      = array();
+			$taxonomy_rest_bases  = array();
+
+			foreach ( $post_type_taxonomies as $taxonomy ) {
+				if ( empty( $taxonomy->public ) || empty( $taxonomy->show_in_rest ) ) {
+					continue;
+				}
+
+				$taxonomies[]                            = $taxonomy->name;
+				$taxonomy_labels[ $taxonomy->name ] = $taxonomy->label;
+				$taxonomy_rest_bases[ $taxonomy->name ] = ! empty( $taxonomy->rest_base ) ? $taxonomy->rest_base : $taxonomy->name;
+			}
+
+			$data[] = array(
+				'name'       => $post_type->name,
+				'label'      => $post_type->label,
+				'rest_base'  => $post_type->rest_base ?: $post_type->name,
+				'taxonomies' => array_values( $taxonomies ),
+				'taxonomy_labels' => $taxonomy_labels,
+				'taxonomy_rest_bases' => $taxonomy_rest_bases,
+			);
+		}
+
+		return rest_ensure_response( $data );
 	}
 
 	/**
-	 * Build image payload from attachment ID.
+	 * Get terms for a taxonomy as select options.
 	 *
-	 * @param int $attachment_id Attachment ID.
-	 * @return array|null
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response
 	 */
-	private function get_attachment_image_payload( int $attachment_id ): ?array {
-		if ( $attachment_id <= 0 ) {
-			return null;
+	public function get_taxonomy_terms( WP_REST_Request $request ): WP_REST_Response {
+		$taxonomy = (string) $request->get_param( 'taxonomy' );
+		$options  = array();
+
+		if ( empty( $taxonomy ) || ! taxonomy_exists( $taxonomy ) ) {
+			return rest_ensure_response( $options );
 		}
 
-		$src       = wp_get_attachment_image_url( $attachment_id, 'full' );
-		$thumbnail = wp_get_attachment_image_url( $attachment_id, 'thumbnail' ) ?: $src;
-
-		if ( ! $src ) {
-			return null;
+		$taxonomy_obj = get_taxonomy( $taxonomy );
+		if ( ! $taxonomy_obj || empty( $taxonomy_obj->public ) || empty( $taxonomy_obj->show_in_rest ) ) {
+			return rest_ensure_response( $options );
 		}
 
-		return array(
-			'id'        => $attachment_id,
-			'src'       => $src,
-			'thumbnail' => $thumbnail,
-			'alt'       => get_post_meta( $attachment_id, '_wp_attachment_image_alt', true ) ?: '',
+		$terms = get_terms(
+			array(
+				'taxonomy'   => $taxonomy,
+				'hide_empty' => false,
+			)
 		);
+
+		if ( is_wp_error( $terms ) || empty( $terms ) ) {
+			return rest_ensure_response( $options );
+		}
+
+		foreach ( $terms as $term ) {
+			$key             = $taxonomy . ':' . $term->term_id;
+			$options[ $key ] = sprintf( '%1$s: %2$s', $taxonomy, $term->name );
+		}
+
+		return rest_ensure_response( $options );
+	}
+
+	/**
+	 * Get selected post meta values for a set of posts.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response
+	 */
+	public function get_post_meta_values( WP_REST_Request $request ): WP_REST_Response {
+		$post_ids  = array_filter( array_map( 'absint', explode( ',', (string) $request->get_param( 'post_ids' ) ) ) );
+		$meta_keys = array_filter( array_map( 'sanitize_key', explode( ',', (string) $request->get_param( 'meta_keys' ) ) ) );
+
+		$payload = array();
+
+		foreach ( $post_ids as $post_id ) {
+			$payload[ $post_id ] = array();
+
+			if ( 'publish' !== get_post_status( $post_id ) ) {
+				continue;
+			}
+
+			foreach ( $meta_keys as $meta_key ) {
+				$value = get_post_meta( $post_id, $meta_key, true );
+				$payload[ $post_id ][ $meta_key ] = is_scalar( $value ) ? (string) $value : '';
+			}
+		}
+
+		return rest_ensure_response( $payload );
 	}
 }

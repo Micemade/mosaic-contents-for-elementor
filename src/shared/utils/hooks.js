@@ -42,7 +42,7 @@ export const useElementorDevice = () => {
  * Generate CSS custom properties from responsive Elementor settings.
  *
  * Responsive settings (objects with breakpoint keys) become scoped
- * CSS variables like `--mpl4e-title-size-desktop: 26px`.
+ * CSS variables like `--ml4e-title-size-desktop: 26px`.
  * Scalar colour/background/border/shadow values become simple vars.
  *
  * @param {Object} widgetData - Full settings object from Elementor model.
@@ -90,7 +90,7 @@ export const useCssVariables = (widgetData) => {
  * Derive grid settings from Elementor widget data.
  *
  * All widgets share the same column structure; only the setting-key
- * prefix differs (e.g. `mpl4e_items_margin` vs `mpl4e_cat_items_margin`).
+ * prefix differs (e.g. `ml4e_items_margin` vs `ml4e_cat_items_margin`).
  *
  * @param {Object}  widgetData - Full settings object.
  * @param {string}  marginKey  - Setting key for items margin.

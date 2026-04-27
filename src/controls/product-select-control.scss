@@ -4,13 +4,13 @@
  * Styles for the async product select control in the Elementor editor panel.
  */
 
-.mpl4e-product-select-wrapper {
+.ml4e-product-select-wrapper {
 	width: 100%;
 	margin: 5px 0;
 }
 
 // ── Option label layout ───────────────────────────────────────────────────
-.mpl4e-product-option {
+.ml4e-product-option {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -32,7 +32,7 @@
 }
 
 // ── React Select overrides for Elementor panel ────────────────────────────
-.mpl4e-ps {
+.ml4e-ps {
 	// Control (input wrapper).
 	&__control {
 		background-color: var(--e-a-bg-default, #69727d);

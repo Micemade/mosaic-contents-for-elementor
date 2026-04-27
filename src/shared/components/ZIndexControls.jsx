@@ -4,7 +4,7 @@
  * Shared component that renders "Bring Forward" / "Send Backward" buttons
  * for controlling the stacking order (z-index) of grid items.
  *
- * Used by products-layout, categories-layout, and single-product-layout widgets.
+ * Used by content-layout, categories-layout, and single-product-layout widgets.
  *
  * @module ZIndexControls
  */
@@ -21,7 +21,7 @@ import React from 'react';
  * @param {number}   delta            - Change to apply (+1 or -1).
  * @param {Object}   layoutData       - Current parsed layout data (with .zindex).
  * @param {string}   customLayoutData - Raw JSON string of the custom layout (from Elementor setting).
- * @param {string}   widgetType       - Widget type slug (e.g. "products-layout").
+ * @param {string}   widgetType       - Widget type slug (e.g. "content-layout").
  * @param {string}   widgetId         - Elementor widget ID.
  * @param {string}   settingKey       - Elementor setting key for the custom layout.
  * @param {Function} updateFn         - The updateElementorSetting function.
@@ -140,21 +140,21 @@ const ZIndexControls = ({
 	};
 
 	return (
-		<div className="mpl4e-zindex-controls">
+		<div className="ml4e-zindex-controls">
 			<button
 				type="button"
-				className="mpl4e-zindex-btn mpl4e-zindex-btn--up"
+				className="ml4e-zindex-btn ml4e-zindex-btn--up"
 				onMouseDownCapture={handleBringForward}
 				title={`Bring Forward (z-index: ${currentZIndex + 1})`}
 			>
 				<i className="eicon-sort-up" aria-hidden="true" />
 			</button>
-			<span className="mpl4e-zindex-value" title="Current z-index">
+			<span className="ml4e-zindex-value" title="Current z-index">
 				{currentZIndex}
 			</span>
 			<button
 				type="button"
-				className="mpl4e-zindex-btn mpl4e-zindex-btn--down"
+				className="ml4e-zindex-btn ml4e-zindex-btn--down"
 				onMouseDownCapture={handleSendBackward}
 				title={`Send Backward (z-index: ${Math.max(0, currentZIndex - 1)})`}
 				disabled={currentZIndex <= 0}

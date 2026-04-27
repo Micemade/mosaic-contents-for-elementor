@@ -4,7 +4,7 @@
  * @returns {string}
  */
 export const getRestNonce = () =>
-	window.MPL4E?.restNonce || window.parent?.MPL4E?.restNonce || '';
+	window.ML4E?.restNonce || window.parent?.ML4E?.restNonce || '';
 
 /**
  * Build REST nonce headers object.

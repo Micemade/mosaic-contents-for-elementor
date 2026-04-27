@@ -1,11 +1,11 @@
 /**
- * Products Layout Widget Component.
+ * Content Layout Widget Component.
  *
  * Renders WooCommerce products in a responsive grid using react-grid-layout.
  * Layout items are the primary structure, products are assigned to them.
  * Pattern follows mosaic-product-layouts: map over layout items, find matching product.
  *
- * @module ProductsLayoutWidget
+ * @module ContentLayoutWidget
  */
 
 /*
@@ -20,8 +20,6 @@ import DOMPurify from 'dompurify';
 // Components.
 import GridLayout from '../../shared/components/GridLayout.jsx';
 import ProductImage from '../../shared/components/ProductImage.jsx';
-import RatingStars from '../../shared/components/RatingStars.jsx';
-import AddToCartButton from '../../shared/components/AddToCartButton.jsx';
 import ItemControls from '../../shared/components/ItemControls.jsx';
 import GridHelper from '../../shared/components/GridHelper.jsx';
 import Pagination from '../../shared/components/Pagination.jsx';
@@ -29,7 +27,6 @@ import Pagination from '../../shared/components/Pagination.jsx';
 // Utilities and data.
 import { decode } from '../../shared/utils/generalUtils.js';
 import { parseElementOrdering } from '../../shared/utils/elementOrdering.js';
-import { mapKeysToCamelCase } from '../../shared/utils/transformationUtils.js';
 import { getBreakpointTextAlignVars } from '../../shared/utils/alignmentUtils.js';
 import { applyLayoutChange, selectElementorWidget, addGridItem, removeGridItem } from '../../shared/utils/layoutEditing.js';
 import { getLayout } from '../../shared/utils/layoutUtils.js';
@@ -38,16 +35,58 @@ import { loadCachedData } from '../../shared/utils/dataLoading.js';
 import { useCssVariables, useGridSettings, useElementorDevice } from '../../shared/utils/hooks.js';
 import { getVisibleLayout } from '../../shared/utils/visibleLayout.js';
 
-import './products-layout.scss';
+import './content-layout.scss';
 
 // Sanitize HTML content.
 const Sanitizer = DOMPurify.sanitize;
 
 // Cache: LRU in editor, plain object on frontend.
 const productsCache = createCache();
+const postTypeRouteCache = new Map([
+	['post', 'posts'],
+	['page', 'pages'],
+	['attachment', 'media'],
+]);
+
+function getRestRoot() {
+	const localizedRoot = window?.ML4E?.restRoot;
+	const wpApiRoot = window?.wpApiSettings?.root;
+	const fallback = '/wp-json/';
+
+	const root = localizedRoot || wpApiRoot || fallback;
+	return root.endsWith('/') ? root : `${root}/`;
+}
+
+async function resolvePostTypeRestBase(postType) {
+	if (!postType) {
+		return 'posts';
+	}
+
+	if (postTypeRouteCache.has(postType)) {
+		return postTypeRouteCache.get(postType);
+	}
+
+	try {
+		const response = await fetch(`${getRestRoot()}ml4e/v1/post-types`);
+		if (response.ok) {
+			const postTypes = await response.json();
+			if (Array.isArray(postTypes)) {
+				postTypes.forEach((typeObj) => {
+					if (typeObj?.name && typeObj?.rest_base) {
+						postTypeRouteCache.set(typeObj.name, typeObj.rest_base);
+					}
+				});
+			}
+		}
+	} catch (error) {
+		console.warn('Failed to resolve post type REST base; falling back to post type slug.', error);
+	}
+
+	return postTypeRouteCache.get(postType) || postType;
+}
 
 /**
- * Fetch products from WooCommerce Store API.
+ * Fetch posts from WordPress REST API.
  *
  * Uses /wc/store/v1/products endpoint (public, no auth required).
  * Pattern adapted from mosaic-product-layouts apiFetchQuery.
@@ -56,39 +95,47 @@ const productsCache = createCache();
  * @returns {Promise<Object>} Product result with items and pagination metadata.
  */
 async function fetchProducts(querySettings) {
-	const { layoutItemLimit, mpl4e_orderby, mpl4e_order, mpl4e_category, mpl4e_on_sale, mpl4e_featured, mpl4e_page = 1 } = querySettings;
+	const {
+		layoutItemLimit,
+		ml4e_post_type,
+		ml4e_orderby,
+		ml4e_order,
+		ml4e_taxonomy,
+		ml4e_terms,
+		ml4e_sticky,
+		ml4e_page = 1,
+	} = querySettings;
 
 	// Build query parameters
 	const params = new URLSearchParams();
 
-	params.append('page', String(Math.max(1, Number(mpl4e_page) || 1)));
+	params.append('page', String(Math.max(1, Number(ml4e_page) || 1)));
 	if (layoutItemLimit) params.append('per_page', layoutItemLimit);
-	if (mpl4e_orderby) params.append('orderby', mpl4e_orderby);
-	if (mpl4e_order) params.append('order', mpl4e_order);
+	if (ml4e_orderby) params.append('orderby', ml4e_orderby);
+	if (ml4e_order) params.append('order', ml4e_order);
 
-	// Handle multiple categories (array or comma-separated string)
-	if (mpl4e_category) {
-		if (Array.isArray(mpl4e_category) && mpl4e_category.length > 0) {
-			// WC Store API accepts comma-separated category IDs
-			params.append('category', mpl4e_category.join(','));
-		} else if (typeof mpl4e_category === 'string' && mpl4e_category) {
-			params.append('category', mpl4e_category);
+	if (Array.isArray(ml4e_terms) && ml4e_terms.length > 0 && ml4e_taxonomy) {
+		const termIds = ml4e_terms
+			.filter((term) => typeof term === 'string' && term.startsWith(`${ml4e_taxonomy}:`))
+			.map((term) => term.split(':')[1])
+			.filter(Boolean);
+
+		if (termIds.length) {
+			params.append(ml4e_taxonomy, termIds.join(','));
 		}
 	}
 
-	if (mpl4e_on_sale) params.append('on_sale', 'true');
-	if (mpl4e_featured) params.append('featured', 'true');
+	if (ml4e_sticky) params.append('sticky', 'true');
 
-	// Specify fields to return (optimizes response size)
-	params.append(
-		'_fields',
-		'id,name,short_description,price_html,images,permalink,add_to_cart,type,average_rating,review_count,on_sale,categories,brands,is_in_stock,is_purchasable,sku'
-	);
+	params.append('_embed', 'wp:featuredmedia,wp:term');
 
-	const response = await fetch(`/wp-json/wc/store/v1/products?${params.toString()}`);
+	const postType = ml4e_post_type || 'post';
+	const restBase = await resolvePostTypeRestBase(postType);
+	const endpoint = `${getRestRoot()}wp/v2/${encodeURIComponent(restBase)}?${params.toString()}`;
+	const response = await fetch(endpoint);
 
 	if (!response.ok) {
-		throw new Error(`WC Store API error: ${response.status}`);
+		throw new Error(`WordPress REST API error: ${response.status}`);
 	}
 
 	const total = parseInt(response.headers.get('X-WP-Total') || '0', 10);
@@ -96,7 +143,32 @@ async function fetchProducts(querySettings) {
 
 	const data = await response.json();
 
-	const items = data.map((item) => mapKeysToCamelCase(item));
+	const items = data.map((item) => {
+		const featured = item?._embedded?.['wp:featuredmedia']?.[0] || null;
+		const terms = (item?._embedded?.['wp:term'] || []).flat();
+
+		return {
+			id: item.id,
+			name: item?.title?.rendered || '',
+			shortDescription: item?.excerpt?.rendered || '',
+			permalink: item?.link || '#',
+			meta: item?.meta || {},
+			terms,
+			images: featured
+				? [
+					{
+						src: featured?.source_url || '',
+						srcset: featured?.media_details?.sizes
+							? Object.values(featured.media_details.sizes)
+								.map((size) => `${size.source_url} ${size.width}w`)
+								.join(', ')
+							: '',
+						sizes: '(max-width: 1024px) 100vw, 50vw',
+					},
+				]
+				: [],
+		};
+	});
 
 	return { items, total, totalPages };
 }
@@ -123,7 +195,7 @@ function prepareProductsData(products, layoutItems) {
 }
 
 /**
- * Products Layout Widget Component.
+ * Content Layout Widget Component.
  *
  * Renders WooCommerce products in a responsive grid using react-grid-layout.
  * Layout items are the primary structure, products are assigned to them.
@@ -134,7 +206,7 @@ function prepareProductsData(products, layoutItems) {
  * @param {string} props.widgetId - Unique widget instance ID.
  * @param {string} props.mode - 'display' (frontend) or 'edit' (editor).
  */
-const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display' }) => {
+const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display' }) => {
 
 	// Determine if we're in edit mode (from prop, not runtime detection)
 	const isEditMode = mode === 'edit';
@@ -152,42 +224,37 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 	// Map flex justify-content alignment values → text-align equivalents for .product-elements.
 	// flex-start → left, flex-end → right, center → center.
 	const alignTextVars = useMemo(() => {
-		return getBreakpointTextAlignVars(widgetData?.mpl4e_product_align, '--mpl4e-product-align-text-');
-	}, [widgetData?.mpl4e_product_align]);
+		return getBreakpointTextAlignVars(widgetData?.ml4e_product_align, '--ml4e-product-align-text-');
+	}, [widgetData?.ml4e_product_align]);
 
 	// Extract settings with defaults
-	const layoutId = widgetData?.mpl4e_layout || 'default';
-	const customLayoutData = widgetData?.mpl4e_custom_layout || '';
-	const productLayout = widgetData?.mpl4e_product_layout || 'vertical';
-	const saleBadgePosition = widgetData?.mpl4e_sale_badge_position || { x: 10, y: 10 };
-	const featuredImageSize = widgetData?.mpl4e_featured_image_size || 'automatic';
-	const featuredImagePosition = widgetData?.mpl4e_featured_image_position || { x: 50, y: 50 };
-	const featuredImageFit = widgetData?.mpl4e_image_fit || 'cover';
-	const helperType = widgetData?.mpl4e_helper_grid || 'none';
-	const enablePagination = widgetData?.mpl4e_enable_pagination || false;
-	const normalizedCategory = useMemo(() => {
-		if (Array.isArray(widgetData?.mpl4e_category)) {
-			return widgetData.mpl4e_category.join(',');
-		}
-
-		return widgetData?.mpl4e_category || '';
-	}, [widgetData?.mpl4e_category]);
+	const layoutId = widgetData?.ml4e_layout || 'default';
+	const customLayoutData = widgetData?.ml4e_custom_layout || '';
+	const contentLayoutVariant = widgetData?.ml4e_product_layout || 'vertical';
+	const saleBadgePosition = widgetData?.ml4e_sale_badge_position || { x: 10, y: 10 };
+	const featuredImageSize = widgetData?.ml4e_featured_image_size || 'automatic';
+	const featuredImagePosition = widgetData?.ml4e_featured_image_position || { x: 50, y: 50 };
+	const featuredImageFit = widgetData?.ml4e_image_fit || 'cover';
+	const helperType = widgetData?.ml4e_helper_grid || 'none';
+	const enablePagination = widgetData?.ml4e_enable_pagination || false;
+	const selectedTerms = widgetData?.ml4e_terms || [];
+	const selectedPostType = widgetData?.ml4e_post_type || 'post';
 
 	// Element ordering from repeater control
 	const elementOrdering = useMemo(
-		() => parseElementOrdering(widgetData?.mpl4e_element_ordering, [
+		() => parseElementOrdering(widgetData?.ml4e_element_ordering, [
 			{ element_label: 'Title', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
-			{ element_label: 'Price', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
-			{ element_label: 'Rating', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
-			{ element_label: 'Add to Cart', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
-			{ element_label: 'Categories', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
-			{ element_label: 'Brands', visible_desktop: 'no', visible_tablet: 'no', visible_mobile: 'no' },
+			{ element_label: 'Excerpt', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
+			{ element_label: 'Featured Image', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
+			{ element_label: 'Read More', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
+			{ element_label: 'Terms', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
+			{ element_label: 'Post Meta', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
 		]),
-		[widgetData?.mpl4e_element_ordering]
+		[widgetData?.ml4e_element_ordering]
 	);
 
 	// Grid settings from Elementor controls
-	const gridSettings = useGridSettings(widgetData, 'mpl4e_items_margin', 'mpl4e_row_height');
+	const gridSettings = useGridSettings(widgetData, 'ml4e_items_margin', 'ml4e_row_height');
 	// Track Elementor's device mode switcher for the grid helper column calculation.
 	const deviceType = useElementorDevice();
 
@@ -213,20 +280,22 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 	const querySettings = useMemo(
 		() => ({
 			layoutItemLimit: layoutItemCount,
-			mpl4e_orderby: widgetData?.mpl4e_orderby || 'date',
-			mpl4e_order: widgetData?.mpl4e_order || 'desc',
-			mpl4e_category: normalizedCategory,
-			mpl4e_on_sale: widgetData?.mpl4e_on_sale || false,
-			mpl4e_featured: widgetData?.mpl4e_featured || false,
-			mpl4e_page: enablePagination ? currentPage : 1,
+			ml4e_post_type: widgetData?.ml4e_post_type || 'post',
+			ml4e_orderby: widgetData?.ml4e_orderby || 'date',
+			ml4e_order: widgetData?.ml4e_order || 'desc',
+			ml4e_taxonomy: widgetData?.ml4e_taxonomy || 'category',
+			ml4e_terms: selectedTerms,
+			ml4e_sticky: widgetData?.ml4e_sticky || false,
+			ml4e_page: enablePagination ? currentPage : 1,
 		}),
 		[
 			layoutItemCount,
-			widgetData?.mpl4e_orderby,
-			widgetData?.mpl4e_order,
-			normalizedCategory,
-			widgetData?.mpl4e_on_sale,
-			widgetData?.mpl4e_featured,
+			widgetData?.ml4e_post_type,
+			widgetData?.ml4e_orderby,
+			widgetData?.ml4e_order,
+			widgetData?.ml4e_taxonomy,
+			selectedTerms,
+			widgetData?.ml4e_sticky,
 			enablePagination,
 			currentPage,
 		]
@@ -236,11 +305,12 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 		setCurrentPage(1);
 	}, [
 		layoutItemCount,
-		widgetData?.mpl4e_orderby,
-		widgetData?.mpl4e_order,
-		normalizedCategory,
-		widgetData?.mpl4e_on_sale,
-		widgetData?.mpl4e_featured,
+		widgetData?.ml4e_post_type,
+		widgetData?.ml4e_orderby,
+		widgetData?.ml4e_order,
+		widgetData?.ml4e_taxonomy,
+		selectedTerms,
+		widgetData?.ml4e_sticky,
 		enablePagination,
 	]);
 
@@ -305,9 +375,9 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 	// Handle layout changes in editor (drag/resize)
 	const handleLayoutChange = (newLayouts) => {
 		applyLayoutChange({
-			widgetType: 'products-layout',
+			widgetType: 'content-layout',
 			widgetId,
-			settingKey: 'mpl4e_custom_layout',
+			settingKey: 'ml4e_custom_layout',
 			customLayoutData,
 			layoutData,
 			newLayouts,
@@ -315,16 +385,16 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 	};
 
 	const selectWidget = () => {
-		selectElementorWidget({ isEditMode, widgetId, widgetClass: 'products-layout' });
+		selectElementorWidget({ isEditMode, widgetId, widgetClass: 'content-layout' });
 	};
 
 	// Handle adding a new grid item (editor only)
 	const handleAddItem = () => {
 		addGridItem({
 			isEditMode,
-			widgetType: 'products-layout',
+			widgetType: 'content-layout',
 			widgetId,
-			settingKey: 'mpl4e_custom_layout',
+			settingKey: 'ml4e_custom_layout',
 			customLayoutData,
 			layoutData,
 			gridColumns: {
@@ -339,9 +409,9 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 	const handleRemoveItem = (itemId) => {
 		removeGridItem({
 			isEditMode,
-			widgetType: 'products-layout',
+			widgetType: 'content-layout',
 			widgetId,
-			settingKey: 'mpl4e_custom_layout',
+			settingKey: 'ml4e_custom_layout',
 			customLayoutData,
 			layoutData,
 			itemId,
@@ -350,24 +420,24 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 
 	if (isLoading) {
 		return (
-			<div className="products-layout">
-				<p className="layout-loading">Loading products...</p>
+			<div className="content-layout">
+				<p className="layout-loading">Loading content...</p>
 			</div>
 		);
 	}
 
 	if (error) {
 		return (
-			<div className="products-layout">
-				<p className="products-layout-error">{error}</p>
+			<div className="content-layout">
+				<p className="content-layout-error">{error}</p>
 			</div>
 		);
 	}
 
 	if (products.length === 0) {
 		return (
-			<div className="products-layout">
-				<p className="products-layout-empty">No products found.</p>
+			<div className="content-layout">
+				<p className="content-layout-empty">No content found.</p>
 			</div>
 		);
 	}
@@ -375,26 +445,26 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 	return (
 		<>
 			<div
-				className="products-layout mosaic-product-layouts-widgets mosaic-product-layouts"
+				className="content-layout mosaic-content-layouts-widgets mosaic-content-layouts"
 				data-widget-id={widgetId}
 				style={{ ...cssVariables, ...alignTextVars }}
 			>
 				{isFetching && (
-					<p className="layout-loading">Fetching products...</p>
+					<p className="layout-loading">Fetching posts...</p>
 				)}
 				<GridLayout
 					layouts={visibleLayoutData}
 					columns={gridSettings.columns}
 					itemsMargin={gridSettings.itemsMargin}
 					rowHeight={gridSettings.rowHeight}
-					allowOverlap={widgetData?.mpl4e_allow_overlap || false}
-					compactionType={widgetData?.mpl4e_compaction_type || 'vertical'}
+					allowOverlap={widgetData?.ml4e_allow_overlap || false}
+					compactionType={widgetData?.ml4e_compaction_type || 'vertical'}
 					context={isEditMode ? 'edit' : 'frontend'}
 					isDraggable={isEditMode}
 					isResizable={isEditMode}
 					onLayoutChange={isEditMode ? handleLayoutChange : undefined}
 					selectWidget={selectWidget}
-					draggableCancel=".mpl4e-item-controls"
+					draggableCancel=".ml4e-item-controls"
 				>
 					{/* Map over visible layout items only — items without a matching product are hidden */}
 					{visibleLayoutData.mobile.map((layoutItem) => {
@@ -411,17 +481,17 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 									{/* Editor-only item controls */}
 									{isEditMode && (
 										<ItemControls
-											settingKey={`mpl4e_custom_layout`}
+											settingKey={`ml4e_custom_layout`}
 											itemId={layoutItem.i}
 											layoutData={layoutData}
 											customLayoutData={customLayoutData}
 											widgetId={widgetId}
-											widgetType='products-layout'
+											widgetType='content-layout'
 											onRemove={handleRemoveItem}
 										/>
 									)}
 									<div className="item-wrapper empty">
-										<p>No product</p>
+										<p>No content item</p>
 									</div>
 								</div>
 							);
@@ -436,32 +506,21 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 								{/* Editor-only item controls */}
 								{isEditMode && (
 									<ItemControls
-										settingKey={`mpl4e_custom_layout`}
+										settingKey={`ml4e_custom_layout`}
 										itemId={layoutItem.i}
 										layoutData={layoutData}
 										customLayoutData={customLayoutData}
 										widgetId={widgetId}
-										widgetType='products-layout'
+										widgetType='content-layout'
 										onRemove={handleRemoveItem}
 									/>
 								)}
-								{matchedProduct.onSale && (
-									<div
-										className='sale-badge-wrapper'
-										style={{
-											left: `${saleBadgePosition.x}%`,
-											top: `${saleBadgePosition.y}%`,
-										}}
-									>
-										<span className="product-badge sale-badge rounded">Sale</span>
-									</div>
-								)}
-
-								<div className={`item-wrapper ${productLayout}`}>
+								<div className={`item-wrapper ${contentLayoutVariant}`}>
 
 									<figure className="product-image product-featured-image gradient-preloader">
 										<ProductImage
 											productId={matchedProduct.id}
+											postType={selectedPostType}
 											name={matchedProduct.name}
 											images={matchedProduct.images}
 											featuredImageSize={featuredImageSize}
@@ -485,68 +544,70 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 																<a href={matchedProduct.permalink}>{decode(matchedProduct.name)}</a>
 															</h3>
 														);
-													case 'price':
-														return matchedProduct.priceHtml ? (
+													case 'excerpt':
+														return matchedProduct.shortDescription ? (
 															<div
 																key={el.key}
-																className={`price${elClasses}`}
-																dangerouslySetInnerHTML={{ __html: Sanitizer(matchedProduct.priceHtml) }}
+																	className={`excerpt${elClasses}`}
+																	dangerouslySetInnerHTML={{ __html: Sanitizer(matchedProduct.shortDescription) }}
 															/>
 														) : null;
-													case 'rating':
-														return matchedProduct.averageRating && matchedProduct.averageRating !== '0' ? (
-															<div key={el.key} className={`rating-wrapper${elClasses}`}>
-																<RatingStars rating={Number(matchedProduct.averageRating)} reviewCount={matchedProduct.reviewCount} />
-															</div>
-														) : null;
-													case 'add_to_cart':
+													case 'read_more':
 														return (
-															<div key={el.key} className={`add-to-cart-wrapper${elClasses}`}>
-																<AddToCartButton
-																	product={{
-																		id: matchedProduct.id,
-																		name: matchedProduct.name,
-																		type: matchedProduct.type || 'simple',
-																		sku: matchedProduct.sku || '',
-																		permalink: matchedProduct.permalink,
-																		addToCart: matchedProduct.addToCart,
-																		isInStock: matchedProduct.isInStock,
-																		isPurchasable: matchedProduct.isPurchasable,
-																	}}
-																/>
+															<div key={el.key} className={`read-more-wrapper${elClasses}`}>
+																<a className="read-more-link" href={matchedProduct.permalink}>
+																	Read More
+																</a>
 															</div>
 														);
-													case 'categories':
-														return matchedProduct.categories && matchedProduct.categories.length > 0 ? (
-															<div key={el.key} className={`taxonomy categories${elClasses}`}>
-																{matchedProduct.categories.flatMap((cat, index) => [
+													case 'terms':
+														return matchedProduct.terms && matchedProduct.terms.length > 0 ? (
+															<div key={el.key} className={`taxonomy terms${elClasses}`}>
+																{matchedProduct.terms.flatMap((term, index) => [
 																	...(index > 0 ? [', '] : []),
 																	<a
-																		key={cat.id}
-																		href={cat.link || '#'}
+																		key={`${term.taxonomy}-${term.id}`}
+																		href={term.link || '#'}
 																		className="tax-link"
 																	>
-																		{decode(cat.name)}
+																		{decode(term.name)}
 																	</a>
 																])}
 															</div>
 														) : null;
-													case 'brands':
-														return matchedProduct.brands && matchedProduct.brands.length > 0 ? (
-															<div key={el.key} className={`taxonomy brands${elClasses}`}>
-																{matchedProduct.brands.flatMap((brand, index) => [
-																	...(index > 0 ? [', '] : []),
-																	<a
-																		key={brand.id}
-																		href={brand.link || '#'}
-																		className="tax-link"
-																	>
-																		{decode(brand.name)}
-																	</a>
-																])}
+													case 'post_meta': {
+														const rows = (widgetData?.ml4e_post_meta || []).filter((metaDef) => {
+															const key = metaDef?.meta_key;
+															if (!key) return false;
+															const value = `${matchedProduct?.meta?.[key] ?? ''}`;
+															const condition = metaDef?.meta_condition || 'always';
+															const expected = `${metaDef?.meta_condition_value ?? ''}`;
 
+															if (condition === 'not_empty') return value.trim() !== '';
+															if (condition === 'equals') return value === expected;
+															if (condition === 'not_equals') return value !== expected;
+															return true;
+														});
+
+														if (!rows.length) return null;
+
+														return (
+															<div key={el.key} className={`post-meta${elClasses}`}>
+																{rows.map((metaDef) => {
+																	const key = metaDef.meta_key;
+																	const value = `${matchedProduct?.meta?.[key] ?? ''}`;
+																	const label = metaDef?.meta_label || key;
+
+																		return (
+																			<div key={key} className="post-meta-row">
+																				<span className="post-meta-label">{label}:</span>{' '}
+																				<span className="post-meta-value">{metaDef?.meta_prefix || ''}{value}{metaDef?.meta_suffix || ''}</span>
+																			</div>
+																		);
+																	})}
 															</div>
-														) : null;
+														);
+													}
 													default:
 														return null;
 												}
@@ -565,10 +626,10 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 				{/* Editor-only floating toolbar */}
 				{isEditMode && (
 					<>
-						<div className="mpl4e-editor-toolbar">
+						<div className="ml4e-editor-toolbar">
 							<button
 								type="button"
-								className="mpl4e-toolbar-btn mpl4e-add-item-btn"
+								className="ml4e-toolbar-btn ml4e-add-item-btn"
 								onClick={handleAddItem}
 								title="Add Item"
 							>
@@ -598,4 +659,4 @@ const ProductsLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'displa
 	);
 };
 
-export default ProductsLayoutWidget;
+export default ContentLayoutWidget;

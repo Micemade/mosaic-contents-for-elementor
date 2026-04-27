@@ -9,10 +9,10 @@
  * - Async search: Triggered when user types 2+ characters
  * - Debounced: 300ms debounce on search input
  *
- * @package Micemade\MosaicProductLayoutsElementor\Controls
+ * @package Micemade\MosaicLayoutsElementor\Controls
  */
 
-namespace Micemade\MosaicProductLayoutsElementor\Controls;
+namespace Micemade\MosaicLayoutsElementor\Controls;
 
 use Elementor\Base_Data_Control;
 
@@ -39,7 +39,7 @@ class Product_Select extends Base_Data_Control {
 	 * @return string Control type.
 	 */
 	public function get_type() {
-		return 'mpl4e_product_select';
+		return 'ml4e_product_select';
 	}
 
 	/**
@@ -83,7 +83,7 @@ class Product_Select extends Base_Data_Control {
 	public function enqueue() {
 		// Enqueue the React-based control script.
 		wp_enqueue_script(
-			'mpl4e-product-select-control',
+			'ml4e-product-select-control',
 			plugins_url( 'assets/admin/js/product-select-control.js', dirname( __FILE__ ) ),
 			array( 'jquery', 'react', 'react-dom', 'wp-api-fetch', 'wp-i18n' ),
 			'1.0.0',
@@ -92,7 +92,7 @@ class Product_Select extends Base_Data_Control {
 
 		// Enqueue the control styles.
 		wp_enqueue_style(
-			'mpl4e-product-select-control',
+			'ml4e-product-select-control',
 			plugins_url( 'assets/admin/css/product-select-control.css', dirname( __FILE__ ) ),
 			array(),
 			'1.0.0'
@@ -103,7 +103,7 @@ class Product_Select extends Base_Data_Control {
 	 * Render control output in the editor.
 	 *
 	 * Uses Underscore JS template. The React component mounts into
-	 * the .mpl4e-product-select-container element.
+	 * the .ml4e-product-select-container element.
 	 *
 	 * @since 1.0.0
 	 * @access public
@@ -120,12 +120,12 @@ class Product_Select extends Base_Data_Control {
 		<!-- Hidden input for Elementor data binding (stores selected product ID) -->
 		<input type="hidden"
 			id="<?php echo esc_attr( $control_uid ); ?>"
-			class="mpl4e-product-select-value"
+			class="ml4e-product-select-value"
 			data-setting="value"
 			value="{{ data.controlValue }}" />
 
 		<!-- React mount container -->
-		<div class="mpl4e-product-select-container"
+		<div class="ml4e-product-select-container"
 			data-control-uid="<?php echo esc_attr( $control_uid ); ?>"
 			data-initial-value="{{ data.controlValue }}">
 		</div>

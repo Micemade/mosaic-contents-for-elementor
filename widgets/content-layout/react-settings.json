@@ -1,0 +1,108 @@
+{
+	"ml4e_orderby": {
+		"type": "string",
+		"default": "date"
+	},
+	"ml4e_post_type": {
+		"type": "string",
+		"default": "post"
+	},
+	"ml4e_taxonomy": {
+		"type": "string",
+		"default": "category"
+	},
+	"ml4e_order": {
+		"type": "string",
+		"default": "desc"
+	},
+	"ml4e_terms": {
+		"type": "array",
+		"default": []
+	},
+	"ml4e_sticky": {
+		"type": "boolean",
+		"default": false
+	},
+	"ml4e_post_meta": {
+		"type": "array",
+		"default": []
+	},
+	"ml4e_enable_pagination": {
+		"type": "boolean",
+		"default": false
+	},
+	"ml4e_layout": {
+		"type": "string",
+		"default": "grid"
+	},
+	"ml4e_custom_layout": {
+		"type": "string",
+		"default": ""
+	},
+	"ml4e_items_margin": {
+		"type": "number",
+		"default": 15
+	},
+	"ml4e_row_height": {
+		"type": "number",
+		"default": 5
+	},
+	"ml4e_allow_overlap": {
+		"type": "boolean",
+		"default": false
+	},
+	"ml4e_compaction_type": {
+		"type": "string",
+		"default": "vertical"
+	},
+	"ml4e_helper_grid": {
+		"type": "string",
+		"default": "none"
+	},
+	"ml4e_style_preset": {
+		"type": "string",
+		"default": ""
+	},
+	"ml4e_product_layout": {
+		"type": "string",
+		"default": "vertical"
+	},
+	"ml4e_product_align": {
+		"type": "responsive",
+		"default": ""
+	},
+
+	"ml4e_sale_badge_position": {
+		"type": "object",
+		"default": {
+			"x": 10,
+			"y": 10
+		}
+	},
+	"ml4e_featured_image_size": {
+		"type": "string",
+		"default": "automatic"
+	},
+	"ml4e_featured_image_position": {
+		"type": "object",
+		"default": {
+			"x": 50,
+			"y": 50
+		}
+	},
+	"ml4e_image_fit": {
+		"type": "string",
+		"default": "cover"
+	},
+	"ml4e_element_ordering": {
+		"type": "array",
+		"default": [
+			{ "element_label": "Title", "visible_desktop": "yes", "visible_tablet": "yes", "visible_mobile": "yes" },
+			{ "element_label": "Excerpt", "visible_desktop": "yes", "visible_tablet": "yes", "visible_mobile": "yes" },
+			{ "element_label": "Featured Image", "visible_desktop": "yes", "visible_tablet": "yes", "visible_mobile": "yes" },
+			{ "element_label": "Read More", "visible_desktop": "yes", "visible_tablet": "yes", "visible_mobile": "yes" },
+			{ "element_label": "Terms", "visible_desktop": "yes", "visible_tablet": "yes", "visible_mobile": "yes" },
+			{ "element_label": "Post Meta", "visible_desktop": "yes", "visible_tablet": "yes", "visible_mobile": "yes" }
+		]
+	}
+}

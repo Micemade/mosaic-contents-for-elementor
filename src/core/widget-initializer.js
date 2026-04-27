@@ -10,14 +10,14 @@ import widgetManager from './widget-manager';
 /**
  * Factory function to create widget initializers for each widget type
  * 
- * @param {string} widgetType - Widget type (e.g., 'products-layout')
+ * @param {string} widgetType - Widget type (e.g., 'content-layout')
  * @param {string} mode - Widget mode: 'display' (frontend) or 'edit' (editor)
  * @returns {Function} Widget initializer function
  */
 export const createWidgetInitializer = (widgetType, mode = 'display') => {
 	return ($scope) => {
 
-		// Widget-specific class names (e.g., .products-layout-wrapper)
+		// Widget-specific class names (e.g., .content-layout-wrapper)
 		const wrapperClass = `.${widgetType}-wrapper`;
 		const rootClass = `.${widgetType}-react-root`;
 		

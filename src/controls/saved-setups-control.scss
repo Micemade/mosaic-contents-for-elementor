@@ -5,7 +5,7 @@
  * layout+style setups (save, load, delete).
  */
 
-.mpl4e-saved-setups-ui {
+.ml4e-saved-setups-ui {
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
@@ -13,14 +13,14 @@
 }
 
 // ── Loading / Error ──────────────────────────────────────────
-.mpl4e-setups-loading {
+.ml4e-setups-loading {
 	padding: 8px 0;
 	color: #888;
 	font-size: 12px;
 	text-align: center;
 }
 
-.mpl4e-setups-error {
+.ml4e-setups-error {
 	padding: 6px 10px;
 	background: #fef0f0;
 	border: 1px solid #f5c6c6;
@@ -31,13 +31,13 @@
 }
 
 // ── Select row (dropdown + delete button) ────────────────────
-.mpl4e-setups-select-row {
+.ml4e-setups-select-row {
 	display: flex;
 	gap: 4px;
 	align-items: stretch;
 }
 
-.mpl4e-setups-select {
+.ml4e-setups-select {
 	flex: 1;
 	min-width: 0;
 	height: 30px;
@@ -58,7 +58,7 @@
 	}
 }
 
-.mpl4e-setups-delete-btn {
+.ml4e-setups-delete-btn {
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -90,13 +90,13 @@
 }
 
 // ── Save row (text input + save button) ──────────────────────
-.mpl4e-setups-save-row {
+.ml4e-setups-save-row {
 	display: flex;
 	gap: 4px;
 	align-items: stretch;
 }
 
-.mpl4e-setups-name-input {
+.ml4e-setups-name-input {
 	flex: 1;
 	min-width: 0;
 	height: 30px;
@@ -121,14 +121,14 @@
 	}
 
 	// Error flash animation
-	&.mpl4e-input-error {
+	&.ml4e-input-error {
 		border-color: #cc1818;
 		box-shadow: 0 0 0 1px #cc1818;
-		animation: mpl4e-shake 0.3s ease-in-out;
+		animation: ml4e-shake 0.3s ease-in-out;
 	}
 }
 
-.mpl4e-setups-save-btn {
+.ml4e-setups-save-btn {
 	height: 30px;
 	padding: 0 14px;
 	border: none;
@@ -153,7 +153,7 @@
 }
 
 // ── Shake animation for validation ──────────────────────────
-@keyframes mpl4e-shake {
+@keyframes ml4e-shake {
 	0%, 100% { transform: translateX(0); }
 	20% { transform: translateX(-4px); }
 	40% { transform: translateX(4px); }

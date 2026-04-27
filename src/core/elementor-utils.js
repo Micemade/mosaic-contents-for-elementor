@@ -9,7 +9,7 @@
  * Update Elementor model setting from React component
  * Critical for saving custom layouts after drag/resize
  * 
- * @param {string} widgetType - Widget type (e.g., 'products-layout')
+ * @param {string} widgetType - Widget type (e.g., 'content-layout')
  * @param {string} widgetId - Widget instance ID
  * @param {string} settingName - Setting key to update
  * @param {*} value - New value
@@ -177,18 +177,18 @@ ${mq} {
 		display: none !important;
 	}
 
-	/* Products Layout - ${name} */
-	.products-layout .flex-wrapper {
-		text-align: var(--mpl4e-product-align-${name}, center);
+	/* Content Layout - ${name} */
+	.content-layout .flex-wrapper {
+		text-align: var(--ml4e-product-align-${name}, center);
 	}
 
-	.products-layout .item-wrapper .flex-wrapper .product-elements {
-		text-align: var(--mpl4e-product-align-text-${name});
+	.content-layout .item-wrapper .flex-wrapper .product-elements {
+		text-align: var(--ml4e-product-align-text-${name});
 	}
 
 	/* Categories Layout - ${name} */
 	.categories-layout .flex-wrapper {
-		text-align: var(--mpl4e-cat-align-text-${name}, center);
+		text-align: var(--ml4e-cat-align-text-${name}, center);
 	}
 }
 `;

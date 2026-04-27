@@ -9,13 +9,52 @@ import { useState, useEffect } from 'react';
  * Uses wpApiSettings if available (set by wp-api script), otherwise falls back to /wp-json/.
  */
 const getApiRoot = () => {
+	if (typeof window.ML4E !== 'undefined' && window.ML4E.restRoot) {
+		return window.ML4E.restRoot;
+	}
+
 	if (typeof window.wpApiSettings !== 'undefined' && window.wpApiSettings.root) {
 		return window.wpApiSettings.root;
 	}
 	return '/wp-json/';
 };
 
-export const getFeaturedImage = (productId, featuredImageSize) => {
+const postTypeRestBaseCache = new Map([
+	['post', 'posts'],
+	['page', 'pages'],
+	['attachment', 'media'],
+]);
+
+const resolvePostTypeRestBase = async (postType) => {
+	if (!postType) {
+		return 'posts';
+	}
+
+	if (postTypeRestBaseCache.has(postType)) {
+		return postTypeRestBaseCache.get(postType);
+	}
+
+	try {
+		const apiRoot = getApiRoot();
+		const response = await fetch(`${apiRoot}ml4e/v1/post-types`);
+		if (response.ok) {
+			const types = await response.json();
+			if (Array.isArray(types)) {
+				types.forEach((type) => {
+					if (type?.name && type?.rest_base) {
+						postTypeRestBaseCache.set(type.name, type.rest_base);
+					}
+				});
+			}
+		}
+	} catch (error) {
+		console.warn('Failed to resolve post type REST base for featured image lookup:', error);
+	}
+
+	return postTypeRestBaseCache.get(postType) || postType;
+};
+
+export const getFeaturedImage = (productId, featuredImageSize, postType = 'post') => {
 
 	const [loadingFeaturedImg, setLoadingFeaturedImg] = useState(true);
 	const [featuredImage, setFeaturedImage] = useState(null);
@@ -29,7 +68,8 @@ export const getFeaturedImage = (productId, featuredImageSize) => {
 			try {
 				setLoadingFeaturedImg(true);
 				const apiRoot = getApiRoot();
-				const response = await fetch(`${apiRoot}wp/v2/product/${productId}?_embed`);
+				const restBase = await resolvePostTypeRestBase(postType);
+				const response = await fetch(`${apiRoot}wp/v2/${encodeURIComponent(restBase)}/${productId}?_embed`);
 
 				if (!response.ok) {
 					throw new Error(`WP REST API error: ${response.status}`);
@@ -53,7 +93,7 @@ export const getFeaturedImage = (productId, featuredImageSize) => {
 		};
 		fetchFeaturedImage();
 
-	}, [productId, featuredImageSize]);
+	}, [productId, featuredImageSize, postType]);
 
 	return { loadingFeaturedImg, featuredImage };
 };

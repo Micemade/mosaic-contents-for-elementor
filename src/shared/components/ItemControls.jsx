@@ -25,7 +25,7 @@ const ItemControls = ({
 	manageTitle = 'Manage',
 }) => (
 
-	<div className="mpl4e-item-controls">
+	<div className="ml4e-item-controls">
 		<ZIndexControls
 			itemId={itemId}
 			layoutData={layoutData}
@@ -38,7 +38,7 @@ const ItemControls = ({
 		{typeof onManage === 'function' && (
 			<button
 				type="button"
-				className="mpl4e-manage-item-btn"
+				className="ml4e-manage-item-btn"
 				onMouseDownCapture={(e) => {
 					e.stopPropagation();
 					e.preventDefault();
@@ -52,7 +52,7 @@ const ItemControls = ({
 		{layoutData.mobile.length > 1 && (
 			<button
 				type="button"
-				className="mpl4e-remove-item-btn"
+				className="ml4e-remove-item-btn"
 				onMouseDownCapture={(e) => {
 					e.stopPropagation();
 					onRemove(itemId);

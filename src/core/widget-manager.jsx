@@ -21,6 +21,43 @@ class WidgetManager {
 		this.models = {};
 	}
 
+	markDocumentModified(status = true) {
+		const $e = window.$e || window.parent?.$e;
+		if ($e?.internal) {
+			try {
+				$e.internal('document/save/set-is-modified', { status });
+				return;
+			} catch (error) {
+				console.warn('Elementor internal save state command failed, falling back:', error);
+			}
+		}
+
+		if (typeof elementor !== 'undefined' && elementor.saver) {
+			elementor.saver.setFlagEditorChange(status);
+		}
+	}
+
+	resolveModel(widgetType, widgetId) {
+		const modelKey = `${widgetType}_${widgetId}`;
+		if (this.models[modelKey]) {
+			return this.models[modelKey];
+		}
+
+		const currentPanelModel = elementor?.getPanelView?.()?.getCurrentPageView?.()?.model;
+		if (currentPanelModel?.id === widgetId && typeof currentPanelModel.setSetting === 'function') {
+			this.models[modelKey] = currentPanelModel;
+			return currentPanelModel;
+		}
+
+		const containerModel = elementor?.getContainer?.(widgetId)?.model;
+		if (containerModel && typeof containerModel.setSetting === 'function') {
+			this.models[modelKey] = containerModel;
+			return containerModel;
+		}
+
+		return null;
+	}
+
 	/**
 	 * Initialize or update a widget instance.
 	 *
@@ -137,8 +174,7 @@ class WidgetManager {
 	 * @return void
 	 */
 	updateModelSetting(widgetType, widgetId, settingName, value) {
-		const modelKey = `${widgetType}_${widgetId}`;
-		const model = this.models[modelKey];
+		const model = this.resolveModel(widgetType, widgetId);
 
 		if (model && model.setSetting) {
 			// Prefer Elementor command API to create proper undo/redo history entries.
@@ -162,11 +198,7 @@ class WidgetManager {
 
 			// Fallback for older Elementor APIs.
 			model.setSetting(settingName, value);
-
-			// Mark document as changed to enable Update/Publish button.
-			if (typeof elementor !== 'undefined' && elementor.saver) {
-				elementor.saver.setFlagEditorChange(true);
-			}
+			this.markDocumentModified(true);
 		} else {
 			console.warn(`Model not found for ${widgetType} widget ${widgetId}`);
 		}

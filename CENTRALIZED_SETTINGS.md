@@ -18,7 +18,7 @@ All three consumers are driven generically from the same JSON; adding or modifyi
 
 | Widget | Schema File |
 |--------|-------------|
-| Products Layout | `src/widgets/products-layout/react-settings.json` |
+| Content Layout | `src/widgets/content-layout/react-settings.json` |
 | Categories Layout | `src/widgets/categories-layout/react-settings.json` |
 | Single Product Layout | `src/widgets/single-product-layout/react-settings.json` |
 
@@ -35,7 +35,7 @@ All three consumers are driven generically from the same JSON; adding or modifyi
 Responsive settings support per-breakpoint defaults:
 ```json
 {
-  "mpl4e_title_size": {
+  "ml4e_title_size": {
     "type": "responsive",
     "default": { "size": 24, "unit": "px" },
     "tablet_default": { "size": 22, "unit": "px" },
@@ -137,13 +137,13 @@ Uses the `createSettingsMapper(settingsDef)` **factory function**, driven entire
 ```javascript
 import { createSettingsMapper } from './settings-mappers';
 
-import productsSettingsDef       from './products-layout/react-settings.json';
+import productsSettingsDef       from './content-layout/react-settings.json';
 import categoriesSettingsDef     from './categories-layout/react-settings.json';
 import singleProductSettingsDef  from './single-product-layout/react-settings.json';
 
 // Each widget gets a mapper built from its own JSON schema
 export const WIDGET_REGISTRY = {
-    'products-layout':       { ..., settingsMapper: createSettingsMapper(productsSettingsDef) },
+    'content-layout':       { ..., settingsMapper: createSettingsMapper(productsSettingsDef) },
     'categories-layout':     { ..., settingsMapper: createSettingsMapper(categoriesSettingsDef) },
     'single-product-layout': { ..., settingsMapper: createSettingsMapper(singleProductSettingsDef) },
 };
@@ -186,7 +186,7 @@ export const createSettingsMapper = (settingsDefinition) => (model) => {
 1. **Add to the widget's `react-settings.json`:**
    ```json
    {
-     "mpl4e_new_setting": {
+     "ml4e_new_setting": {
        "type": "string",
        "default": "auto"
      }
@@ -195,8 +195,8 @@ export const createSettingsMapper = (settingsDefinition) => (model) => {
 
 2. **Add the Elementor control** in the widget's `register_controls()` method:
    ```php
-   $this->add_control( 'mpl4e_new_setting', [
-       'label'   => __( 'New Setting', 'mosaic-product-layouts-for-elementor' ),
+   $this->add_control( 'ml4e_new_setting', [
+       'label'   => __( 'New Setting', 'mosaic-layouts-for-elementor' ),
        'type'    => Controls_Manager::SELECT,
        'default' => 'auto',
        'options' => [ 'auto' => 'Auto', 'manual' => 'Manual' ],
@@ -208,7 +208,7 @@ export const createSettingsMapper = (settingsDefinition) => (model) => {
    npm run build
    ```
 
-The setting is now automatically available in `render()`, `content_template()`, and as `widgetData.mpl4e_new_setting` inside the React component.
+The setting is now automatically available in `render()`, `content_template()`, and as `widgetData.ml4e_new_setting` inside the React component.
 
 ---
 

@@ -1,5 +1,5 @@
 /**
- * Products Layout Widget Styles
+ * Content Layout Widget Styles
  *
  * Styles for react-grid-layout based product grid.
  * Uses Elementor breakpoints dynamically injected via JavaScript.
@@ -11,7 +11,7 @@
 
 // Import shared mixins and variables for consistent styling across widgets.
 @use '../../shared/assets/gridLayout' as *;
-@use '../../shared/assets/productElements' as *;
+@use '../../shared/assets/contentElements' as *;
 @use '../../shared/assets/itemControls' as *;
 
 // Apply grid layout styles
@@ -20,7 +20,7 @@
 }
 
 
-%productLayout {
+%contentLayout {
 
 // Product element layouts.
 	&:not(.default) > * {
@@ -67,7 +67,7 @@
 			right: 0;
 		}
 	}
-	// end product element layouts
+	// end content element layouts
 
 	.overlay {
 		position: absolute;
@@ -202,7 +202,7 @@
 		@include rating-stars;
 
 	}// end .product-elements
-}// end %productLayout
+}// end %contentLayout
 
 /*
  * SALE BADGE STYLES
@@ -214,7 +214,7 @@
 	.react-grid-item {
 
 		.item-wrapper {
-			@extend %productLayout;
+			@extend %contentLayout;
 		}
 
 	}
@@ -266,7 +266,7 @@
  * Editor-only toolbar styles
  * Floating toolbar for widget actions in Elementor editor
  */
-.mpl4e-editor-toolbar {
+.ml4e-editor-toolbar {
 	position: absolute;
 	top: 10px;
 	left: 10px;
@@ -281,12 +281,12 @@
 	opacity: 0;
 	transition: visibility .2s,opacity .2s;
 
-	.mosaic-product-layouts:hover & {
+	.mosaic-content-layouts:hover & {
 		visibility: visible;
 		opacity: 1;
 	}
 
-	.mpl4e-toolbar-btn {
+	.ml4e-toolbar-btn {
 		display: flex;
 		align-items: center;
 		gap: 6px;
@@ -326,7 +326,7 @@
  * Positioned in the top-right corner of each grid item
  */
 
-.mpl4e-remove-item-btn {
+.ml4e-remove-item-btn {
 	display: flex;
 	align-items: center;
 	justify-content: center;

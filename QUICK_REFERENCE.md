@@ -112,7 +112,7 @@ GridLayout onLayoutChange callback
   ↓
 Widget component handleLayoutChange()
   ↓
-updateElementorSetting('products-layout', widgetId, 'custom_layout', JSON.stringify(layout))
+updateElementorSetting('content-layout', widgetId, 'custom_layout', JSON.stringify(layout))
   ↓
 widgetManager.updateModelSetting(widgetType, widgetId, settingName, value)
   ↓
@@ -170,7 +170,7 @@ Extract query params from widgetData
   ↓
 Fetch /wp-json/wc/store/products
   ├─→ Include query params (category, per_page, orderby, etc.)
-  └─→ Add nonce header (window.MPL4E.storeApiNonce)
+  └─→ Add nonce header (window.ML4E.storeApiNonce)
   ↓
 WooCommerce Store API processes request
   ↓
@@ -207,7 +207,7 @@ Update cart count (if present in DOM)
 ```
 User selects a saved setup from dropdown
   ↓
-apiFetch GET /wp/v2/settings → mpl4e_products_layout_setups
+apiFetch GET /wp/v2/settings → ml4e_content_layout_setups
   ↓
 Find matching setup by name
   ↓
@@ -217,7 +217,7 @@ elementor.channels.editor.trigger('mosaic:applySetup', { widgetId, settings })
   ↓
 editor-hooks.js handler in preview iframe
   ↓
-Disable renderOnChange + change:mpl4e_layout listener
+Disable renderOnChange + change:ml4e_layout listener
   ↓
 settingsModel.set(setupSettings) ← atomic batch (single Backbone change)
   ↓
@@ -245,7 +245,7 @@ Capture keys from manifest:
   └─→ RESPONSIVE_KEYS with _tablet, _mobile variants
   ↓
 apiFetch POST /wp/v2/settings
-  ├─→ { mpl4e_products_layout_setups: [...existing, { name, settings }] }
+  ├─→ { ml4e_content_layout_setups: [...existing, { name, settings }] }
   └─→ Persisted in wp_options table
   ↓
 Show toast notification
@@ -285,7 +285,7 @@ elementor.channels.editor.on('mosaic:applySetup', (data) => { /* batch apply */ 
 
 ### Registry
 ```javascript
-getRegisteredWidgets()           // ['products-layout', 'categories-layout', ...]
+getRegisteredWidgets()           // ['content-layout', 'categories-layout', ...]
 isWidgetRegistered(widgetType)   // true/false
 getWidgetConfig(widgetType)      // { component, settingsMapper }
 ```
@@ -364,7 +364,7 @@ const MyWidget = ({ widgetData, widgetId, mode }) => {
     // Update Elementor setting (editor only)
     const handleLayoutChange = (newLayout) => {
         if (inEditor) {
-            updateElementorSetting('products-layout', widgetId, 'custom_layout', JSON.stringify(newLayout));
+            updateElementorSetting('content-layout', widgetId, 'custom_layout', JSON.stringify(newLayout));
         }
     };
     
@@ -375,7 +375,7 @@ const MyWidget = ({ widgetData, widgetId, mode }) => {
             category: widgetData?.category_ids || '',
         }), {
             headers: {
-                'Nonce': window.MPL4E?.storeApiNonce || ''
+                'Nonce': window.ML4E?.storeApiNonce || ''
             }
         })
         .then(res => res.json())
@@ -428,7 +428,7 @@ import newWidgetSettings from '../widgets/new-widget/react-settings.json';
 import { createSettingsMapper } from '../widgets/settings-mappers';
 
 export const WIDGET_REGISTRY = {
-    'products-layout': { /* existing */ },
+    'content-layout': { /* existing */ },
     'new-widget': {
         component: NewWidget,
         settingsMapper: createSettingsMapper(newWidgetSettings)
@@ -445,7 +445,7 @@ class NewWidget extends \Elementor\Widget_Base {
     // render() and content_template() provided by trait
 }
 
-// 5. Register in main plugin (mosaic-product-layouts-for-elementor.php)
+// 5. Register in main plugin (mosaic-layouts-for-elementor.php)
 public function init_widgets( $widgets_manager ) {
     require_once __DIR__ . '/widgets/new-widget.php';
     $widgets_manager->register( new NewWidget() );
@@ -468,9 +468,9 @@ src/
 │   └── elementor-utils.js
 ├── widgets/
 │   ├── settings-mappers.js       # createSettingsMapper() factory
-│   ├── products-layout/
-│   │   ├── products-layout.jsx
-│   │   ├── products-layout.scss
+│   ├── content-layout/
+│   │   ├── content-layout.jsx
+│   │   ├── content-layout.scss
 │   │   └── react-settings.json   # Settings source of truth
 │   ├── categories-layout/
 │   │   ├── categories-layout.jsx
@@ -520,7 +520,7 @@ src/
     └── saved-setups-control.scss
 
 widgets/                          # PHP widget classes
-├── products-layout.php
+├── content-layout.php
 ├── categories-layout.php
 └── single-product-layout.php
 
@@ -557,7 +557,7 @@ console.log(window.MosaicLayoutsReact);
 console.log(window.MosaicLayoutsReact.instances);
 
 // Check WooCommerce config
-console.log(window.MPL4E);
+console.log(window.ML4E);
 ```
 
 **Editor Issues:**
@@ -581,14 +581,14 @@ elementor.channels.editor.trigger('mosaic:applySetup', { widgetId: '12345', sett
 **Saved Setups Issues:**
 ```javascript
 // Check saved setups in database (browser console or WP CLI)
-wp.apiFetch({ path: '/wp/v2/settings' }).then(s => console.log(s.mpl4e_products_layout_setups));
+wp.apiFetch({ path: '/wp/v2/settings' }).then(s => console.log(s.ml4e_content_layout_setups));
 
 // Check current model settings (preview iframe console)
-const model = window.MosaicLayoutsReact.models['products-layout-WIDGET_ID'];
+const model = window.MosaicLayoutsReact.models['content-layout-WIDGET_ID'];
 console.log(model.get('settings').attributes);
 
 // Verify WP option directly (WP CLI)
-// wp option get mpl4e_products_layout_setups --format=json
+// wp option get ml4e_content_layout_setups --format=json
 ```
 
 **Build Issues:**

@@ -19,180 +19,72 @@ const { __ } = wp.i18n;
 // ── Widget-specific configuration ─────────────────────────────────────────
 // Each widget type has its own WP option key, settings manifest, and channel events.
 const WIDGET_CONFIGS = {
-	'products-layout': {
-		optionKey: 'mpl4e_products_layout_setups',
+	'content-layout': {
+		optionKey: 'ml4e_content_layout_setups',
 		applySetupEvent: 'mosaic:applySetup',
 // Layout settings (React-mapped)
 		layoutKeys: [
-			'mpl4e_layout',
-			'mpl4e_custom_layout',
-			'mpl4e_items_margin',
-			'mpl4e_row_height',
-			'mpl4e_allow_overlap',
-			'mpl4e_compaction_type',
-			'mpl4e_element_ordering',
+			'ml4e_layout',
+			'ml4e_custom_layout',
+			'ml4e_items_margin',
+			'ml4e_row_height',
+			'ml4e_allow_overlap',
+			'ml4e_compaction_type',
+			'ml4e_element_ordering',
 		],
 		// Style settings (React-mapped)
 		styleKeys: [
-			'mpl4e_style_preset',
-			'mpl4e_product_layout',
-			'mpl4e_title_size',
-			'mpl4e_price_size',
-			'mpl4e_button_size',
-			'mpl4e_taxonomy_size',
-			'mpl4e_product_align',
-			'mpl4e_product_vertical_align',
-			'mpl4e_featured_image_size',
-			'mpl4e_featured_image_position',
-			'mpl4e_image_fit',
-			'mpl4e_sale_badge_position',
+			'ml4e_style_preset',
+			'ml4e_product_layout',
+			'ml4e_title_size',
+			'ml4e_price_size',
+			'ml4e_button_size',
+			'ml4e_taxonomy_size',
+			'ml4e_product_align',
+			'ml4e_product_vertical_align',
+			'ml4e_featured_image_size',
+			'ml4e_featured_image_position',
+			'ml4e_image_fit',
+			'ml4e_sale_badge_position',
 		],
 		// Responsive setting keys (have _tablet, _mobile variants)
 		responsiveKeys: [
-			'mpl4e_title_size',
-			'mpl4e_price_size',
-			'mpl4e_button_size',
-			'mpl4e_taxonomy_size',
-			'mpl4e_product_align',
-			'mpl4e_product_vertical_align',
-			'mpl4e_elements_gap',
-			'mpl4e_padding',
-			'mpl4e_image_size',
-			'mpl4e_badge_sale_size',
+			'ml4e_title_size',
+			'ml4e_price_size',
+			'ml4e_button_size',
+			'ml4e_taxonomy_size',
+			'ml4e_product_align',
+			'ml4e_product_vertical_align',
+			'ml4e_elements_gap',
+			'ml4e_padding',
+			'ml4e_image_size',
+			'ml4e_badge_sale_size',
 		],
 		// Selector-only style settings (NOT in React mapper but affect visual appearance)
 		selectorStyleKeys: [
-			'mpl4e_elements_gap',
-			'mpl4e_padding',
-			'mpl4e_image_size',
-			'mpl4e_text_color',
-			'mpl4e_links_color',
-			'mpl4e_border_radius',
-			'mpl4e_rating_size',
-			'mpl4e_badge_sale_size',
-			'mpl4e_sale_badge_color',
-			'mpl4e_sale_badge_backcolor',
+			'ml4e_elements_gap',
+			'ml4e_padding',
+			'ml4e_image_size',
+			'ml4e_text_color',
+			'ml4e_links_color',
+			'ml4e_border_radius',
+			'ml4e_rating_size',
+			'ml4e_badge_sale_size',
+			'ml4e_sale_badge_color',
+			'ml4e_sale_badge_backcolor',
 		],
 		// Group control prefixes
 		groupControlPrefixes: [
-			'mpl4e_background_color',
-			'mpl4e_product_border',
-			'mpl4e_box_shadow',
-		],
-	},
-	'categories-layout': {
-		optionKey: 'mpl4e_categories_layout_setups',
-		applySetupEvent: 'mosaic:catApplySetup',
-		layoutKeys: [
-			'mpl4e_cat_layout',
-			'mpl4e_cat_custom_layout',
-			'mpl4e_cat_items_margin',
-			'mpl4e_cat_row_height',
-			'mpl4e_cat_allow_overlap',
-			'mpl4e_cat_compaction_type',
-			'mpl4e_cat_element_ordering',
-		],
-		styleKeys: [
-			'mpl4e_style_preset',
-			'mpl4e_cat_card_layout',
-			'mpl4e_cat_title_size',
-			'mpl4e_cat_count_size',
-			'mpl4e_cat_description_size',
-			'mpl4e_cat_align',
-			'mpl4e_cat_vertical_align',
-			'mpl4e_cat_image_fit',
-			'mpl4e_cat_image_position',
-		],
-		responsiveKeys: [
-			'mpl4e_cat_title_size',
-			'mpl4e_cat_count_size',
-			'mpl4e_cat_description_size',
-			'mpl4e_cat_align',
-			'mpl4e_cat_vertical_align',
-			'mpl4e_cat_elements_gap',
-			'mpl4e_cat_padding',
-			'mpl4e_cat_image_size',
-		],
-		selectorStyleKeys: [
-			'mpl4e_cat_elements_gap',
-			'mpl4e_cat_padding',
-			'mpl4e_cat_image_size',
-			'mpl4e_cat_text_color',
-			'mpl4e_cat_links_color',
-			'mpl4e_cat_border_radius',
-		],
-		groupControlPrefixes: [
-			'mpl4e_cat_background_color',
-			'mpl4e_cat_border',
-			'mpl4e_cat_box_shadow',
-		],
-	},
-	'single-product-layout': {
-		optionKey: 'mpl4e_single_product_layout_setups',
-		applySetupEvent: 'mosaic:spApplySetup',
-		layoutKeys: [
-			'mpl4e_sp_layout',
-			'mpl4e_sp_custom_layout',
-			'mpl4e_sp_items_margin',
-			'mpl4e_sp_row_height',
-			'mpl4e_sp_allow_overlap',
-			'mpl4e_sp_compaction_type',
-		],
-		styleKeys: [
-			'mpl4e_sp_style_preset',
-			'mpl4e_sp_featured_image_size',
-			'mpl4e_sp_excerpt_truncate',
-			'mpl4e_sp_image_fit',
-			'mpl4e_sp_group_styles',
-		],
-		responsiveKeys: [
-			// Global
-			'mpl4e_sp_global_h_align',
-			'mpl4e_sp_global_v_align',
-			'mpl4e_sp_global_padding',
-			'mpl4e_sp_global_border_radius',
-			// Per-element text sizes, alignment, padding, border-radius
-			...['title', 'price', 'excerpt', 'addtocart', 'sale_badge', 'rating', 'categories', 'brands'].flatMap((el) => [
-				`mpl4e_sp_${el}_text_size`,
-				`mpl4e_sp_${el}_h_align`,
-				`mpl4e_sp_${el}_v_align`,
-				`mpl4e_sp_${el}_padding`,
-				`mpl4e_sp_${el}_border_radius`,
-			]),
-			// Image
-			'mpl4e_sp_image_border_radius',
-		],
-		selectorStyleKeys: [
-			// Per-element text colors
-			...['title', 'price', 'excerpt', 'addtocart', 'sale_badge', 'rating', 'categories', 'brands'].map(
-				(el) => `mpl4e_sp_${el}_text_color`
-			),
-			// Excerpt truncation
-			'mpl4e_sp_excerpt_truncate_lines',
-			// Image focal point
-			'mpl4e_sp_image_position',
-		],
-		groupControlPrefixes: [
-			// Global
-			'mpl4e_sp_global_background',
-			'mpl4e_sp_global_border',
-			'mpl4e_sp_global_box_shadow',
-			// Per-element
-			...['title', 'price', 'excerpt', 'addtocart', 'sale_badge', 'rating', 'categories', 'brands'].flatMap((el) => [
-				`mpl4e_sp_${el}_background`,
-				`mpl4e_sp_${el}_border`,
-				`mpl4e_sp_${el}_box_shadow`,
-			]),
-			// Image
-			'mpl4e_sp_image_border',
-			'mpl4e_sp_image_box_shadow',
+			'ml4e_background_color',
+			'ml4e_product_border',
+			'ml4e_box_shadow',
 		],
 	},
 };
 
 /**
  * Detect the current widget type from the Elementor panel.
- * @returns {string} Widget type name (e.g., 'products-layout', 'categories-layout')
+ * @returns {string} Widget type name.
  */
 function detectWidgetType() {
 	try {
@@ -207,7 +99,7 @@ function detectWidgetType() {
 	} catch (e) {
 		// fallback
 	}
-	return 'products-layout'; // default fallback
+	return 'content-layout'; // default fallback
 }
 
 /**
@@ -248,7 +140,7 @@ function showToast(message, type = 'success') {
 			// Elementor toasts don't have 'type' but we can use different buttons/durations
 		});
 	} else {
-		console.log(`[MPL4E Setup ${type}]:`, message);
+		console.log(`[ML4E Setup ${type}]:`, message);
 	}
 }
 
@@ -393,7 +285,7 @@ function SavedSetupsUI({ initialValue, onValueChange }) {
 			.catch(err => {
 				if (err.name === 'AbortError') return;
 				console.error('Failed to fetch setups:', err);
-				setError(__('Failed to load setups.', 'mosaic-product-layouts-for-elementor'));
+				setError(__('Failed to load setups.', 'mosaic-layouts-for-elementor'));
 			})
 			.finally(() => setIsLoading(false));
 
@@ -412,7 +304,7 @@ function SavedSetupsUI({ initialValue, onValueChange }) {
 			});
 			return true;
 		} catch (err) {
-			const msg = err.message || __('Failed to save.', 'mosaic-product-layouts-for-elementor');
+			const msg = err.message || __('Failed to save.', 'mosaic-layouts-for-elementor');
 			setError(msg);
 			showToast(msg, 'error');
 			return false;
@@ -428,8 +320,8 @@ function SavedSetupsUI({ initialValue, onValueChange }) {
 			// Focus the input and show inline feedback
 			if (nameInputRef.current) {
 				nameInputRef.current.focus();
-				nameInputRef.current.classList.add('mpl4e-input-error');
-				setTimeout(() => nameInputRef.current?.classList.remove('mpl4e-input-error'), 1500);
+				nameInputRef.current.classList.add('ml4e-input-error');
+				setTimeout(() => nameInputRef.current?.classList.remove('ml4e-input-error'), 1500);
 			}
 			return;
 		}
@@ -439,7 +331,7 @@ function SavedSetupsUI({ initialValue, onValueChange }) {
 
 		const model = getWidgetModel();
 		if (!model) {
-			showToast(__('No widget model found.', 'mosaic-product-layouts-for-elementor'), 'error');
+			showToast(__('No widget model found.', 'mosaic-layouts-for-elementor'), 'error');
 			return;
 		}
 
@@ -454,7 +346,7 @@ function SavedSetupsUI({ initialValue, onValueChange }) {
 		const existingIndex = setups.findIndex(s => s.id === id);
 		if (existingIndex !== -1) {
 			if (!confirm(
-				`${__('Setup', 'mosaic-product-layouts-for-elementor')} "${trimmed}" ${__('already exists. Overwrite?', 'mosaic-product-layouts-for-elementor')}`
+				`${__('Setup', 'mosaic-layouts-for-elementor')} "${trimmed}" ${__('already exists. Overwrite?', 'mosaic-layouts-for-elementor')}`
 			)) {
 				return;
 			}
@@ -472,8 +364,8 @@ function SavedSetupsUI({ initialValue, onValueChange }) {
 			onValueChange(id);
 			showToast(
 				existingIndex !== -1
-					? __('Setup updated!', 'mosaic-product-layouts-for-elementor')
-					: __('Setup saved!', 'mosaic-product-layouts-for-elementor')
+					? __('Setup updated!', 'mosaic-layouts-for-elementor')
+					: __('Setup saved!', 'mosaic-layouts-for-elementor')
 			);
 		}
 	}, [newSetupName, setups, persistSetups, onValueChange]);
@@ -493,7 +385,7 @@ function SavedSetupsUI({ initialValue, onValueChange }) {
 		if (!model) return;
 
 		applySettingsToModel(model, setup.settings);
-		showToast(`${__('Loaded:', 'mosaic-product-layouts-for-elementor')} ${setup.name}`);
+		showToast(`${__('Loaded:', 'mosaic-layouts-for-elementor')} ${setup.name}`);
 	}, [setups, onValueChange]);
 
 	// ── Delete selected setup ──
@@ -504,7 +396,7 @@ function SavedSetupsUI({ initialValue, onValueChange }) {
 		const name = setup?.name || selectedId;
 
 		if (!confirm(
-			`${__('Delete setup', 'mosaic-product-layouts-for-elementor')} "${name}"?`
+			`${__('Delete setup', 'mosaic-layouts-for-elementor')} "${name}"?`
 		)) {
 			return;
 		}
@@ -515,31 +407,31 @@ function SavedSetupsUI({ initialValue, onValueChange }) {
 			setSetups(updated);
 			setSelectedId('');
 			onValueChange('');
-			showToast(__('Setup deleted.', 'mosaic-product-layouts-for-elementor'));
+			showToast(__('Setup deleted.', 'mosaic-layouts-for-elementor'));
 		}
 	}, [selectedId, setups, persistSetups, onValueChange]);
 
 	// ── Render ──
 	if (isLoading) {
-		return <div className="mpl4e-setups-loading">{__('Loading setups…', 'mosaic-product-layouts-for-elementor')}</div>;
+		return <div className="ml4e-setups-loading">{__('Loading setups…', 'mosaic-layouts-for-elementor')}</div>;
 	}
 
 	return (
-		<div className="mpl4e-saved-setups-ui">
-			{error && <div className="mpl4e-setups-error">{error}</div>}
+		<div className="ml4e-saved-setups-ui">
+			{error && <div className="ml4e-setups-error">{error}</div>}
 
 			{/* Select saved setup */}
-			<div className="mpl4e-setups-select-row">
+			<div className="ml4e-setups-select-row">
 				<select
-					className="mpl4e-setups-select"
+					className="ml4e-setups-select"
 					value={selectedId}
 					onChange={handleSelect}
 					disabled={isSaving}
 				>
 					<option value="">{
 						setups.length
-							? __('— Select a setup —', 'mosaic-product-layouts-for-elementor')
-							: __('— No saved setups —', 'mosaic-product-layouts-for-elementor')
+							? __('— Select a setup —', 'mosaic-layouts-for-elementor')
+							: __('— No saved setups —', 'mosaic-layouts-for-elementor')
 					}</option>
 					{setups.map(s => (
 						<option key={s.id} value={s.id}>{s.name}</option>
@@ -549,10 +441,10 @@ function SavedSetupsUI({ initialValue, onValueChange }) {
 				{/* Delete button – only when a setup is selected */}
 				{selectedId && (
 					<button
-						className="mpl4e-setups-delete-btn"
+						className="ml4e-setups-delete-btn"
 						onClick={handleDelete}
 						disabled={isSaving}
-						title={__('Delete selected setup', 'mosaic-product-layouts-for-elementor')}
+						title={__('Delete selected setup', 'mosaic-layouts-for-elementor')}
 						type="button"
 					>
 						<i className="eicon-trash-o" />
@@ -561,26 +453,26 @@ function SavedSetupsUI({ initialValue, onValueChange }) {
 			</div>
 
 			{/* Save new setup */}
-			<div className="mpl4e-setups-save-row">
+			<div className="ml4e-setups-save-row">
 				<input
 					ref={nameInputRef}
-					className="mpl4e-setups-name-input"
+					className="ml4e-setups-name-input"
 					type="text"
-					placeholder={__('Setup name…', 'mosaic-product-layouts-for-elementor')}
+					placeholder={__('Setup name…', 'mosaic-layouts-for-elementor')}
 					value={newSetupName}
 					onChange={(e) => setNewSetupName(e.target.value)}
 					onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); }}
 					disabled={isSaving}
 				/>
 				<button
-					className="mpl4e-setups-save-btn"
+					className="ml4e-setups-save-btn"
 					onClick={handleSave}
 					disabled={isSaving}
 					type="button"
 				>
 					{isSaving
-						? __('Saving…', 'mosaic-product-layouts-for-elementor')
-						: __('Save', 'mosaic-product-layouts-for-elementor')
+						? __('Saving…', 'mosaic-layouts-for-elementor')
+						: __('Save', 'mosaic-layouts-for-elementor')
 					}
 				</button>
 			</div>
@@ -596,7 +488,7 @@ function initSavedSetupsControl() {
 
 	const BaseDataControl = elementor.modules.controls.BaseData;
 	if (!BaseDataControl) {
-		console.error('MPL4E: BaseData control not found');
+		console.error('ML4E: BaseData control not found');
 		return;
 	}
 
@@ -606,7 +498,7 @@ function initSavedSetupsControl() {
 		},
 
 		initSavedSetups() {
-			const container = this.$el.find('.mpl4e-saved-setups-container');
+			const container = this.$el.find('.ml4e-saved-setups-container');
 			if (!container.length) return;
 
 			const initialValue = container.data('initial-value') || '';
@@ -641,7 +533,7 @@ function initSavedSetupsControl() {
 		},
 	});
 
-	elementor.addControlView('mpl4e_saved_setups', SavedSetupsControl);
+	elementor.addControlView('ml4e_saved_setups', SavedSetupsControl);
 }
 
 // Initialize when Elementor is ready

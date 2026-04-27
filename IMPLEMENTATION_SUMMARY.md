@@ -20,9 +20,9 @@ src/
 │   └── elementor-utils.js       # Shared utilities: breakpoints, CSS injection, panel helpers
 ├── widgets/
 │   ├── settings-mappers.js      # createSettingsMapper() factory — drives all widgets
-│   ├── products-layout/
-│   │   ├── products-layout.jsx
-│   │   ├── products-layout.scss
+│   ├── content-layout/
+│   │   ├── content-layout.jsx
+│   │   ├── content-layout.scss
 │   │   └── react-settings.json  # ← settings source of truth
 │   ├── categories-layout/
 │   │   ├── categories-layout.jsx
@@ -76,7 +76,7 @@ src/
     └── saved-setups-control.scss
 
 widgets/                         # PHP widget classes (all use WidgetHelpers trait)
-├── products-layout.php
+├── content-layout.php
 ├── categories-layout.php
 └── single-product-layout.php
 
@@ -116,9 +116,9 @@ Reset button → `mosaic:resetLayout` channel event → `editor-hooks.js` clears
 Panel change → `model.on('change')` → `settingsMapper(model)` → `updateInstance()` → React `setState` (no DOM remount) + `view.renderUI()` for CSS selectors
 
 ### Responsive CSS Variables ✓
-`useCssVariables(widgetData)` in `src/shared/utils/hooks.js` converts responsive settings into scoped CSS custom properties: `--mpl4e-title-size-desktop`, `--mpl4e-title-size-tablet`, etc.
+`useCssVariables(widgetData)` in `src/shared/utils/hooks.js` converts responsive settings into scoped CSS custom properties: `--ml4e-title-size-desktop`, `--ml4e-title-size-tablet`, etc.
 
-`injectBreakpointStylesheet()` in `elementor-utils.js` injects media queries using those variables, including `.product-elements { text-align: var(--mpl4e-product-align-text-{bp}) }` derived from the `mpl4e_product_align` flex-to-text-align mapping.
+`injectBreakpointStylesheet()` in `elementor-utils.js` injects media queries using those variables, including `.product-elements { text-align: var(--ml4e-product-align-text-{bp}) }` derived from the `ml4e_product_align` flex-to-text-align mapping.
 
 ### Saved Setups ✓
 Custom panel control saves/loads/deletes full layout+style presets via `wp.apiFetch → /wp/v2/settings`. Batch apply uses `mosaic:applySetup` channel event with atomic `settingsModel.set()`.
@@ -156,6 +156,6 @@ assets/admin/js/saved-setups-control.js
 2. Create `src/widgets/{name}/{name}.jsx` using `widgetData`, `widgetId`, `mode` props
 3. Import schema into `src/core/widget-registry.js` and add registry entry
 4. Create `widgets/{name}.php` using the `WidgetHelpers` trait; `get_name()` must match the registry key
-5. Register in `mosaic-product-layouts-for-elementor.php → init_widgets()`
+5. Register in `mosaic-layouts-for-elementor.php → init_widgets()`
 6. Run `npm run build`
 
