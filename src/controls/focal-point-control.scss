@@ -5,14 +5,14 @@
  */
 
 // Control container
-.elementor-control-type-ml4e_focal_point {
+.elementor-control-type-mc4e_focal_point {
 	
 	.elementor-control-input-wrapper {
 		width: 100%;
 	}
 
 	// Value display
-	.ml4e-focal-point-values {
+	.mc4e-focal-point-values {
 		display: flex;
 		justify-content: space-between;
 		margin-top: 8px;
@@ -22,7 +22,7 @@
 		font-size: 12px;
 		font-family: monospace;
 
-		.ml4e-focal-point-value {
+		.mc4e-focal-point-value {
 			color: var( --e-a-color-txt, rgb(102, 102, 102));
 
 			span {
@@ -33,13 +33,13 @@
 	}
 
 	// Container for the React component
-	.ml4e-focal-point-container {
+	.mc4e-focal-point-container {
 		margin-top: 8px;
 	}
 }
 
 // Focal point picker component
-.ml4e-focal-point-picker {
+.mc4e-focal-point-picker {
 	user-select: none;
 	touch-action: none;
 	position: relative;
@@ -51,7 +51,7 @@
 	overflow: hidden;
 	border: 1px solid var( --e-a-border-color,#dddddd);
 
-	&:hover .ml4e-focal-point-marker {
+	&:hover .mc4e-focal-point-marker {
 		transform: translate(-50%, -50%) scale(1.1);
 	}
 
@@ -67,7 +67,7 @@
 }
 
 // Marker animation
-.ml4e-focal-point-marker {
+.mc4e-focal-point-marker {
 	position: absolute;
 	display: flex;
 	align-items: center;
@@ -85,7 +85,7 @@
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 	}
 
-	.ml4e-focal-point-center-dot {
+	.mc4e-focal-point-center-dot {
 		position: absolute;
 		width: 6px;
 		height: 6px;
@@ -95,7 +95,7 @@
 }
 
 // Grid styling
-.ml4e-focal-point-grid {
+.mc4e-focal-point-grid {
 	opacity: 0.8;
 	position: absolute;
 	top: 0;
@@ -106,7 +106,7 @@
 }
 
 // Labels
-.ml4e-focal-point-labels {
+.mc4e-focal-point-labels {
 	position: absolute;
 	top: 0;
 	left: 0;

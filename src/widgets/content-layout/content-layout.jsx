@@ -49,7 +49,7 @@ const postTypeRouteCache = new Map([
 ]);
 
 function getRestRoot() {
-	const localizedRoot = window?.ML4E?.restRoot;
+	const localizedRoot = window?.MC4E?.restRoot;
 	const wpApiRoot = window?.wpApiSettings?.root;
 	const fallback = '/wp-json/';
 
@@ -67,7 +67,7 @@ async function resolvePostTypeRestBase(postType) {
 	}
 
 	try {
-		const response = await fetch(`${getRestRoot()}ml4e/v1/post-types`);
+		const response = await fetch(`${getRestRoot()}mc4e/v1/post-types`);
 		if (response.ok) {
 			const postTypes = await response.json();
 			if (Array.isArray(postTypes)) {
@@ -97,39 +97,39 @@ async function resolvePostTypeRestBase(postType) {
 async function fetchProducts(querySettings) {
 	const {
 		layoutItemLimit,
-		ml4e_post_type,
-		ml4e_orderby,
-		ml4e_order,
-		ml4e_taxonomy,
-		ml4e_terms,
-		ml4e_sticky,
-		ml4e_page = 1,
+		mc4e_post_type,
+		mc4e_orderby,
+		mc4e_order,
+		mc4e_taxonomy,
+		mc4e_terms,
+		mc4e_sticky,
+		mc4e_page = 1,
 	} = querySettings;
 
 	// Build query parameters
 	const params = new URLSearchParams();
 
-	params.append('page', String(Math.max(1, Number(ml4e_page) || 1)));
+	params.append('page', String(Math.max(1, Number(mc4e_page) || 1)));
 	if (layoutItemLimit) params.append('per_page', layoutItemLimit);
-	if (ml4e_orderby) params.append('orderby', ml4e_orderby);
-	if (ml4e_order) params.append('order', ml4e_order);
+	if (mc4e_orderby) params.append('orderby', mc4e_orderby);
+	if (mc4e_order) params.append('order', mc4e_order);
 
-	if (Array.isArray(ml4e_terms) && ml4e_terms.length > 0 && ml4e_taxonomy) {
-		const termIds = ml4e_terms
-			.filter((term) => typeof term === 'string' && term.startsWith(`${ml4e_taxonomy}:`))
+	if (Array.isArray(mc4e_terms) && mc4e_terms.length > 0 && mc4e_taxonomy) {
+		const termIds = mc4e_terms
+			.filter((term) => typeof term === 'string' && term.startsWith(`${mc4e_taxonomy}:`))
 			.map((term) => term.split(':')[1])
 			.filter(Boolean);
 
 		if (termIds.length) {
-			params.append(ml4e_taxonomy, termIds.join(','));
+			params.append(mc4e_taxonomy, termIds.join(','));
 		}
 	}
 
-	if (ml4e_sticky) params.append('sticky', 'true');
+	if (mc4e_sticky) params.append('sticky', 'true');
 
 	params.append('_embed', 'wp:featuredmedia,wp:term');
 
-	const postType = ml4e_post_type || 'post';
+	const postType = mc4e_post_type || 'post';
 	const restBase = await resolvePostTypeRestBase(postType);
 	const endpoint = `${getRestRoot()}wp/v2/${encodeURIComponent(restBase)}?${params.toString()}`;
 	const response = await fetch(endpoint);
@@ -224,25 +224,25 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 	// Map flex justify-content alignment values → text-align equivalents for .product-elements.
 	// flex-start → left, flex-end → right, center → center.
 	const alignTextVars = useMemo(() => {
-		return getBreakpointTextAlignVars(widgetData?.ml4e_product_align, '--ml4e-product-align-text-');
-	}, [widgetData?.ml4e_product_align]);
+		return getBreakpointTextAlignVars(widgetData?.mc4e_product_align, '--mc4e-product-align-text-');
+	}, [widgetData?.mc4e_product_align]);
 
 	// Extract settings with defaults
-	const layoutId = widgetData?.ml4e_layout || 'default';
-	const customLayoutData = widgetData?.ml4e_custom_layout || '';
-	const contentLayoutVariant = widgetData?.ml4e_product_layout || 'vertical';
-	const saleBadgePosition = widgetData?.ml4e_sale_badge_position || { x: 10, y: 10 };
-	const featuredImageSize = widgetData?.ml4e_featured_image_size || 'automatic';
-	const featuredImagePosition = widgetData?.ml4e_featured_image_position || { x: 50, y: 50 };
-	const featuredImageFit = widgetData?.ml4e_image_fit || 'cover';
-	const helperType = widgetData?.ml4e_helper_grid || 'none';
-	const enablePagination = widgetData?.ml4e_enable_pagination || false;
-	const selectedTerms = widgetData?.ml4e_terms || [];
-	const selectedPostType = widgetData?.ml4e_post_type || 'post';
+	const layoutId = widgetData?.mc4e_layout || 'default';
+	const customLayoutData = widgetData?.mc4e_custom_layout || '';
+	const contentLayoutVariant = widgetData?.mc4e_product_layout || 'vertical';
+	const saleBadgePosition = widgetData?.mc4e_sale_badge_position || { x: 10, y: 10 };
+	const featuredImageSize = widgetData?.mc4e_featured_image_size || 'automatic';
+	const featuredImagePosition = widgetData?.mc4e_featured_image_position || { x: 50, y: 50 };
+	const featuredImageFit = widgetData?.mc4e_image_fit || 'cover';
+	const helperType = widgetData?.mc4e_helper_grid || 'none';
+	const enablePagination = widgetData?.mc4e_enable_pagination || false;
+	const selectedTerms = widgetData?.mc4e_terms || [];
+	const selectedPostType = widgetData?.mc4e_post_type || 'post';
 
 	// Element ordering from repeater control
 	const elementOrdering = useMemo(
-		() => parseElementOrdering(widgetData?.ml4e_element_ordering, [
+		() => parseElementOrdering(widgetData?.mc4e_element_ordering, [
 			{ element_label: 'Title', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
 			{ element_label: 'Excerpt', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
 			{ element_label: 'Featured Image', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
@@ -250,11 +250,11 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 			{ element_label: 'Terms', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
 			{ element_label: 'Post Meta', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
 		]),
-		[widgetData?.ml4e_element_ordering]
+		[widgetData?.mc4e_element_ordering]
 	);
 
 	// Grid settings from Elementor controls
-	const gridSettings = useGridSettings(widgetData, 'ml4e_items_margin', 'ml4e_row_height');
+	const gridSettings = useGridSettings(widgetData, 'mc4e_items_margin', 'mc4e_row_height');
 	// Track Elementor's device mode switcher for the grid helper column calculation.
 	const deviceType = useElementorDevice();
 
@@ -280,22 +280,22 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 	const querySettings = useMemo(
 		() => ({
 			layoutItemLimit: layoutItemCount,
-			ml4e_post_type: widgetData?.ml4e_post_type || 'post',
-			ml4e_orderby: widgetData?.ml4e_orderby || 'date',
-			ml4e_order: widgetData?.ml4e_order || 'desc',
-			ml4e_taxonomy: widgetData?.ml4e_taxonomy || 'category',
-			ml4e_terms: selectedTerms,
-			ml4e_sticky: widgetData?.ml4e_sticky || false,
-			ml4e_page: enablePagination ? currentPage : 1,
+			mc4e_post_type: widgetData?.mc4e_post_type || 'post',
+			mc4e_orderby: widgetData?.mc4e_orderby || 'date',
+			mc4e_order: widgetData?.mc4e_order || 'desc',
+			mc4e_taxonomy: widgetData?.mc4e_taxonomy || 'category',
+			mc4e_terms: selectedTerms,
+			mc4e_sticky: widgetData?.mc4e_sticky || false,
+			mc4e_page: enablePagination ? currentPage : 1,
 		}),
 		[
 			layoutItemCount,
-			widgetData?.ml4e_post_type,
-			widgetData?.ml4e_orderby,
-			widgetData?.ml4e_order,
-			widgetData?.ml4e_taxonomy,
+			widgetData?.mc4e_post_type,
+			widgetData?.mc4e_orderby,
+			widgetData?.mc4e_order,
+			widgetData?.mc4e_taxonomy,
 			selectedTerms,
-			widgetData?.ml4e_sticky,
+			widgetData?.mc4e_sticky,
 			enablePagination,
 			currentPage,
 		]
@@ -305,12 +305,12 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 		setCurrentPage(1);
 	}, [
 		layoutItemCount,
-		widgetData?.ml4e_post_type,
-		widgetData?.ml4e_orderby,
-		widgetData?.ml4e_order,
-		widgetData?.ml4e_taxonomy,
+		widgetData?.mc4e_post_type,
+		widgetData?.mc4e_orderby,
+		widgetData?.mc4e_order,
+		widgetData?.mc4e_taxonomy,
 		selectedTerms,
-		widgetData?.ml4e_sticky,
+		widgetData?.mc4e_sticky,
 		enablePagination,
 	]);
 
@@ -359,8 +359,8 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 					setPaginationMeta({ total: result.total || 0, totalPages: result.totalPages || 1 });
 				},
 				onError: (err) => {
-					console.error('Error fetching products:', err);
-					setError('Failed to fetch products. Please try again later.');
+					console.error('Error fetching content:', err);
+					setError('Failed to fetch content.Please try again later.');
 					setPaginationMeta({ total: 0, totalPages: 1 });
 				},
 				setIsLoading,
@@ -377,7 +377,7 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 		applyLayoutChange({
 			widgetType: 'content-layout',
 			widgetId,
-			settingKey: 'ml4e_custom_layout',
+			settingKey: 'mc4e_custom_layout',
 			customLayoutData,
 			layoutData,
 			newLayouts,
@@ -394,7 +394,7 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 			isEditMode,
 			widgetType: 'content-layout',
 			widgetId,
-			settingKey: 'ml4e_custom_layout',
+			settingKey: 'mc4e_custom_layout',
 			customLayoutData,
 			layoutData,
 			gridColumns: {
@@ -411,7 +411,7 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 			isEditMode,
 			widgetType: 'content-layout',
 			widgetId,
-			settingKey: 'ml4e_custom_layout',
+			settingKey: 'mc4e_custom_layout',
 			customLayoutData,
 			layoutData,
 			itemId,
@@ -457,14 +457,14 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 					columns={gridSettings.columns}
 					itemsMargin={gridSettings.itemsMargin}
 					rowHeight={gridSettings.rowHeight}
-					allowOverlap={widgetData?.ml4e_allow_overlap || false}
-					compactionType={widgetData?.ml4e_compaction_type || 'vertical'}
+					allowOverlap={widgetData?.mc4e_allow_overlap || false}
+					compactionType={widgetData?.mc4e_compaction_type || 'vertical'}
 					context={isEditMode ? 'edit' : 'frontend'}
 					isDraggable={isEditMode}
 					isResizable={isEditMode}
 					onLayoutChange={isEditMode ? handleLayoutChange : undefined}
 					selectWidget={selectWidget}
-					draggableCancel=".ml4e-item-controls"
+					draggableCancel=".mc4e-item-controls"
 				>
 					{/* Map over visible layout items only — items without a matching product are hidden */}
 					{visibleLayoutData.mobile.map((layoutItem) => {
@@ -481,7 +481,7 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 									{/* Editor-only item controls */}
 									{isEditMode && (
 										<ItemControls
-											settingKey={`ml4e_custom_layout`}
+											settingKey={`mc4e_custom_layout`}
 											itemId={layoutItem.i}
 											layoutData={layoutData}
 											customLayoutData={customLayoutData}
@@ -506,7 +506,7 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 								{/* Editor-only item controls */}
 								{isEditMode && (
 									<ItemControls
-										settingKey={`ml4e_custom_layout`}
+										settingKey={`mc4e_custom_layout`}
 										itemId={layoutItem.i}
 										layoutData={layoutData}
 										customLayoutData={customLayoutData}
@@ -576,7 +576,7 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 															</div>
 														) : null;
 													case 'post_meta': {
-														const rows = (widgetData?.ml4e_post_meta || []).filter((metaDef) => {
+														const rows = (widgetData?.mc4e_post_meta || []).filter((metaDef) => {
 															const key = metaDef?.meta_key;
 															if (!key) return false;
 															const value = `${matchedProduct?.meta?.[key] ?? ''}`;
@@ -626,10 +626,10 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 				{/* Editor-only floating toolbar */}
 				{isEditMode && (
 					<>
-						<div className="ml4e-editor-toolbar">
+						<div className="mc4e-editor-toolbar">
 							<button
 								type="button"
-								className="ml4e-toolbar-btn ml4e-add-item-btn"
+								className="mc4e-toolbar-btn mc4e-add-item-btn"
 								onClick={handleAddItem}
 								title="Add Item"
 							>

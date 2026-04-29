@@ -9,8 +9,8 @@ import { useState, useEffect } from 'react';
  * Uses wpApiSettings if available (set by wp-api script), otherwise falls back to /wp-json/.
  */
 const getApiRoot = () => {
-	if (typeof window.ML4E !== 'undefined' && window.ML4E.restRoot) {
-		return window.ML4E.restRoot;
+	if (typeof window.MC4E !== 'undefined' && window.MC4E.restRoot) {
+		return window.MC4E.restRoot;
 	}
 
 	if (typeof window.wpApiSettings !== 'undefined' && window.wpApiSettings.root) {
@@ -36,7 +36,7 @@ const resolvePostTypeRestBase = async (postType) => {
 
 	try {
 		const apiRoot = getApiRoot();
-		const response = await fetch(`${apiRoot}ml4e/v1/post-types`);
+		const response = await fetch(`${apiRoot}mc4e/v1/post-types`);
 		if (response.ok) {
 			const types = await response.json();
 			if (Array.isArray(types)) {

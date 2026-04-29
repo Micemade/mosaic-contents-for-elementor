@@ -35,7 +35,7 @@ function initProductSelectControl() {
 	const BaseDataControl = elementor.modules.controls.BaseData;
 
 	if (!BaseDataControl) {
-		console.error('ML4E: BaseData control not found');
+		console.error('MC4E: BaseData control not found');
 		return;
 	}
 
@@ -51,7 +51,7 @@ function initProductSelectControl() {
 		 * Initialize the React Select component.
 		 */
 		initProductSelect() {
-			const container = this.$el.find('.ml4e-product-select-container');
+			const container = this.$el.find('.mc4e-product-select-container');
 
 			if (!container.length) {
 				return;
@@ -79,7 +79,7 @@ function initProductSelectControl() {
 		 */
 		onProductChange(productId) {
 			// Update the hidden input.
-			this.$el.find('.ml4e-product-select-value').val(productId);
+			this.$el.find('.mc4e-product-select-value').val(productId);
 
 			// Save value to Elementor.
 			this.setValue(productId);
@@ -118,5 +118,5 @@ function initProductSelectControl() {
 	});
 
 	// Register the control view with Elementor.
-	elementor.addControlView('ml4e_product_select', ProductSelectControl);
+	elementor.addControlView('mc4e_product_select', ProductSelectControl);
 }

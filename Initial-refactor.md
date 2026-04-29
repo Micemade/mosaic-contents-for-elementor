@@ -6,7 +6,7 @@ The plugin should use the existing functionality regarding the settings, layout,
 The 'product' post type should be replaced with option to choose any of registered WordPress post (content) types.
 
 ## Specific tasks
-- Rename all the Mosaic Product Layouts for Elementor to Mosaic Layouts for Elementor, including all variants (like localization domain, abbreviations like ml4e)
+- Rename all the Mosaic Product Layouts for Elementor to Mosaic Contents for Elementor, including all variants (like localization domain, abbreviations like mc4e)
 - Remove the 'categories-layout' and 'single-product-layout' widgets from the plugin, as well as those two widgets-specific (not shared with 'content-layout' widget) methods, helpers, or any directly related and by removal redundant code.
 - Use the 'content-layout' widget to replace a 'product' post type with a selection of registered post types
 - Query settings should be changed from product-specific options (onSale, featured) to post type arguments.

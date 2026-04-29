@@ -5,10 +5,10 @@
  * A custom Elementor control for saving, loading, and deleting layout+style setups.
  * Stores setup selections in wp_options via WP Settings API (REST).
  *
- * @package Micemade\MosaicLayoutsElementor\Controls
+ * @package Micemade\MosaicContentsElementor\Controls
  */
 
-namespace Micemade\MosaicLayoutsElementor\Controls;
+namespace Micemade\MosaicContentsElementor\Controls;
 
 use Elementor\Base_Data_Control;
 
@@ -34,7 +34,7 @@ class Saved_Setups extends Base_Data_Control {
 	 * @return string Control type.
 	 */
 	public function get_type() {
-		return 'ml4e_saved_setups';
+		return 'mc4e_saved_setups';
 	}
 
 	/**
@@ -70,7 +70,7 @@ class Saved_Setups extends Base_Data_Control {
 	public function enqueue() {
 		// Enqueue the React-based control script.
 		wp_enqueue_script(
-			'ml4e-saved-setups-control',
+			'mc4e-saved-setups-control',
 			plugins_url( 'assets/admin/js/saved-setups-control.js', dirname( __FILE__ ) ),
 			array( 'jquery', 'react', 'react-dom', 'wp-api-fetch', 'wp-i18n' ),
 			'1.0.0',
@@ -79,7 +79,7 @@ class Saved_Setups extends Base_Data_Control {
 
 		// Enqueue the control styles.
 		wp_enqueue_style(
-			'ml4e-saved-setups-control',
+			'mc4e-saved-setups-control',
 			plugins_url( 'assets/admin/css/saved-setups-control.css', dirname( __FILE__ ) ),
 			array(),
 			'1.0.0'
@@ -90,7 +90,7 @@ class Saved_Setups extends Base_Data_Control {
 	 * Render control output in the editor.
 	 *
 	 * Uses Underscore JS template. The React component mounts into
-	 * the .ml4e-saved-setups-container element.
+	 * the .mc4e-saved-setups-container element.
 	 *
 	 * @since 1.0.0
 	 * @access public
@@ -107,12 +107,12 @@ class Saved_Setups extends Base_Data_Control {
 		<!-- Hidden input for Elementor data binding (stores selected setup ID) -->
 		<input type="hidden"
 			id="<?php echo esc_attr( $control_uid ); ?>"
-			class="ml4e-saved-setups-value"
+			class="mc4e-saved-setups-value"
 			data-setting="value"
 			value="{{ data.controlValue }}" />
 
 		<!-- React mount container -->
-		<div class="ml4e-saved-setups-container"
+		<div class="mc4e-saved-setups-container"
 			data-control-uid="<?php echo esc_attr( $control_uid ); ?>"
 			data-initial-value="{{ data.controlValue }}">
 		</div>

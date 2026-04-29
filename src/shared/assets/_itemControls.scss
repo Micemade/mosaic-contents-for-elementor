@@ -7,7 +7,7 @@
 
 // ── Item controls wrapper ─────────────────────────────────────────────────
 // Groups the z-index controls with other item buttons (delete, edit).
-.ml4e-item-controls {
+.mc4e-item-controls {
 	position: absolute;
 	top: 30px;
 	right: 0;
@@ -24,7 +24,7 @@
 	box-shadow: 0 0 1px #000;
 
 	// ── Z-Index controls group ────────────────────────────────────────────────
-	.ml4e-zindex-controls {
+	.mc4e-zindex-controls {
 		display: flex;
 		align-items: center;
 		gap: 1px;
@@ -33,7 +33,7 @@
 		overflow: hidden;
 		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 
-		.ml4e-zindex-btn {
+		.mc4e-zindex-btn {
 			display: flex;
 			align-items: center;
 			justify-content: center;
@@ -72,9 +72,9 @@
 				opacity: 0.3;
 				cursor: default;
 			}
-		}// end .ml4e-zindex-btn
+		}// end .mc4e-zindex-btn
 
-		.ml4e-zindex-value {
+		.mc4e-zindex-value {
 			display: flex;
 			align-items: center;
 			justify-content: center;
@@ -89,10 +89,10 @@
 			user-select: none;
 		}
 
-	}// end .ml4e-zindex-controls
+	}// end .mc4e-zindex-controls
 
 	// ── SINGLE PRODUCT Edit Styles button ────────────────────────────────
-	.ml4e-manage-item-btn,
+	.mc4e-manage-item-btn,
 	.sp-edit-element-btn {
 		width: 22px;
 		height: 22px;
@@ -120,14 +120,14 @@
 			box-shadow: 0 0 1px rgba(0, 0, 0, 0.7);
 		}
 	}
-	.ml4e-manage-item-btn i {font-size: 18px;}
+	.mc4e-manage-item-btn i {font-size: 18px;}
 
 	// ── SINGLE PRODUCT Group member dropdown ───────────────────────────────────────────────
-	.ml4e-group-controls-wrapper {
+	.mc4e-group-controls-wrapper {
 		position: relative;
 	}
 
-	.ml4e-group-dropdown {
+	.mc4e-group-dropdown {
 		position: absolute;
 		top: calc(100% + 4px);
 		left: 0;
@@ -139,7 +139,7 @@
 		z-index: 9999;
 		padding: 4px 0;
 
-		.ml4e-element-toggle-item {
+		.mc4e-element-toggle-item {
 			&.is-active {
 				background: rgba(0, 200, 0, 0.08);
 			}
@@ -148,7 +148,7 @@
 			}
 		}
 
-		.ml4e-other-group-badge {
+		.mc4e-other-group-badge {
 			font-size: 10px;
 			background: #ddd;
 			color: #555;
@@ -159,7 +159,7 @@
 	}
 
 	// ── SINGLE PRODUCT Add Group toolbar button ────────────────────────────────────────────
-	.ml4e-add-group-btn {
+	.mc4e-add-group-btn {
 		display: inline-flex;
 		align-items: center;
 		gap: 4px;
@@ -175,8 +175,8 @@
 }
 
 // Show controls on grid item hover.
-.react-grid-item:hover > .ml4e-item-controls,
-.react-grid-item:hover > .sp-element > .ml4e-item-controls {
+.react-grid-item:hover > .mc4e-item-controls,
+.react-grid-item:hover > .sp-element > .mc4e-item-controls {
 	opacity: 1;
 	visibility: visible;
 }

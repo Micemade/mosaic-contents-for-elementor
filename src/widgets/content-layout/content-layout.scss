@@ -266,7 +266,7 @@
  * Editor-only toolbar styles
  * Floating toolbar for widget actions in Elementor editor
  */
-.ml4e-editor-toolbar {
+.mc4e-editor-toolbar {
 	position: absolute;
 	top: 10px;
 	left: 10px;
@@ -286,7 +286,7 @@
 		opacity: 1;
 	}
 
-	.ml4e-toolbar-btn {
+	.mc4e-toolbar-btn {
 		display: flex;
 		align-items: center;
 		gap: 6px;
@@ -326,7 +326,7 @@
  * Positioned in the top-right corner of each grid item
  */
 
-.ml4e-remove-item-btn {
+.mc4e-remove-item-btn {
 	display: flex;
 	align-items: center;
 	justify-content: center;

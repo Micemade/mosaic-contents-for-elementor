@@ -12,7 +12,7 @@ Creative WooCommerce product, category, and single-product layouts for Elementor
 
 == Description ==
 
-Mosiac Product Layouts for Elementor (ML4E) adds custom Elementor widgets for WooCommerce:
+Mosiac Product Layouts for Elementor (MC4E) adds custom Elementor widgets for WooCommerce:
 
 * Content Layout
 * Categories Layout
@@ -34,7 +34,7 @@ Key capabilities:
 
 == Documentation ==
 
-For more detailed instructions on how to use ML4E widgets consult the documentation in the docs/index.html.
+For more detailed instructions on how to use MC4E widgets consult the documentation in the docs/index.html.
 
 == Frequently Asked Questions ==
 

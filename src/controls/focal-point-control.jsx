@@ -33,7 +33,7 @@ function initFocalPointControl() {
 	const BaseDataControl = elementor.modules.controls.BaseData;
 	
 	if (!BaseDataControl) {
-		console.error('ML4E: BaseData control not found');
+		console.error('MC4E: BaseData control not found');
 		return;
 	}
 
@@ -49,7 +49,7 @@ function initFocalPointControl() {
 		 * Initialize the focal point picker
 		 */
 		initializeFocalPoint() {
-			const container = this.$el.find('.ml4e-focal-point-container');
+			const container = this.$el.find('.mc4e-focal-point-container');
 			
 			if (!container.length) {
 				return;
@@ -83,12 +83,12 @@ function initFocalPointControl() {
 			const roundedY = Math.round(y);
 
 			// Update hidden inputs
-			this.$el.find('.ml4e-focal-point-x').val(roundedX);
-			this.$el.find('.ml4e-focal-point-y').val(roundedY);
+			this.$el.find('.mc4e-focal-point-x').val(roundedX);
+			this.$el.find('.mc4e-focal-point-y').val(roundedY);
 
 			// Update value display
-			this.$el.find('.ml4e-x-value').text(roundedX);
-			this.$el.find('.ml4e-y-value').text(roundedY);
+			this.$el.find('.mc4e-x-value').text(roundedX);
+			this.$el.find('.mc4e-y-value').text(roundedY);
 
 			// Save value to Elementor
 			this.setValue({
@@ -122,5 +122,5 @@ function initFocalPointControl() {
 	});
 
 	// Register the control view with Elementor
-	elementor.addControlView('ml4e_focal_point', FocalPointControl);
+	elementor.addControlView('mc4e_focal_point', FocalPointControl);
 }

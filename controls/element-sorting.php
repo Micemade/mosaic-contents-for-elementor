@@ -8,10 +8,10 @@
  *
  * Based on the sorter control pattern from Micemade Elements.
  *
- * @package Micemade\MosaicLayoutsElementor\Controls
+ * @package Micemade\MosaicContentsElementor\Controls
  */
 
-namespace Micemade\MosaicLayoutsElementor\Controls;
+namespace Micemade\MosaicContentsElementor\Controls;
 
 use Elementor\Base_Data_Control;
 
@@ -35,7 +35,7 @@ class Element_Sorting extends Base_Data_Control {
 	 * @return string Control type.
 	 */
 	public function get_type() {
-		return 'ml4e_sorter_label';
+		return 'mc4e_sorter_label';
 	}
 
 	/**
@@ -55,7 +55,7 @@ class Element_Sorting extends Base_Data_Control {
 	/**
 	 * Enqueue control scripts.
 	 *
-	 * Registers a Backbone view for ml4e_sorter_label in the Elementor panel.
+	 * Registers a Backbone view for mc4e_sorter_label in the Elementor panel.
 	 * Without this, Elementor 3.26+ (container architecture) fails to initialise
 	 * the container for repeater items that contain this control, causing all
 	 * other controls in the same row (e.g. visibility SWITCHERs) to throw:
@@ -73,7 +73,7 @@ class Element_Sorting extends Base_Data_Control {
 		if("undefined"===typeof elementor||!elementor.modules)return;
 		var Base=elementor.modules.controls.BaseData;
 		if(!Base)return;
-		elementor.addControlView("ml4e_sorter_label",Base.extend({
+		elementor.addControlView("mc4e_sorter_label",Base.extend({
 			onBaseInputChange:function(){}
 		}));
 	}

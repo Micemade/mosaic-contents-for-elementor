@@ -35,7 +35,7 @@ All three consumers are driven generically from the same JSON; adding or modifyi
 Responsive settings support per-breakpoint defaults:
 ```json
 {
-  "ml4e_title_size": {
+  "mc4e_title_size": {
     "type": "responsive",
     "default": { "size": 24, "unit": "px" },
     "tablet_default": { "size": 22, "unit": "px" },
@@ -186,7 +186,7 @@ export const createSettingsMapper = (settingsDefinition) => (model) => {
 1. **Add to the widget's `react-settings.json`:**
    ```json
    {
-     "ml4e_new_setting": {
+     "mc4e_new_setting": {
        "type": "string",
        "default": "auto"
      }
@@ -195,8 +195,8 @@ export const createSettingsMapper = (settingsDefinition) => (model) => {
 
 2. **Add the Elementor control** in the widget's `register_controls()` method:
    ```php
-   $this->add_control( 'ml4e_new_setting', [
-       'label'   => __( 'New Setting', 'mosaic-layouts-for-elementor' ),
+   $this->add_control( 'mc4e_new_setting', [
+       'label'   => __( 'New Setting', 'mosaic-contents-for-elementor' ),
        'type'    => Controls_Manager::SELECT,
        'default' => 'auto',
        'options' => [ 'auto' => 'Auto', 'manual' => 'Manual' ],
@@ -208,7 +208,7 @@ export const createSettingsMapper = (settingsDefinition) => (model) => {
    npm run build
    ```
 
-The setting is now automatically available in `render()`, `content_template()`, and as `widgetData.ml4e_new_setting` inside the React component.
+The setting is now automatically available in `render()`, `content_template()`, and as `widgetData.mc4e_new_setting` inside the React component.
 
 ---
 

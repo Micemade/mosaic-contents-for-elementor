@@ -42,17 +42,17 @@ const PRODUCTS_STYLE_PRESET_SETTING_KEYS = Array.from(
  */
 const WIDGET_KEYS = {
 	'content-layout': {
-		layoutKey: 'ml4e_layout',
-		customLayoutKey: 'ml4e_custom_layout',
-		savedSetupKey: 'ml4e_saved_setup',
-		stylePresetKey: 'ml4e_style_preset',
+		layoutKey: 'mc4e_layout',
+		customLayoutKey: 'mc4e_custom_layout',
+		savedSetupKey: 'mc4e_saved_setup',
+		stylePresetKey: 'mc4e_style_preset',
 		presetSettingKeys: PRODUCTS_STYLE_PRESET_SETTING_KEYS,
 		stylePresetMap: PRODUCTS_STYLE_PRESET_MAP,
 		resetEvent: 'mosaic:resetLayout',
 		applySetupEvent: 'mosaic:applySetup',
 		addItemEvent: 'mosaic:addItem',
 		gridColumns: { desktop: 48, tablet: 24, mobile: 12 },
-		repeaterKeys: ['ml4e_element_ordering'],
+		repeaterKeys: ['mc4e_element_ordering'],
 	},
 };
 
@@ -63,7 +63,7 @@ const POST_TYPE_META_CACHE = new Map();
 const TAXONOMY_TERMS_OPTIONS_CACHE = new Map();
 
 const getRestRoot = () => {
-	const localizedRoot = window?.ML4E?.restRoot;
+	const localizedRoot = window?.MC4E?.restRoot;
 	const wpApiRoot = window?.wpApiSettings?.root;
 	const fallback = '/wp-json/';
 	const root = localizedRoot || wpApiRoot || fallback;
@@ -81,7 +81,7 @@ const fetchPostTypeMeta = async (postType) => {
 	}
 
 	try {
-		const response = await fetch(`${getRestRoot()}ml4e/v1/post-types`);
+		const response = await fetch(`${getRestRoot()}mc4e/v1/post-types`);
 		if (!response.ok) {
 			return null;
 		}
@@ -158,7 +158,7 @@ const fetchTaxonomyTermsOptions = async (taxonomy) => {
 	}
 
 	try {
-		const url = `${getRestRoot()}ml4e/v1/taxonomy-terms?taxonomy=${encodeURIComponent(taxonomy)}`;
+		const url = `${getRestRoot()}mc4e/v1/taxonomy-terms?taxonomy=${encodeURIComponent(taxonomy)}`;
 		const response = await fetch(url);
 		if (!response.ok) {
 			return {};
@@ -176,16 +176,16 @@ const fetchTaxonomyTermsOptions = async (taxonomy) => {
 
 const syncTermsOptionsForTaxonomy = async (model, taxonomy) => {
 	const termsOptions = await fetchTaxonomyTermsOptions(taxonomy);
-	updateControlOptions('ml4e_terms', termsOptions);
+	updateControlOptions('mc4e_terms', termsOptions);
 
-	const selectedTerms = model.getSetting('ml4e_terms');
+	const selectedTerms = model.getSetting('mc4e_terms');
 	if (Array.isArray(selectedTerms)) {
 		const filteredTerms = selectedTerms.filter((term) => (
 			typeof term === 'string' && taxonomy && term.startsWith(`${taxonomy}:`) && termsOptions[term]
 		));
 
 		if (filteredTerms.length !== selectedTerms.length) {
-			model.setSetting('ml4e_terms', filteredTerms);
+			model.setSetting('mc4e_terms', filteredTerms);
 		}
 	}
 };
@@ -193,10 +193,10 @@ const syncTermsOptionsForTaxonomy = async (model, taxonomy) => {
 const syncTaxonomyOptionsForPostType = async (model, postType, forceResetTaxonomy = false) => {
 	const postTypeMeta = await fetchPostTypeMeta(postType);
 	if (!postTypeMeta) {
-		updateControlOptions('ml4e_taxonomy', {});
-		updateControlOptions('ml4e_terms', {});
-		model.setSetting('ml4e_taxonomy', '');
-		model.setSetting('ml4e_terms', []);
+		updateControlOptions('mc4e_taxonomy', {});
+		updateControlOptions('mc4e_terms', {});
+		model.setSetting('mc4e_taxonomy', '');
+		model.setSetting('mc4e_terms', []);
 		return;
 	}
 
@@ -212,15 +212,15 @@ const syncTaxonomyOptionsForPostType = async (model, postType, forceResetTaxonom
 		return acc;
 	}, {});
 
-	updateControlOptions('ml4e_taxonomy', taxonomyOptions);
+	updateControlOptions('mc4e_taxonomy', taxonomyOptions);
 
-	const currentTaxonomy = model.getSetting('ml4e_taxonomy');
+	const currentTaxonomy = model.getSetting('mc4e_taxonomy');
 	const fallbackTaxonomy = Object.keys(taxonomyOptions)[0] || '';
 	if (forceResetTaxonomy || !taxonomyOptions[currentTaxonomy]) {
-		model.setSetting('ml4e_taxonomy', fallbackTaxonomy);
+		model.setSetting('mc4e_taxonomy', fallbackTaxonomy);
 	}
 
-	const activeTaxonomy = model.getSetting('ml4e_taxonomy');
+	const activeTaxonomy = model.getSetting('mc4e_taxonomy');
 	await syncTermsOptionsForTaxonomy(model, activeTaxonomy);
 };
 
@@ -298,11 +298,11 @@ const patchRepeaterCollection = (collection, widgetId, scheduleRepeaterUpdate) =
 
 	// Skip if this exact collection instance was already patched
 	// (e.g. Elementor updated in-place rather than replacing it).
-	if (collection.__ml4ePatched === widgetId) {
+	if (collection.__mc4ePatched === widgetId) {
 		return;
 	}
 
-	collection.__ml4ePatched = widgetId;
+	collection.__mc4ePatched = widgetId;
 
 	['add', 'remove', 'reset', 'sort'].forEach((method) => {
 		const original = collection[method];
@@ -518,7 +518,7 @@ export const registerEditorHooks = () => {
 				let taxonomySyncSeq = 0;
 
 				if (widgetType === 'content-layout') {
-					const selectedPostType = model.getSetting('ml4e_post_type') || 'post';
+					const selectedPostType = model.getSetting('mc4e_post_type') || 'post';
 					const runTaxonomySync = async (nextPostType) => {
 						taxonomySyncSeq += 1;
 						const seq = taxonomySyncSeq;
@@ -529,7 +529,7 @@ export const registerEditorHooks = () => {
 					};
 
 					void runTaxonomySync(selectedPostType);
-					model.get('settings').on('change:ml4e_post_type', (settingsModel, nextPostType) => {
+					model.get('settings').on('change:mc4e_post_type', (settingsModel, nextPostType) => {
 						void settingsModel;
 						taxonomySyncSeq += 1;
 						const seq = taxonomySyncSeq;
@@ -541,7 +541,7 @@ export const registerEditorHooks = () => {
 						})();
 					});
 
-					model.get('settings').on('change:ml4e_taxonomy', (settingsModel, nextTaxonomy) => {
+					model.get('settings').on('change:mc4e_taxonomy', (settingsModel, nextTaxonomy) => {
 						void settingsModel;
 						void syncTermsOptionsForTaxonomy(model, nextTaxonomy || '');
 					});
@@ -637,9 +637,9 @@ export const registerEditorHooks = () => {
 						// 3c. Apply group styles template to existing repeater rows.
 						// The template defines visual style (colors, borders, etc.)
 						// without overwriting group_id/group_label associations.
-						const groupTemplate = setupSettings.ml4e_sp_group_styles_template;
+						const groupTemplate = setupSettings.mc4e_sp_group_styles_template;
 						if (groupTemplate && typeof groupTemplate === 'object') {
-							const repeaterCollection = settingsModel.get('ml4e_sp_group_styles');
+							const repeaterCollection = settingsModel.get('mc4e_sp_group_styles');
 							if (repeaterCollection && typeof repeaterCollection.each === 'function') {
 								repeaterCollection.each((rowModel) => {
 									Object.entries(groupTemplate).forEach(([key, value]) => {
@@ -650,7 +650,7 @@ export const registerEditorHooks = () => {
 							}
 							// Remove the transient template key from settings so
 							// it is not persisted as an unknown Elementor control.
-							settingsModel.unset('ml4e_sp_group_styles_template', { silent: true });
+							settingsModel.unset('mc4e_sp_group_styles_template', { silent: true });
 						}
 					} finally {
 						isApplyingSetupBatch = false;
@@ -695,10 +695,10 @@ export const registerEditorHooks = () => {
 					// Only add if this widget is currently open in the panel
 					if (elementor.getPanelView().getCurrentPageView().model.id === widgetId) {
 						// Guard against duplicate firing in the same tick.
-						if (model.__ml4eAddItemInProgress) {
+						if (model.__mc4eAddItemInProgress) {
 							return;
 						}
-						model.__ml4eAddItemInProgress = true;
+						model.__mc4eAddItemInProgress = true;
 
 						try {
 							const customLayoutData = model.getSetting(wKeys.customLayoutKey) || '';
@@ -710,7 +710,7 @@ export const registerEditorHooks = () => {
 							setWidgetSettingWithHistory(model, widgetId, wKeys.customLayoutKey, newLayoutJson);
 						} finally {
 							setTimeout(() => {
-								model.__ml4eAddItemInProgress = false;
+								model.__mc4eAddItemInProgress = false;
 							}, 0);
 						}
 					}

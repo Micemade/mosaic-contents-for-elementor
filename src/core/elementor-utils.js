@@ -16,12 +16,12 @@
  * @returns {boolean} Success status
  */
 export const updateElementorSetting = (widgetType, widgetId, settingName, value) => {
-	if (typeof window.MosaicLayoutsReact === 'undefined') {
-		console.warn('MosaicLayoutsReact not available');
+	if (typeof window.MosaicContentsReact === 'undefined') {
+		console.warn('MosaicContentsReact not available');
 		return false;
 	}
 
-	window.MosaicLayoutsReact.updateModelSetting(widgetType, widgetId, settingName, value);
+	window.MosaicContentsReact.updateModelSetting(widgetType, widgetId, settingName, value);
 
 	return true;
 };
@@ -179,16 +179,16 @@ ${mq} {
 
 	/* Content Layout - ${name} */
 	.content-layout .flex-wrapper {
-		text-align: var(--ml4e-product-align-${name}, center);
+		text-align: var(--mc4e-product-align-${name}, center);
 	}
 
 	.content-layout .item-wrapper .flex-wrapper .product-elements {
-		text-align: var(--ml4e-product-align-text-${name});
+		text-align: var(--mc4e-product-align-text-${name});
 	}
 
 	/* Categories Layout - ${name} */
 	.categories-layout .flex-wrapper {
-		text-align: var(--ml4e-cat-align-text-${name}, center);
+		text-align: var(--mc4e-cat-align-text-${name}, center);
 	}
 }
 `;

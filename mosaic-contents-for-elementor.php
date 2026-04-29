@@ -1,43 +1,43 @@
 <?php
 /**
- * Plugin Name: Mosaic Layouts for Elementor
- * Plugin URI: https://github.com/Micemade/mosaic-layouts-for-elementor
+ * Plugin Name: Mosaic Contents for Elementor
+ * Plugin URI: https://github.com/Micemade/mosaic-contents-for-elementor
  * Author: Micemade
- * Author URI: https://github.com/Micemade/mosaic-layouts-for-elementor
+ * Author URI: https://github.com/Micemade/mosaic-contents-for-elementor
  * Description: A set of Elementor widgets for building general-purpose content layouts.
  * Version: 0.1.0
  * License: GPLv2 or later
  * License URL: http://www.gnu.org/licenses/gpl-2.0.txt
- * text-domain: mosaic-layouts-for-elementor
+ * text-domain: mosaic-contents-for-elementor
  * Elementor tested up to: 3.43.1
  * Elementor Pro tested up to: 3.1.0
  */
 
-namespace Micemade\MosaicLayoutsElementor;
+namespace Micemade\MosaicContentsElementor;
 
-use Micemade\MosaicLayoutsElementor\Widgets\ContentLayout;
+use Micemade\MosaicContentsElementor\Widgets\ContentLayout;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-if ( ! defined( 'ML4E_VERSION' ) ) {
-	define( 'ML4E_VERSION', '0.1.0' );
+if ( ! defined( 'MC4E_VERSION' ) ) {
+	define( 'MC4E_VERSION', '0.1.0' );
 }
 
-if ( ! defined( 'ML4E_PLUGIN_FILE' ) ) {
-	define( 'ML4E_PLUGIN_FILE', __FILE__ );
+if ( ! defined( 'MC4E_PLUGIN_FILE' ) ) {
+	define( 'MC4E_PLUGIN_FILE', __FILE__ );
 }
 
-if ( ! defined( 'ML4E_PLUGIN_DIR' ) ) {
-	define( 'ML4E_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+if ( ! defined( 'MC4E_PLUGIN_DIR' ) ) {
+	define( 'MC4E_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 }
 
-if ( ! defined( 'ML4E_PLUGIN_URL' ) ) {
-	define( 'ML4E_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+if ( ! defined( 'MC4E_PLUGIN_URL' ) ) {
+	define( 'MC4E_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 }
 
-final class MosaicLayoutsElementor {
+final class MosaicContentsElementor {
 
 	const ELEMENTOR_MINIMUM_VERSION = '3.0.0';
 	const PHP_MINIMUM_VERSION       = '7.0';
@@ -94,19 +94,19 @@ final class MosaicLayoutsElementor {
 		require_once __DIR__ . '/controls/focal-point.php';
 
 		// Register the focal point control.
-		$controls_manager->register( new \Micemade\MosaicLayoutsElementor\Controls\Focal_Point() );
+		$controls_manager->register( new \Micemade\MosaicContentsElementor\Controls\Focal_Point() );
 
 		// Require and register the saved setups control.
 		require_once __DIR__ . '/controls/saved-setups.php';
-		$controls_manager->register( new \Micemade\MosaicLayoutsElementor\Controls\Saved_Setups() );
+		$controls_manager->register( new \Micemade\MosaicContentsElementor\Controls\Saved_Setups() );
 
 		// Require and register the product select control.
 		require_once __DIR__ . '/controls/product-select.php';
-		$controls_manager->register( new \Micemade\MosaicLayoutsElementor\Controls\Product_Select() );
+		$controls_manager->register( new \Micemade\MosaicContentsElementor\Controls\Product_Select() );
 
 		// Require and register the element sorting control.
 		require_once __DIR__ . '/controls/element-sorting.php';
-		$controls_manager->register( new \Micemade\MosaicLayoutsElementor\Controls\Element_Sorting() );
+		$controls_manager->register( new \Micemade\MosaicContentsElementor\Controls\Element_Sorting() );
 	}
 
 	/**
@@ -118,11 +118,11 @@ final class MosaicLayoutsElementor {
 		wp_enqueue_script( 'react-dom' );
 
 		// Panel-only styles (parent window, not the preview iframe).
-		wp_register_style( 'ml4e-editor-panel', false );
-		wp_enqueue_style( 'ml4e-editor-panel' );
+		wp_register_style( 'mc4e-editor-panel', false );
+		wp_enqueue_style( 'mc4e-editor-panel' );
 		wp_add_inline_style(
-			'ml4e-editor-panel',
-			'.elementor-control-ml4e_post_meta .elementor-repeater-row-tool.elementor-repeater-tool-duplicate{display:none!important}'
+			'mc4e-editor-panel',
+			'.elementor-control-mc4e_post_meta .elementor-repeater-row-tool.elementor-repeater-tool-duplicate{display:none!important}'
 		);
 
 		// The control script is enqueued by the control's enqueue() method
@@ -140,7 +140,7 @@ final class MosaicLayoutsElementor {
 
 		// Editor script (full functionality)
 		wp_enqueue_script(
-			'ml4e-editor-js',
+			'mc4e-editor-js',
 			plugin_dir_url( __FILE__ ) . 'assets/admin/js/main-editor.js',
 			array( 'jquery', 'elementor-frontend', 'react', 'react-dom' ),
 			'1.0.0',
@@ -148,7 +148,7 @@ final class MosaicLayoutsElementor {
 		);
 
 		wp_enqueue_style(
-			'ml4e-editor-css',
+			'mc4e-editor-css',
 			plugin_dir_url( __FILE__ ) . 'assets/admin/css/main-editor.css',
 			array(),
 			'1.0.0'
@@ -182,9 +182,9 @@ final class MosaicLayoutsElementor {
 	public function create_new_category( $elements_manager ) {
 
 		$elements_manager->add_category(
-			'mosaic-layouts',
+			'mosaic-contents',
 			array(
-				'title' => __( 'Mosaic Layouts', 'mosaic-layouts-for-elementor' ),
+				'title' => __( 'Mosaic Contents', 'mosaic-contents-for-elementor' ),
 				'icon'  => 'fa fa-plug',
 			)
 		);
@@ -214,7 +214,7 @@ final class MosaicLayoutsElementor {
 		
 		// Frontend-only script (lightweight, no editor features)
 		wp_enqueue_script(
-			'ml4e-frontend-js',
+			'mc4e-frontend-js',
 			plugin_dir_url( __FILE__ ) . 'assets/js/main-frontend.js',
 			array( 'jquery', 'elementor-frontend', 'react', 'react-dom' ),
 			'1.0.0',
@@ -222,7 +222,7 @@ final class MosaicLayoutsElementor {
 		);
 
 		wp_enqueue_style(
-			'ml4e-css',
+			'mc4e-css',
 			plugin_dir_url( __FILE__ ) . 'assets/css/main-frontend.css',
 			array(),
 			'1.0.0'
@@ -242,15 +242,15 @@ final class MosaicLayoutsElementor {
 			'placeholderImg' => plugins_url( 'assets/images/woocommerce-placeholder-300x300.png', __FILE__ ),
 		);
 
-		wp_localize_script( 'ml4e-frontend-js', 'ML4E', $localize_data );
-		wp_localize_script( 'ml4e-editor-js', 'ML4E', $localize_data );
+		wp_localize_script( 'mc4e-frontend-js', 'MC4E', $localize_data );
+		wp_localize_script( 'mc4e-editor-js', 'MC4E', $localize_data );
 
 	}
 
 	/**
 	 * Register plugin settings for saved setups.
 	 *
-	 * Registers WP option 'ml4e_content_layout_setups' with show_in_rest
+	 * Registers WP option 'mc4e_content_layout_setups' with show_in_rest
 	 * so it can be read/written via wp.apiFetch({ path: '/wp/v2/settings' }).
 	 */
 	public function register_settings() {
@@ -265,7 +265,7 @@ final class MosaicLayoutsElementor {
 			'default'           => '',
 		);
 
-		register_setting( 'options', 'ml4e_content_layout_setups', $setting_args );
+		register_setting( 'options', 'mc4e_content_layout_setups', $setting_args );
 	}
 
 	/**
@@ -282,13 +282,13 @@ final class MosaicLayoutsElementor {
 	public function admin_notice_missing_elementor() {
 		$message = sprintf(
 			/* translators: 1: Plugin name 2: Elementor */
-			__( '"%1$s" requires "%2$s" to be installed and activated.', 'mosaic-layouts-for-elementor' ),
-			'<strong>' . __( 'Mosaic Layouts for Elementor', 'mosaic-layouts-for-elementor' ) . '</strong>',
-			'<strong>' . __( 'Elementor', 'mosaic-layouts-for-elementor' ) . '</strong>'
+			__( '"%1$s" requires "%2$s" to be installed and activated.', 'mosaic-contents-for-elementor' ),
+			'<strong>' . __( 'Mosaic Contents for Elementor', 'mosaic-contents-for-elementor' ) . '</strong>',
+			'<strong>' . __( 'Elementor', 'mosaic-contents-for-elementor' ) . '</strong>'
 		);
 
 		printf( '<div class="notice notice-warning is-dismissible"><p>%1$s</p></div>', wp_kses_post( $message ) );
 	}
 }
 
-MosaicLayoutsElementor::get_instance();
+MosaicContentsElementor::get_instance();

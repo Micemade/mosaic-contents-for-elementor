@@ -1,15 +1,15 @@
 <?php
 /**
- * REST API endpoints for the Mosaic Layouts for Elementor plugin.
+ * REST API endpoints for the Mosaic Contents for Elementor plugin.
  *
  * Provides lightweight endpoints for fetching products with search support
  * for scalable selection in the Elementor editor.
  *
- * @package Micemade\MosaicLayoutsElementor
+ * @package Micemade\MosaicContentsElementor
  * @since 1.0.0
  */
 
-namespace Micemade\MosaicLayoutsElementor;
+namespace Micemade\MosaicContentsElementor;
 
 use WP_REST_Request;
 use WP_REST_Response;
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * REST API class for Mosaic Layouts for Elementor.
+ * REST API class for Mosaic Contents for Elementor.
  *
  * Registers custom REST endpoints for products that return lightweight data
  * optimized for the Elementor editor async select control.
@@ -34,7 +34,7 @@ class RestAPI {
 	 *
 	 * @var string
 	 */
-	private const NAMESPACE = 'ml4e/v1';
+	private const NAMESPACE = 'mc4e/v1';
 
 	/**
 	 * Default number of items to return.
@@ -89,13 +89,13 @@ class RestAPI {
 				'permission_callback' => '__return_true',
 				'args'                => array(
 					'post_ids' => array(
-						'description'       => __( 'Comma-separated post IDs.', 'mosaic-layouts-for-elementor' ),
+						'description'       => __( 'Comma-separated post IDs.', 'mosaic-contents-for-elementor' ),
 						'type'              => 'string',
 						'required'          => true,
 						'sanitize_callback' => 'sanitize_text_field',
 					),
 					'meta_keys' => array(
-						'description'       => __( 'Comma-separated meta keys.', 'mosaic-layouts-for-elementor' ),
+						'description'       => __( 'Comma-separated meta keys.', 'mosaic-contents-for-elementor' ),
 						'type'              => 'string',
 						'required'          => true,
 						'sanitize_callback' => 'sanitize_text_field',
@@ -113,7 +113,7 @@ class RestAPI {
 				'permission_callback' => '__return_true',
 				'args'                => array(
 					'taxonomy' => array(
-						'description'       => __( 'Taxonomy slug.', 'mosaic-layouts-for-elementor' ),
+						'description'       => __( 'Taxonomy slug.', 'mosaic-contents-for-elementor' ),
 						'type'              => 'string',
 						'required'          => true,
 						'sanitize_callback' => 'sanitize_key',
@@ -140,13 +140,13 @@ class RestAPI {
 	private function get_collection_params(): array {
 		return array(
 			'search'   => array(
-				'description'       => __( 'Search term to filter results.', 'mosaic-layouts-for-elementor' ),
+				'description'       => __( 'Search term to filter results.', 'mosaic-contents-for-elementor' ),
 				'type'              => 'string',
 				'required'          => false,
 				'sanitize_callback' => 'sanitize_text_field',
 			),
 			'per_page' => array(
-				'description'       => __( 'Maximum number of items to return.', 'mosaic-layouts-for-elementor' ),
+				'description'       => __( 'Maximum number of items to return.', 'mosaic-contents-for-elementor' ),
 				'type'              => 'integer',
 				'default'           => self::DEFAULT_PER_PAGE,
 				'minimum'           => 1,
@@ -173,7 +173,7 @@ class RestAPI {
 		if ( ! function_exists( 'wc_get_products' ) ) {
 			return new WP_Error(
 				'woocommerce_not_active',
-				__( 'WooCommerce is not active.', 'mosaic-layouts-for-elementor' ),
+				__( 'WooCommerce is not active.', 'mosaic-contents-for-elementor' ),
 				array( 'status' => 400 )
 			);
 		}

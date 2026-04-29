@@ -109,7 +109,7 @@ const FocalPointPicker = ({
 	return (
 		<div 
 			ref={containerRef}
-			className="ml4e-focal-point-picker"
+			className="mc4e-focal-point-picker"
 			onMouseDown={handleStart}
 			onTouchStart={handleStart}
 		>
@@ -124,7 +124,7 @@ const FocalPointPicker = ({
 				const gridPositions = [25, 50, 75];
 				
 				return (
-					<div className="ml4e-focal-point-grid">
+					<div className="mc4e-focal-point-grid">
 						{/* Horizontal lines */}
 						{gridPositions.map((pos) => (
 							<div 
@@ -158,7 +158,7 @@ const FocalPointPicker = ({
 
 			{/* Focal point marker */}
 			<div 
-				className="ml4e-focal-point-marker"
+				className="mc4e-focal-point-marker"
 				style={{
 					left: `${x}%`,
 					top: `${y}%`,
@@ -167,11 +167,11 @@ const FocalPointPicker = ({
 				}}
 			>
 				{/* Center dot */}
-				<div className="ml4e-focal-point-center-dot" />
+				<div className="mc4e-focal-point-center-dot" />
 			</div>
 
 			{/* Corner labels */}
-			<div className="ml4e-focal-point-labels">
+			<div className="mc4e-focal-point-labels">
 				<span style={{ position: 'absolute', top: '4px', left: '4px' }}>0,0</span>
 				<span style={{ position: 'absolute', top: '4px', right: '4px' }}>100,0</span>
 				<span style={{ position: 'absolute', bottom: '4px', left: '4px' }}>0,100</span>

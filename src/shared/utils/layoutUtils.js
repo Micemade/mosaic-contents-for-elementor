@@ -51,8 +51,8 @@ export function getLayout(layoutId = 'default', itemCount = 3) {
 /**
  * Get computed layout data from custom layout or predefined layout.
  *
- * @param {string} customLayoutData - Custom layout JSON string (from ml4e_custom_layout)
- * @param {string} layoutId - Predefined layout ID (from ml4e_layout)
+ * @param {string} customLayoutData - Custom layout JSON string (from mc4e_custom_layout)
+ * @param {string} layoutId - Predefined layout ID (from mc4e_layout)
  * @param {number} itemCount - Number of items for fallback
  * @returns {Object} Parsed layouts object
  */

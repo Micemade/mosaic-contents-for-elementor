@@ -116,9 +116,9 @@ Reset button → `mosaic:resetLayout` channel event → `editor-hooks.js` clears
 Panel change → `model.on('change')` → `settingsMapper(model)` → `updateInstance()` → React `setState` (no DOM remount) + `view.renderUI()` for CSS selectors
 
 ### Responsive CSS Variables ✓
-`useCssVariables(widgetData)` in `src/shared/utils/hooks.js` converts responsive settings into scoped CSS custom properties: `--ml4e-title-size-desktop`, `--ml4e-title-size-tablet`, etc.
+`useCssVariables(widgetData)` in `src/shared/utils/hooks.js` converts responsive settings into scoped CSS custom properties: `--mc4e-title-size-desktop`, `--mc4e-title-size-tablet`, etc.
 
-`injectBreakpointStylesheet()` in `elementor-utils.js` injects media queries using those variables, including `.product-elements { text-align: var(--ml4e-product-align-text-{bp}) }` derived from the `ml4e_product_align` flex-to-text-align mapping.
+`injectBreakpointStylesheet()` in `elementor-utils.js` injects media queries using those variables, including `.product-elements { text-align: var(--mc4e-product-align-text-{bp}) }` derived from the `mc4e_product_align` flex-to-text-align mapping.
 
 ### Saved Setups ✓
 Custom panel control saves/loads/deletes full layout+style presets via `wp.apiFetch → /wp/v2/settings`. Batch apply uses `mosaic:applySetup` channel event with atomic `settingsModel.set()`.
@@ -156,6 +156,6 @@ assets/admin/js/saved-setups-control.js
 2. Create `src/widgets/{name}/{name}.jsx` using `widgetData`, `widgetId`, `mode` props
 3. Import schema into `src/core/widget-registry.js` and add registry entry
 4. Create `widgets/{name}.php` using the `WidgetHelpers` trait; `get_name()` must match the registry key
-5. Register in `mosaic-layouts-for-elementor.php → init_widgets()`
+5. Register in `mosaic-contents-for-elementor.php → init_widgets()`
 6. Run `npm run build`
 

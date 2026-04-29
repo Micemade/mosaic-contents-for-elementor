@@ -1,6 +1,6 @@
 <?php
 
-namespace Micemade\MosaicLayoutsElementor\Widgets;
+namespace Micemade\MosaicContentsElementor\Widgets;
 
 use Elementor\Widget_Base;
 use Elementor\Controls_Manager;
@@ -9,8 +9,8 @@ use Elementor\Group_Control_Typography;
 use Elementor\Group_Control_Border;
 use Elementor\Group_Control_Box_Shadow;
 use Elementor\Repeater;
-use Micemade\MosaicLayoutsElementor\WidgetHelpers;
-use Micemade\MosaicLayoutsElementor\RestAPI;
+use Micemade\MosaicContentsElementor\WidgetHelpers;
+use Micemade\MosaicContentsElementor\RestAPI;
 
 /**
  * Content Layout Widget for Elementor.
@@ -46,7 +46,7 @@ class ContentLayout extends Widget_Base {
 	}
 
 	public function get_title() {
-		return __( 'Content Layout', 'mosaic-layouts-for-elementor' );
+		return __( 'Content Layout', 'mosaic-contents-for-elementor' );
 	}
 
 	public function get_icon() {
@@ -54,7 +54,7 @@ class ContentLayout extends Widget_Base {
 	}
 
 	public function get_categories() {
-		return array( 'mosaic-layouts' );
+		return array( 'mosaic-contents' );
 	}
 
 
@@ -180,15 +180,15 @@ class ContentLayout extends Widget_Base {
 		$this->start_controls_section(
 			'query_section',
 			array(
-				'label' => __( 'Query Settings', 'mosaic-layouts-for-elementor' ),
+				'label' => __( 'Query Settings', 'mosaic-contents-for-elementor' ),
 				'tab'   => Controls_Manager::TAB_CONTENT,
 			)
 		);
 
 		$this->add_control(
-			'ml4e_post_type',
+			'mc4e_post_type',
 			array(
-				'label'   => __( 'Post Type', 'mosaic-layouts-for-elementor' ),
+				'label'   => __( 'Post Type', 'mosaic-contents-for-elementor' ),
 				'type'    => Controls_Manager::SELECT,
 				'default' => $default_post_type,
 				'options' => $post_type_options,
@@ -196,9 +196,9 @@ class ContentLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'ml4e_taxonomy',
+			'mc4e_taxonomy',
 			array(
-				'label'   => __( 'Taxonomy', 'mosaic-layouts-for-elementor' ),
+				'label'   => __( 'Taxonomy', 'mosaic-contents-for-elementor' ),
 				'type'    => Controls_Manager::SELECT,
 				'default' => $default_taxonomy,
 				'options' => $taxonomy_options,
@@ -206,9 +206,9 @@ class ContentLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'ml4e_terms',
+			'mc4e_terms',
 			array(
-				'label'       => __( 'Terms', 'mosaic-layouts-for-elementor' ),
+				'label'       => __( 'Terms', 'mosaic-contents-for-elementor' ),
 				'type'        => Controls_Manager::SELECT2,
 				'default'     => array(),
 				'options'     => $this->get_terms_options( $default_taxonomy ),
@@ -218,53 +218,53 @@ class ContentLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'ml4e_orderby',
+			'mc4e_orderby',
 			array(
-				'label'   => __( 'Order By', 'mosaic-layouts-for-elementor' ),
+				'label'   => __( 'Order By', 'mosaic-contents-for-elementor' ),
 				'type'    => Controls_Manager::SELECT,
 				'default' => 'date',
 				'options' => array(
-					'date'       => __( 'Date', 'mosaic-layouts-for-elementor' ),
-					'title'      => __( 'Title', 'mosaic-layouts-for-elementor' ),
-					'modified'   => __( 'Modified', 'mosaic-layouts-for-elementor' ),
-					'menu_order' => __( 'Menu Order', 'mosaic-layouts-for-elementor' ),
-					'rand'       => __( 'Random', 'mosaic-layouts-for-elementor' ),
+					'date'       => __( 'Date', 'mosaic-contents-for-elementor' ),
+					'title'      => __( 'Title', 'mosaic-contents-for-elementor' ),
+					'modified'   => __( 'Modified', 'mosaic-contents-for-elementor' ),
+					'menu_order' => __( 'Menu Order', 'mosaic-contents-for-elementor' ),
+					'rand'       => __( 'Random', 'mosaic-contents-for-elementor' ),
 				),
 			)
 		);
 
 		$this->add_control(
-			'ml4e_order',
+			'mc4e_order',
 			array(
-				'label'   => __( 'Order', 'mosaic-layouts-for-elementor' ),
+				'label'   => __( 'Order', 'mosaic-contents-for-elementor' ),
 				'type'    => Controls_Manager::SELECT,
 				'default' => 'desc',
 				'options' => array(
-					'desc' => __( 'Descending', 'mosaic-layouts-for-elementor' ),
-					'asc'  => __( 'Ascending', 'mosaic-layouts-for-elementor' ),
+					'desc' => __( 'Descending', 'mosaic-contents-for-elementor' ),
+					'asc'  => __( 'Ascending', 'mosaic-contents-for-elementor' ),
 				),
 			)
 		);
 
 		$this->add_control(
-			'ml4e_sticky',
+			'mc4e_sticky',
 			array(
-				'label'        => __( 'Sticky Only', 'mosaic-layouts-for-elementor' ),
+				'label'        => __( 'Sticky Only', 'mosaic-contents-for-elementor' ),
 				'type'         => Controls_Manager::SWITCHER,
-				'label_on'     => __( 'Yes', 'mosaic-layouts-for-elementor' ),
-				'label_off'    => __( 'No', 'mosaic-layouts-for-elementor' ),
+				'label_on'     => __( 'Yes', 'mosaic-contents-for-elementor' ),
+				'label_off'    => __( 'No', 'mosaic-contents-for-elementor' ),
 				'return_value' => 'yes',
 				'default'      => '',
 			)
 		);
 
 		$this->add_control(
-			'ml4e_enable_pagination',
+			'mc4e_enable_pagination',
 			array(
-				'label'        => __( 'Enable Pagination', 'mosaic-layouts-for-elementor' ),
+				'label'        => __( 'Enable Pagination', 'mosaic-contents-for-elementor' ),
 				'type'         => Controls_Manager::SWITCHER,
-				'label_on'     => __( 'Yes', 'mosaic-layouts-for-elementor' ),
-				'label_off'    => __( 'No', 'mosaic-layouts-for-elementor' ),
+				'label_on'     => __( 'Yes', 'mosaic-contents-for-elementor' ),
+				'label_off'    => __( 'No', 'mosaic-contents-for-elementor' ),
 				'return_value' => 'yes',
 				'default'      => '',
 			)
@@ -275,7 +275,7 @@ class ContentLayout extends Widget_Base {
 		$this->start_controls_section(
 			'post_meta_section',
 			array(
-				'label' => __( 'Post Meta Display', 'mosaic-layouts-for-elementor' ),
+				'label' => __( 'Post Meta Display', 'mosaic-contents-for-elementor' ),
 				'tab'   => Controls_Manager::TAB_CONTENT,
 			)
 		);
@@ -285,7 +285,7 @@ class ContentLayout extends Widget_Base {
 		$meta_repeater->add_control(
 			'meta_key',
 			array(
-				'label'       => __( 'Meta Key', 'mosaic-layouts-for-elementor' ),
+				'label'       => __( 'Meta Key', 'mosaic-contents-for-elementor' ),
 				'type'        => Controls_Manager::TEXT,
 				'label_block' => true,
 			)
@@ -294,7 +294,7 @@ class ContentLayout extends Widget_Base {
 		$meta_repeater->add_control(
 			'meta_label',
 			array(
-				'label'       => __( 'Display Label', 'mosaic-layouts-for-elementor' ),
+				'label'       => __( 'Display Label', 'mosaic-contents-for-elementor' ),
 				'type'        => Controls_Manager::TEXT,
 				'label_block' => true,
 			)
@@ -303,7 +303,7 @@ class ContentLayout extends Widget_Base {
 		$meta_repeater->add_control(
 			'meta_prefix',
 			array(
-				'label' => __( 'Prefix', 'mosaic-layouts-for-elementor' ),
+				'label' => __( 'Prefix', 'mosaic-contents-for-elementor' ),
 				'type'  => Controls_Manager::TEXT,
 			)
 		);
@@ -311,7 +311,7 @@ class ContentLayout extends Widget_Base {
 		$meta_repeater->add_control(
 			'meta_suffix',
 			array(
-				'label' => __( 'Suffix', 'mosaic-layouts-for-elementor' ),
+				'label' => __( 'Suffix', 'mosaic-contents-for-elementor' ),
 				'type'  => Controls_Manager::TEXT,
 			)
 		);
@@ -319,14 +319,14 @@ class ContentLayout extends Widget_Base {
 		$meta_repeater->add_control(
 			'meta_condition',
 			array(
-				'label'   => __( 'Condition', 'mosaic-layouts-for-elementor' ),
+				'label'   => __( 'Condition', 'mosaic-contents-for-elementor' ),
 				'type'    => Controls_Manager::SELECT,
 				'default' => 'always',
 				'options' => array(
-					'always'     => __( 'Always', 'mosaic-layouts-for-elementor' ),
-					'not_empty'  => __( 'Not Empty', 'mosaic-layouts-for-elementor' ),
-					'equals'     => __( 'Equals', 'mosaic-layouts-for-elementor' ),
-					'not_equals' => __( 'Not Equals', 'mosaic-layouts-for-elementor' ),
+					'always'     => __( 'Always', 'mosaic-contents-for-elementor' ),
+					'not_empty'  => __( 'Not Empty', 'mosaic-contents-for-elementor' ),
+					'equals'     => __( 'Equals', 'mosaic-contents-for-elementor' ),
+					'not_equals' => __( 'Not Equals', 'mosaic-contents-for-elementor' ),
 				),
 			)
 		);
@@ -334,7 +334,7 @@ class ContentLayout extends Widget_Base {
 		$meta_repeater->add_control(
 			'meta_condition_value',
 			array(
-				'label'     => __( 'Condition Value', 'mosaic-layouts-for-elementor' ),
+				'label'     => __( 'Condition Value', 'mosaic-contents-for-elementor' ),
 				'type'      => Controls_Manager::TEXT,
 				'condition' => array(
 					'meta_condition' => array( 'equals', 'not_equals' ),
@@ -343,9 +343,9 @@ class ContentLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'ml4e_post_meta',
+			'mc4e_post_meta',
 			array(
-				'label'       => __( 'Meta Fields', 'mosaic-layouts-for-elementor' ),
+				'label'       => __( 'Meta Fields', 'mosaic-contents-for-elementor' ),
 				'type'        => Controls_Manager::REPEATER,
 				'fields'      => $meta_repeater->get_controls(),
 				'title_field' => '{{{ meta_key }}}',
@@ -358,58 +358,58 @@ class ContentLayout extends Widget_Base {
 		$this->start_controls_section(
 			'layout_section',
 			array(
-				'label' => __( 'Layout', 'mosaic-layouts-for-elementor' ),
+				'label' => __( 'Layout', 'mosaic-contents-for-elementor' ),
 				'tab'   => Controls_Manager::TAB_LAYOUT,
 			)
 		);
 
 		$this->add_control(
-			'ml4e_layout',
+			'mc4e_layout',
 			array(
-				'label'       => __( 'Predefined Layouts', 'mosaic-layouts-for-elementor' ),
+				'label'       => __( 'Predefined Layouts', 'mosaic-contents-for-elementor' ),
 				'type'        => Controls_Manager::SELECT,
 				'default'     => 'default',
 				'options'     => $this->get_layout_options( 'content-layout' ),
-				'description' => __( 'Choose a predefined layout for the product grid. Layouts 1-9 display 3 items, Layouts 10-14 display 4 items.', 'mosaic-layouts-for-elementor' ),
+				'description' => __( 'Choose a predefined layout for the product grid. Layouts 1-9 display 3 items, Layouts 10-14 display 4 items.', 'mosaic-contents-for-elementor' ),
 			)
 		);
 
 		$this->add_control(
-			'ml4e_custom_layout',
+			'mc4e_custom_layout',
 			array(
-				'label'       => __( 'Custom Layout', 'mosaic-layouts-for-elementor' ),
+				'label'       => __( 'Custom Layout', 'mosaic-contents-for-elementor' ),
 				'type'        => Controls_Manager::HIDDEN,
 				'default'     => '',
-				'description' => __( 'Stores custom layout data when you drag/resize items in the editor.', 'mosaic-layouts-for-elementor' ),
+				'description' => __( 'Stores custom layout data when you drag/resize items in the editor.', 'mosaic-contents-for-elementor' ),
 			)
 		);
 
 		$this->add_control(
-			'ml4e_reset_layout',
+			'mc4e_reset_layout',
 			array(
-				'label'        => __( 'Reset to Predefined Layout', 'mosaic-layouts-for-elementor' ),
+				'label'        => __( 'Reset to Predefined Layout', 'mosaic-contents-for-elementor' ),
 				'type'         => Controls_Manager::BUTTON,
-				'text'         => __( 'Reset Layout', 'mosaic-layouts-for-elementor' ),
-				'description'  => __( 'Clear layout modifications and restore the selected predefined layout.', 'mosaic-layouts-for-elementor' ),
+				'text'         => __( 'Reset Layout', 'mosaic-contents-for-elementor' ),
+				'description'  => __( 'Clear layout modifications and restore the selected predefined layout.', 'mosaic-contents-for-elementor' ),
 				'event'        => 'mosaic:resetLayout',
 			)
 		);
 
 		$this->add_control(
-			'ml4e_add_item',
+			'mc4e_add_item',
 			array(
-				'label'        => __( 'Add Item', 'mosaic-layouts-for-elementor' ),
+				'label'        => __( 'Add Item', 'mosaic-contents-for-elementor' ),
 				'type'         => Controls_Manager::BUTTON,
-				'text'         => __( 'Add Item', 'mosaic-layouts-for-elementor' ),
-				'description'  => __( 'Add a new item to the layout.', 'mosaic-layouts-for-elementor' ),
+				'text'         => __( 'Add Item', 'mosaic-contents-for-elementor' ),
+				'description'  => __( 'Add a new item to the layout.', 'mosaic-contents-for-elementor' ),
 				'event'        => 'mosaic:addItem',
 			)
 		);
 
 		$this->add_control(
-			'ml4e_items_margin',
+			'mc4e_items_margin',
 			array(
-				'label'   => __( 'Grid Gap', 'mosaic-layouts-for-elementor' ),
+				'label'   => __( 'Grid Gap', 'mosaic-contents-for-elementor' ),
 				'type'    => Controls_Manager::SLIDER,
 				'range'   => array(
 					'px' => array(
@@ -425,9 +425,9 @@ class ContentLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'ml4e_row_height',
+			'mc4e_row_height',
 			array(
-				'label'   => __( 'Grid Row Height', 'mosaic-layouts-for-elementor' ),
+				'label'   => __( 'Grid Row Height', 'mosaic-contents-for-elementor' ),
 				'type'    => Controls_Manager::SLIDER,
 				'range'   => array(
 					'px' => array(
@@ -443,60 +443,60 @@ class ContentLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'ml4e_allow_overlap',
+			'mc4e_allow_overlap',
 			array(
-				'label'        => __( 'Allow Overlap', 'mosaic-layouts-for-elementor' ),
+				'label'        => __( 'Allow Overlap', 'mosaic-contents-for-elementor' ),
 				'type'         => Controls_Manager::SWITCHER,
-				'label_on'     => __( 'Yes', 'mosaic-layouts-for-elementor' ),
-				'label_off'    => __( 'No', 'mosaic-layouts-for-elementor' ),
+				'label_on'     => __( 'Yes', 'mosaic-contents-for-elementor' ),
+				'label_off'    => __( 'No', 'mosaic-contents-for-elementor' ),
 				'return_value' => 'yes',
 				'default'      => 'yes',
-				'description'  => __( 'Allow grid items to overlap each other.', 'mosaic-layouts-for-elementor' ),
+				'description'  => __( 'Allow grid items to overlap each other.', 'mosaic-contents-for-elementor' ),
 			)
 		);
 
 		$this->add_control(
-			'ml4e_compaction_type',
+			'mc4e_compaction_type',
 			array(
-				'label'       => __( 'Compaction Type', 'mosaic-layouts-for-elementor' ),
+				'label'       => __( 'Compaction Type', 'mosaic-contents-for-elementor' ),
 				'type'        => Controls_Manager::SELECT,
 				'default'     => 'vertical',
 				'options'     => array(
-					'vertical'   => __( 'Vertical', 'mosaic-layouts-for-elementor' ),
-					'horizontal' => __( 'Horizontal', 'mosaic-layouts-for-elementor' ),
-					'none'       => __( 'None', 'mosaic-layouts-for-elementor' ),
+					'vertical'   => __( 'Vertical', 'mosaic-contents-for-elementor' ),
+					'horizontal' => __( 'Horizontal', 'mosaic-contents-for-elementor' ),
+					'none'       => __( 'None', 'mosaic-contents-for-elementor' ),
 				),
-				'description' => __( 'How items compact when moved. "None" keeps items in place.', 'mosaic-layouts-for-elementor' ),
+				'description' => __( 'How items compact when moved. "None" keeps items in place.', 'mosaic-contents-for-elementor' ),
 				'condition'   => array(
-					'ml4e_allow_overlap!' => 'yes',
+					'mc4e_allow_overlap!' => 'yes',
 				),
 			)
 		);
 
 
 		$this->add_control(
-			'ml4e_helper_notice',
+			'mc4e_helper_notice',
 			array(
 				'type' => \Elementor\Controls_Manager::NOTICE,
 				'notice_type' => 'info',
 				'dismissible' => false,
-				'heading' => esc_html__( 'Helpers', 'mosaic-layouts-for-elementor' ),
-				'content' => esc_html__( 'Visual aid - a grid visualization for placing and resizing items.', 'mosaic-layouts-for-elementor' ),
+				'heading' => esc_html__( 'Helpers', 'mosaic-contents-for-elementor' ),
+				'content' => esc_html__( 'Visual aid - a grid visualization for placing and resizing items.', 'mosaic-contents-for-elementor' ),
 			)
 		);
 
 		$this->add_control(
-			'ml4e_helper_grid',
+			'mc4e_helper_grid',
 			array(
-				'label'        => __( 'Grid Visualization', 'mosaic-layouts-for-elementor' ),
+				'label'        => __( 'Grid Visualization', 'mosaic-contents-for-elementor' ),
 				'type'         => Controls_Manager::SELECT,
 				'default'      => 'none',
 				'options'      => array(
-					'none'   => __( 'None', 'mosaic-layouts-for-elementor' ),
-					'front'  => __( 'Front', 'mosaic-layouts-for-elementor' ),
-					'behind' => __( 'Behind', 'mosaic-layouts-for-elementor' ),
+					'none'   => __( 'None', 'mosaic-contents-for-elementor' ),
+					'front'  => __( 'Front', 'mosaic-contents-for-elementor' ),
+					'behind' => __( 'Behind', 'mosaic-contents-for-elementor' ),
 				),
-				'description'  => __( 'Visual aid for underlying grid structure.', 'mosaic-layouts-for-elementor' ),
+				'description'  => __( 'Visual aid for underlying grid structure.', 'mosaic-contents-for-elementor' ),
 			)
 		);
 
@@ -506,17 +506,17 @@ class ContentLayout extends Widget_Base {
 		$this->start_controls_section(
 			'saved_setups_section',
 			array(
-				'label' => __( 'Saved Setups', 'mosaic-layouts-for-elementor' ),
+				'label' => __( 'Saved Setups', 'mosaic-contents-for-elementor' ),
 				'tab'   => Controls_Manager::TAB_CONTENT,
 			)
 		);
 
 		$this->add_control(
-			'ml4e_saved_setup',
+			'mc4e_saved_setup',
 			array(
-				'label'       => __( 'Layout & Style Setups', 'mosaic-layouts-for-elementor' ),
-				'description' => __( 'Save, load, or delete layout and style configurations.', 'mosaic-layouts-for-elementor' ),
-				'type'        => 'ml4e_saved_setups',
+				'label'       => __( 'Layout & Style Setups', 'mosaic-contents-for-elementor' ),
+				'description' => __( 'Save, load, or delete layout and style configurations.', 'mosaic-contents-for-elementor' ),
+				'type'        => 'mc4e_saved_setups',
 				'default'     => '',
 			)
 		);
@@ -525,31 +525,31 @@ class ContentLayout extends Widget_Base {
 
 		// ── Element Ordering Section ───────────────────────────────────────
 		$this->register_element_ordering_controls(
-			'ml4e_element_ordering',
-			__( 'Element Order & Visibility', 'mosaic-layouts-for-elementor' ),
+			'mc4e_element_ordering',
+			__( 'Element Order & Visibility', 'mosaic-contents-for-elementor' ),
 			array(
 				$this->default_elements_visibility(
-					__( 'Title', 'mosaic-layouts-for-elementor' ),
+					__( 'Title', 'mosaic-contents-for-elementor' ),
 					array( true, true, true, true, true )
 				),
 				$this->default_elements_visibility(
-					__( 'Excerpt', 'mosaic-layouts-for-elementor' ),
+					__( 'Excerpt', 'mosaic-contents-for-elementor' ),
 					array( true, true, true, true, true )
 				),
 				$this->default_elements_visibility(
-					__( 'Featured Image', 'mosaic-layouts-for-elementor' ),
+					__( 'Featured Image', 'mosaic-contents-for-elementor' ),
 					array( true, true, true, true, true )
 				),
 				$this->default_elements_visibility(
-					__( 'Read More', 'mosaic-layouts-for-elementor' ),
+					__( 'Read More', 'mosaic-contents-for-elementor' ),
 					array( true, true, true, true, true )
 				),
 				$this->default_elements_visibility(
-					__( 'Terms', 'mosaic-layouts-for-elementor' ),
+					__( 'Terms', 'mosaic-contents-for-elementor' ),
 					array( true, true, true, true, true )
 				),
 				$this->default_elements_visibility(
-					__( 'Post Meta', 'mosaic-layouts-for-elementor' ),
+					__( 'Post Meta', 'mosaic-contents-for-elementor' ),
 					array( true, true, true, true, true )
 				),
 			)
@@ -559,26 +559,26 @@ class ContentLayout extends Widget_Base {
 		$this->start_controls_section(
 			'product_style_settings_section',
 			[
-				'label' => esc_html__( 'Product Card Style', 'mosaic-layouts-for-elementor' ),
+				'label' => esc_html__( 'Product Card Style', 'mosaic-contents-for-elementor' ),
 				'tab' => \Elementor\Controls_Manager::TAB_STYLE,
 			]
 		);
 
 		$this->add_control(
-			'ml4e_style_preset',
+			'mc4e_style_preset',
 			array(
-				'label'       => esc_html__( 'Style Preset', 'mosaic-layouts-for-elementor' ),
+				'label'       => esc_html__( 'Style Preset', 'mosaic-contents-for-elementor' ),
 				'type'        => Controls_Manager::VISUAL_CHOICE,
 				'columns'     => 4,
 				'label_block' => true,
 				'default'     => '',
 				'options'     => $this->get_style_preset_options( 'content-layout' ),
-				'description' => esc_html__( 'Pick a preset to instantly apply a complete style pack.', 'mosaic-layouts-for-elementor' ),
+				'description' => esc_html__( 'Pick a preset to instantly apply a complete style pack.', 'mosaic-contents-for-elementor' ),
 			)
 		);
 
 		$this->add_control(
-			'ml4e_style_preset_divider',
+			'mc4e_style_preset_divider',
 			array(
 				'type' => Controls_Manager::DIVIDER,
 			)
@@ -587,10 +587,10 @@ class ContentLayout extends Widget_Base {
 		$this->add_control(
 			'popover-toggle-test',
 			[
-				'label' => esc_html__( 'Popover test', 'mosaic-layouts-for-elementor' ),
+				'label' => esc_html__( 'Popover test', 'mosaic-contents-for-elementor' ),
 				'type' => \Elementor\Controls_Manager::POPOVER_TOGGLE,
-				'label_off' => esc_html__( 'Default', 'mosaic-layouts-for-elementor' ),
-				'label_on' => esc_html__( 'Custom', 'mosaic-layouts-for-elementor' ),
+				'label_off' => esc_html__( 'Default', 'mosaic-contents-for-elementor' ),
+				'label_on' => esc_html__( 'Custom', 'mosaic-contents-for-elementor' ),
 				'return_value' => 'yes',
 			]
 		);
@@ -599,7 +599,7 @@ class ContentLayout extends Widget_Base {
 				'popover_content',
 				array(
 					'type'            => Controls_Manager::RAW_HTML,
-					'raw'             =>  __( '<strong>JUST AN EMPTY POPOVER', 'mosaic-layouts-for-elementor' ) ,
+					'raw'             =>  __( '<strong>JUST AN EMPTY POPOVER', 'mosaic-contents-for-elementor' ) ,
 					'separator'       => 'after',
 					'content_classes' => 'elementor-panel-alert elementor-panel-alert-info',
 				)
@@ -614,14 +614,14 @@ class ContentLayout extends Widget_Base {
 		$this->start_controls_tab(
 			'product_text_sizes_tab',
 			array(
-				'label' => esc_html__( 'Text', 'mosaic-layouts-for-elementor' ),
+				'label' => esc_html__( 'Text', 'mosaic-contents-for-elementor' ),
 			)
 		);
 
 		$this->add_responsive_control(
-			'ml4e_title_size',
+			'mc4e_title_size',
 			array(
-				'label'     => esc_html__( 'Title size', 'mosaic-layouts-for-elementor' ),
+				'label'     => esc_html__( 'Title size', 'mosaic-contents-for-elementor' ),
 				'type'      => Controls_Manager::SLIDER,
 				'size_units' => array( 'px', 'em', 'rem', 'vw', 'vh' ),
 				'default'   => array(
@@ -638,15 +638,15 @@ class ContentLayout extends Widget_Base {
 				],
 				'range'     => self::get_range(),
 				'selectors' => array(
-					'#ml4e-{{ID}} .flex-wrapper .product-elements .name' => 'font-size:{{SIZE}}{{UNIT}};',
+					'#mc4e-{{ID}} .flex-wrapper .product-elements .name' => 'font-size:{{SIZE}}{{UNIT}};',
 				),
 			)
 		);
 
 		$this->add_responsive_control(
-			'ml4e_price_size',
+			'mc4e_price_size',
 			array(
-				'label'     => esc_html__( 'Price size', 'mosaic-layouts-for-elementor' ),
+				'label'     => esc_html__( 'Price size', 'mosaic-contents-for-elementor' ),
 				'type'      => Controls_Manager::SLIDER,
 				'size_units' => array( 'px', 'em', 'rem', 'vw', 'vh' ),
 				'default'   => array(
@@ -663,15 +663,15 @@ class ContentLayout extends Widget_Base {
 				],
 				'range'     => self::get_range(),
 				'selectors' => array(
-					'#ml4e-{{ID}} .flex-wrapper .product-elements .price' => 'font-size:{{SIZE}}{{UNIT}};',
+					'#mc4e-{{ID}} .flex-wrapper .product-elements .price' => 'font-size:{{SIZE}}{{UNIT}};',
 				),
 			)
 		);
 
 		$this->add_responsive_control(
-			'ml4e_button_size',
+			'mc4e_button_size',
 			array(
-				'label'     => esc_html__( 'Button text size', 'mosaic-layouts-for-elementor' ),
+				'label'     => esc_html__( 'Button text size', 'mosaic-contents-for-elementor' ),
 				'type'      => Controls_Manager::SLIDER,
 				'size_units' => array( 'px', 'em', 'rem', 'vw', 'vh' ),
 				'default'   => array(
@@ -688,15 +688,15 @@ class ContentLayout extends Widget_Base {
 				],
 				'range'     => self::get_range(),
 				'selectors' => array(
-					'#ml4e-{{ID}} .flex-wrapper .product-elements .add_to_cart_button' => 'font-size:{{SIZE}}{{UNIT}} !important;',
+					'#mc4e-{{ID}} .flex-wrapper .product-elements .add_to_cart_button' => 'font-size:{{SIZE}}{{UNIT}} !important;',
 				),
 			)
 		);
 
 		$this->add_responsive_control(
-			'ml4e_taxonomy_size',
+			'mc4e_taxonomy_size',
 			array(
-				'label'     => esc_html__( 'Taxonomy text size', 'mosaic-layouts-for-elementor' ),
+				'label'     => esc_html__( 'Taxonomy text size', 'mosaic-contents-for-elementor' ),
 				'type'      => Controls_Manager::SLIDER,
 				'size_units' => array( 'px', 'em', 'rem', 'vw', 'vh' ),
 				'default'   => array(
@@ -713,7 +713,7 @@ class ContentLayout extends Widget_Base {
 				],
 				'range'     => self::get_range(), 
 				'selectors' => array(
-					'#ml4e-{{ID}} .flex-wrapper .product-elements .taxonomy' => 'font-size:{{SIZE}}{{UNIT}};',
+					'#mc4e-{{ID}} .flex-wrapper .product-elements .taxonomy' => 'font-size:{{SIZE}}{{UNIT}};',
 				),
 			)
 		);
@@ -724,23 +724,23 @@ class ContentLayout extends Widget_Base {
 		$this->start_controls_tab(
 			'product_layout_tab',
 			array(
-				'label' => esc_html__( 'Layout', 'mosaic-layouts-for-elementor' ),
+				'label' => esc_html__( 'Layout', 'mosaic-contents-for-elementor' ),
 			)
 		);
 		$this->add_control(
-			'ml4e_product_layout',
+			'mc4e_product_layout',
 			array(
-				'label'       => __( 'Product Card Layout', 'mosaic-layouts-for-elementor' ),
+				'label'       => __( 'Product Card Layout', 'mosaic-contents-for-elementor' ),
 				'type'        => Controls_Manager::SELECT,
 				'default'     => 'vertical',
 				'options'     => array(
-					'image-background' => __( 'Image background', 'mosaic-layouts-for-elementor' ),
-					'horizontal'       => __( 'Image left', 'mosaic-layouts-for-elementor' ),
-					'horizontal-alt'   => __( 'Image right', 'mosaic-layouts-for-elementor' ),
-					'vertical'         => __( 'Image top', 'mosaic-layouts-for-elementor' ),
-					'vertical-alt'     => __( 'Image bottom', 'mosaic-layouts-for-elementor' ),
+					'image-background' => __( 'Image background', 'mosaic-contents-for-elementor' ),
+					'horizontal'       => __( 'Image left', 'mosaic-contents-for-elementor' ),
+					'horizontal-alt'   => __( 'Image right', 'mosaic-contents-for-elementor' ),
+					'vertical'         => __( 'Image top', 'mosaic-contents-for-elementor' ),
+					'vertical-alt'     => __( 'Image bottom', 'mosaic-contents-for-elementor' ),
 				),
-				// 'description' => __( 'Select predefined layout for product display.', 'mosaic-layouts-for-elementor' ),
+				// 'description' => __( 'Select predefined layout for product display.', 'mosaic-contents-for-elementor' ),
 			)
 		);
 
@@ -749,21 +749,21 @@ class ContentLayout extends Widget_Base {
 		);
 
 		$this->add_responsive_control(
-			'ml4e_product_align',
+			'mc4e_product_align',
 			array(
-				'label'        => esc_html__( 'Align', 'mosaic-layouts-for-elementor' ),
+				'label'        => esc_html__( 'Align', 'mosaic-contents-for-elementor' ),
 				'type'         => Controls_Manager::CHOOSE,
 				'options'      => array(
 					'flex-start'   => array(
-						'title' => __( 'Left', 'mosaic-layouts-for-elementor' ),
+						'title' => __( 'Left', 'mosaic-contents-for-elementor' ),
 						'icon'  => 'eicon-h-align-left',
 					),
 					'center' => array(
-						'title' => __( 'Center', 'mosaic-layouts-for-elementor' ),
+						'title' => __( 'Center', 'mosaic-contents-for-elementor' ),
 						'icon'  => 'eicon-h-align-center',
 					),
 					'flex-end'  => array(
-						'title' => __( 'Right', 'mosaic-layouts-for-elementor' ),
+						'title' => __( 'Right', 'mosaic-contents-for-elementor' ),
 						'icon'  => 'eicon-h-align-right',
 					),
 
@@ -777,21 +777,21 @@ class ContentLayout extends Widget_Base {
 		);
 
 		$this->add_responsive_control(
-			'ml4e_product_vertical_align',
+			'mc4e_product_vertical_align',
 			array(
-				'label'     => esc_html__( 'Vertical align', 'mosaic-layouts-for-elementor' ),
+				'label'     => esc_html__( 'Vertical align', 'mosaic-contents-for-elementor' ),
 				'type'      => Controls_Manager::CHOOSE,
 				'options'   => array(
 					'flex-start' => array(
-						'title' => __( 'Top', 'mosaic-layouts-for-elementor' ),
+						'title' => __( 'Top', 'mosaic-contents-for-elementor' ),
 						'icon'  => 'eicon-v-align-top',
 					),
 					'center'     => array(
-						'title' => __( 'Center', 'mosaic-layouts-for-elementor' ),
+						'title' => __( 'Center', 'mosaic-contents-for-elementor' ),
 						'icon'  => 'eicon-v-align-middle',
 					),
 					'flex-end'   => array(
-						'title' => __( 'Bottom', 'mosaic-layouts-for-elementor' ),
+						'title' => __( 'Bottom', 'mosaic-contents-for-elementor' ),
 						'icon'  => 'eicon-v-align-bottom',
 					),
 				),
@@ -807,9 +807,9 @@ class ContentLayout extends Widget_Base {
 		);
 
 		$this->add_responsive_control(
-			'ml4e_elements_gap',
+			'mc4e_elements_gap',
 			array(
-				'label'     => esc_html__( 'Elements gap', 'mosaic-layouts-for-elementor' ),
+				'label'     => esc_html__( 'Elements gap', 'mosaic-contents-for-elementor' ),
 				'type'      => Controls_Manager::SLIDER,
 				'size_units' => array( 'px', '%', 'em', 'rem', 'vw', 'vh' ),
 				'default'   => array(
@@ -828,9 +828,9 @@ class ContentLayout extends Widget_Base {
 		);
 
 		$this->add_responsive_control(
-			'ml4e_padding',
+			'mc4e_padding',
 			array(
-				'label'      => __( 'Padding', 'mosaic-layouts-for-elementor' ),
+				'label'      => __( 'Padding', 'mosaic-contents-for-elementor' ),
 				'type'       => Controls_Manager::DIMENSIONS,
 				'size_units' => array( 'px', '%', 'em', 'rem', 'vw', 'vh' ),
 				'selectors' => array(
@@ -845,14 +845,14 @@ class ContentLayout extends Widget_Base {
 		$this->start_controls_tab(
 			'product_image_tab',
 			array(
-				'label' => esc_html__( 'Image', 'mosaic-layouts-for-elementor' ),
+				'label' => esc_html__( 'Image', 'mosaic-contents-for-elementor' ),
 			)
 		);
 		
 		$this->add_responsive_control(
-			'ml4e_image_size',
+			'mc4e_image_size',
 			array(
-				'label'     => esc_html__( 'Image size', 'mosaic-layouts-for-elementor' ),
+				'label'     => esc_html__( 'Image size', 'mosaic-contents-for-elementor' ),
 				'type'      => Controls_Manager::SLIDER,
 				'default'   => array(
 					'size' => 50,
@@ -870,15 +870,15 @@ class ContentLayout extends Widget_Base {
 					'{{WRAPPER}} .item-wrapper .flex-wrapper' => 'flex-basis: calc(100% - {{size}}%);',
 				),
 				'condition'   => array(
-					'ml4e_product_layout!' => 'image-background',
+					'mc4e_product_layout!' => 'image-background',
 				)
 			)
 		);
 
 		$this->add_control(
-			'ml4e_featured_image_size',
+			'mc4e_featured_image_size',
 			array(
-				'label'       => esc_html__( 'Image resolution', 'mosaic-layouts-for-elementor' ),
+				'label'       => esc_html__( 'Image resolution', 'mosaic-contents-for-elementor' ),
 				'type'        => Controls_Manager::SELECT,
 				'default'     => 'automatic',
 				'options'     => $this->get_image_sizes(),
@@ -886,27 +886,27 @@ class ContentLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'ml4e_image_fit',
+			'mc4e_image_fit',
 			array(
-				'label'   => esc_html__( 'Image fit', 'mosaic-layouts-for-elementor' ),
+				'label'   => esc_html__( 'Image fit', 'mosaic-contents-for-elementor' ),
 				'type'    => Controls_Manager::SELECT,
 				'default' => 'cover',
 				'options' => array(
-					'cover'      => __( 'Cover', 'mosaic-layouts-for-elementor' ),
-					'contain'    => __( 'Contain', 'mosaic-layouts-for-elementor' ),
-					'fill'       => __( 'Fill', 'mosaic-layouts-for-elementor' ),
-					'none'       => __( 'None', 'mosaic-layouts-for-elementor' ),
-					'scale-down' => __( 'Scale Down', 'mosaic-layouts-for-elementor' ),
+					'cover'      => __( 'Cover', 'mosaic-contents-for-elementor' ),
+					'contain'    => __( 'Contain', 'mosaic-contents-for-elementor' ),
+					'fill'       => __( 'Fill', 'mosaic-contents-for-elementor' ),
+					'none'       => __( 'None', 'mosaic-contents-for-elementor' ),
+					'scale-down' => __( 'Scale Down', 'mosaic-contents-for-elementor' ),
 				),
 			)
 		);
 
 		$this->add_control(
-			'ml4e_featured_image_position',
+			'mc4e_featured_image_position',
 			array(
-				'label'       => esc_html__( 'Image position', 'mosaic-layouts-for-elementor' ),
-				'description' => esc_html__( 'Drag the focal point to position the image within the product card.', 'mosaic-layouts-for-elementor' ),
-				'type'        => 'ml4e_focal_point',
+				'label'       => esc_html__( 'Image position', 'mosaic-contents-for-elementor' ),
+				'description' => esc_html__( 'Drag the focal point to position the image within the product card.', 'mosaic-contents-for-elementor' ),
+				'type'        => 'mc4e_focal_point',
 				'default'     => array(
 					'x' => 50,
 					'y' => 50,
@@ -920,14 +920,14 @@ class ContentLayout extends Widget_Base {
 		$this->start_controls_tab(
 			'product_colors_tab',
 			array(
-				'label' => esc_html__( 'Colors', 'mosaic-layouts-for-elementor' ),
+				'label' => esc_html__( 'Colors', 'mosaic-contents-for-elementor' ),
 			)
 		);
 		
 		$this->add_control(
-			'ml4e_text_color',
+			'mc4e_text_color',
 			array(
-				'label'     => esc_html__( 'Text color', 'mosaic-layouts-for-elementor' ),
+				'label'     => esc_html__( 'Text color', 'mosaic-contents-for-elementor' ),
 				'type'      => Controls_Manager::COLOR,
 				'default'   => '#333333',
 				'selectors' => array(
@@ -937,9 +937,9 @@ class ContentLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'ml4e_links_color',
+			'mc4e_links_color',
 			array(
-				'label'     => esc_html__( 'Links color', 'mosaic-layouts-for-elementor' ),
+				'label'     => esc_html__( 'Links color', 'mosaic-contents-for-elementor' ),
 				'type'      => Controls_Manager::COLOR,
 				'default'   => '#333333',
 				'selectors' => array(
@@ -950,8 +950,8 @@ class ContentLayout extends Widget_Base {
 		$this->add_group_control(
 			\Elementor\Group_Control_Background::get_type(),
 			array(
-				'name'      => 'ml4e_background_color',
-				'label'     => esc_html__( 'Background', 'mosaic-layouts-for-elementor' ),
+				'name'      => 'mc4e_background_color',
+				'label'     => esc_html__( 'Background', 'mosaic-contents-for-elementor' ),
 				'types'     => array( 'classic', 'gradient' ),
 				'selector' => '{{WRAPPER}} .item-wrapper .flex-wrapper',
 				'default'   => '#ffffff',
@@ -966,23 +966,23 @@ class ContentLayout extends Widget_Base {
 		$this->start_controls_tab(
 			'product_border_tab',
 			array(
-				'label' => esc_html__( 'Borders', 'mosaic-layouts-for-elementor' ),
+				'label' => esc_html__( 'Borders', 'mosaic-contents-for-elementor' ),
 			)
 		);
 		$this->add_group_control(
 			Group_Control_Border::get_type(),
 			array(
-				'name'      => 'ml4e_product_border',
-				'label'     => __( 'Products border', 'mosaic-layouts-for-elementor' ),
+				'name'      => 'mc4e_product_border',
+				'label'     => __( 'Products border', 'mosaic-contents-for-elementor' ),
 				'selector'  => '{{WRAPPER}} .item-wrapper',
 			)
 		);
 
 		$this->add_control(
-			'ml4e_border_radius',
+			'mc4e_border_radius',
 			array(
 				'show_label' => true,
-				'label'      => __( 'Border Radius', 'mosaic-layouts-for-elementor' ),
+				'label'      => __( 'Border Radius', 'mosaic-contents-for-elementor' ),
 				'type'       => Controls_Manager::DIMENSIONS,
 				'size_units' => array( 'px', '%' ),
 				'selectors' => array(
@@ -994,7 +994,7 @@ class ContentLayout extends Widget_Base {
 		$this->add_group_control(
 			Group_Control_Box_Shadow::get_type(),
 			array(
-				'name'      => 'ml4e_box_shadow',
+				'name'      => 'mc4e_box_shadow',
 				'selector'  => '{{WRAPPER}} .item-wrapper',
 			)
 		);
@@ -1006,7 +1006,7 @@ class ContentLayout extends Widget_Base {
 		$this->add_control(
 			'special_elements_heading',
 			array(
-				'label' => esc_html__( 'Special Elements', 'mosaic-layouts-for-elementor' ),
+				'label' => esc_html__( 'Special Elements', 'mosaic-contents-for-elementor' ),
 				'type' => Controls_Manager::HEADING,
 				'separator' => 'before',
 			)
@@ -1019,14 +1019,14 @@ class ContentLayout extends Widget_Base {
 		$this->start_controls_tab(
 			'badges_sale_tab',
 			array(
-				'label' => esc_html__( 'Badges', 'mosaic-layouts-for-elementor' ),
+				'label' => esc_html__( 'Badges', 'mosaic-contents-for-elementor' ),
 			)
 		);
 
 		$this->add_responsive_control(
-			'ml4e_sale_badge_size',
+			'mc4e_sale_badge_size',
 			array(
-				'label'      => esc_html__( 'Sale badge text size', 'mosaic-layouts-for-elementor' ),
+				'label'      => esc_html__( 'Sale badge text size', 'mosaic-contents-for-elementor' ),
 				'type'       => Controls_Manager::SLIDER,
 				'size_units' => array( 'px', 'em', 'rem', 'vw', 'vh' ),
 				'range'      => self::get_range(),
@@ -1041,9 +1041,9 @@ class ContentLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'ml4e_sale_badge_color',
+			'mc4e_sale_badge_color',
 			array(
-				'label'     => esc_html__( 'Sale badge text color', 'mosaic-layouts-for-elementor' ),
+				'label'     => esc_html__( 'Sale badge text color', 'mosaic-contents-for-elementor' ),
 				'type'      => Controls_Manager::COLOR,
 				'default'   => '#FFFFFF',
 				'selectors' => array(
@@ -1053,9 +1053,9 @@ class ContentLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'ml4e_sale_badge_backcolor',
+			'mc4e_sale_badge_backcolor',
 			array(
-				'label'     => esc_html__( 'Sale badge background color', 'mosaic-layouts-for-elementor' ),
+				'label'     => esc_html__( 'Sale badge background color', 'mosaic-contents-for-elementor' ),
 				'type'      => Controls_Manager::COLOR,
 				'default'   => '#CC0000',
 				'selectors' => array(
@@ -1065,11 +1065,11 @@ class ContentLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'ml4e_sale_badge_position',
+			'mc4e_sale_badge_position',
 			array(
-				'label'       => esc_html__( 'Sale badge position', 'mosaic-layouts-for-elementor' ),
-				'description' => esc_html__( 'Drag the focal point to position the sale badge within the product card.', 'mosaic-layouts-for-elementor' ),
-				'type'        => 'ml4e_focal_point',
+				'label'       => esc_html__( 'Sale badge position', 'mosaic-contents-for-elementor' ),
+				'description' => esc_html__( 'Drag the focal point to position the sale badge within the product card.', 'mosaic-contents-for-elementor' ),
+				'type'        => 'mc4e_focal_point',
 				'default'     => array(
 					'x' => 10,
 					'y' => 10,
@@ -1083,14 +1083,14 @@ class ContentLayout extends Widget_Base {
 		$this->start_controls_tab(
 			'badges_other_tab',
 			array(
-				'label' => esc_html__( 'Other', 'mosaic-layouts-for-elementor' ),
+				'label' => esc_html__( 'Other', 'mosaic-contents-for-elementor' ),
 			)
 		);
 
 		$this->add_control(
-			'ml4e_rating_size',
+			'mc4e_rating_size',
 			array(
-				'label'     => esc_html__( 'Rating stars size', 'mosaic-layouts-for-elementor' ),
+				'label'     => esc_html__( 'Rating stars size', 'mosaic-contents-for-elementor' ),
 				'type'      => Controls_Manager::SLIDER,
 				'default'   => array('size' => 100, 'unit' => ''),
 				'range'       => array(

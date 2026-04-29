@@ -20,64 +20,65 @@ const { __ } = wp.i18n;
 // Each widget type has its own WP option key, settings manifest, and channel events.
 const WIDGET_CONFIGS = {
 	'content-layout': {
-		optionKey: 'ml4e_content_layout_setups',
+		optionKey: 'mc4e_content_layout_setups',
 		applySetupEvent: 'mosaic:applySetup',
-// Layout settings (React-mapped)
+
+		// Layout settings (React-mapped)
 		layoutKeys: [
-			'ml4e_layout',
-			'ml4e_custom_layout',
-			'ml4e_items_margin',
-			'ml4e_row_height',
-			'ml4e_allow_overlap',
-			'ml4e_compaction_type',
-			'ml4e_element_ordering',
+			'mc4e_layout',
+			'mc4e_custom_layout',
+			'mc4e_items_margin',
+			'mc4e_row_height',
+			'mc4e_allow_overlap',
+			'mc4e_compaction_type',
+			'mc4e_element_ordering',
 		],
 		// Style settings (React-mapped)
 		styleKeys: [
-			'ml4e_style_preset',
-			'ml4e_product_layout',
-			'ml4e_title_size',
-			'ml4e_price_size',
-			'ml4e_button_size',
-			'ml4e_taxonomy_size',
-			'ml4e_product_align',
-			'ml4e_product_vertical_align',
-			'ml4e_featured_image_size',
-			'ml4e_featured_image_position',
-			'ml4e_image_fit',
-			'ml4e_sale_badge_position',
+			'mc4e_style_preset',
+			'mc4e_product_layout',
+			'mc4e_title_size',
+			'mc4e_price_size',
+			'mc4e_button_size',
+			'mc4e_taxonomy_size',
+			'mc4e_product_align',
+			'mc4e_product_vertical_align',
+			'mc4e_featured_image_size',
+			'mc4e_featured_image_position',
+			'mc4e_image_fit',
+			'mc4e_sale_badge_position',
 		],
 		// Responsive setting keys (have _tablet, _mobile variants)
 		responsiveKeys: [
-			'ml4e_title_size',
-			'ml4e_price_size',
-			'ml4e_button_size',
-			'ml4e_taxonomy_size',
-			'ml4e_product_align',
-			'ml4e_product_vertical_align',
-			'ml4e_elements_gap',
-			'ml4e_padding',
-			'ml4e_image_size',
-			'ml4e_badge_sale_size',
+			'mc4e_title_size',
+			'mc4e_price_size',
+			'mc4e_button_size',
+			'mc4e_taxonomy_size',
+			'mc4e_product_align',
+			'mc4e_product_vertical_align',
+			'mc4e_elements_gap',
+			'mc4e_padding',
+			'mc4e_image_size',
+			'mc4e_badge_sale_size',
 		],
 		// Selector-only style settings (NOT in React mapper but affect visual appearance)
 		selectorStyleKeys: [
-			'ml4e_elements_gap',
-			'ml4e_padding',
-			'ml4e_image_size',
-			'ml4e_text_color',
-			'ml4e_links_color',
-			'ml4e_border_radius',
-			'ml4e_rating_size',
-			'ml4e_badge_sale_size',
-			'ml4e_sale_badge_color',
-			'ml4e_sale_badge_backcolor',
+			'mc4e_elements_gap',
+			'mc4e_padding',
+			'mc4e_image_size',
+			'mc4e_text_color',
+			'mc4e_links_color',
+			'mc4e_border_radius',
+			'mc4e_rating_size',
+			'mc4e_badge_sale_size',
+			'mc4e_sale_badge_color',
+			'mc4e_sale_badge_backcolor',
 		],
 		// Group control prefixes
 		groupControlPrefixes: [
-			'ml4e_background_color',
-			'ml4e_product_border',
-			'ml4e_box_shadow',
+			'mc4e_background_color',
+			'mc4e_product_border',
+			'mc4e_box_shadow',
 		],
 	},
 };
@@ -140,7 +141,7 @@ function showToast(message, type = 'success') {
 			// Elementor toasts don't have 'type' but we can use different buttons/durations
 		});
 	} else {
-		console.log(`[ML4E Setup ${type}]:`, message);
+		console.log(`[MC4E Setup ${type}]:`, message);
 	}
 }
 
@@ -285,7 +286,7 @@ function SavedSetupsUI({ initialValue, onValueChange }) {
 			.catch(err => {
 				if (err.name === 'AbortError') return;
 				console.error('Failed to fetch setups:', err);
-				setError(__('Failed to load setups.', 'mosaic-layouts-for-elementor'));
+				setError(__('Failed to load setups.', 'mosaic-contents-for-elementor'));
 			})
 			.finally(() => setIsLoading(false));
 
@@ -293,6 +294,12 @@ function SavedSetupsUI({ initialValue, onValueChange }) {
 	}, []);
 
 	// ── Persist setups to WP options ──
+	/**
+	 * Persist the current setups state to WordPress settings.
+	 *
+	 * @param {Array<Object>} setupsToSave - The saved setup objects to persist.
+	 * @returns {Promise<boolean>} True when save succeeds.
+	 */
 	const persistSetups = useCallback(async (setupsToSave) => {
 		setIsSaving(true);
 		setError(null);
@@ -304,7 +311,7 @@ function SavedSetupsUI({ initialValue, onValueChange }) {
 			});
 			return true;
 		} catch (err) {
-			const msg = err.message || __('Failed to save.', 'mosaic-layouts-for-elementor');
+			const msg = err.message || __('Failed to save.', 'mosaic-contents-for-elementor');
 			setError(msg);
 			showToast(msg, 'error');
 			return false;
@@ -314,14 +321,20 @@ function SavedSetupsUI({ initialValue, onValueChange }) {
 	}, []);
 
 	// ── Save current setup ──
+	/**
+	 * Capture the current widget settings and save them as a named setup.
+	 * If the setup ID already exists, the user is prompted to confirm overwrite.
+	 *
+	 * @returns {Promise<void>}
+	 */
 	const handleSave = useCallback(async () => {
 		const trimmed = newSetupName.trim();
 		if (!trimmed) {
 			// Focus the input and show inline feedback
 			if (nameInputRef.current) {
 				nameInputRef.current.focus();
-				nameInputRef.current.classList.add('ml4e-input-error');
-				setTimeout(() => nameInputRef.current?.classList.remove('ml4e-input-error'), 1500);
+				nameInputRef.current.classList.add('mc4e-input-error');
+				setTimeout(() => nameInputRef.current?.classList.remove('mc4e-input-error'), 1500);
 			}
 			return;
 		}
@@ -331,7 +344,7 @@ function SavedSetupsUI({ initialValue, onValueChange }) {
 
 		const model = getWidgetModel();
 		if (!model) {
-			showToast(__('No widget model found.', 'mosaic-layouts-for-elementor'), 'error');
+			showToast(__('No widget model found.', 'mosaic-contents-for-elementor'), 'error');
 			return;
 		}
 
@@ -346,7 +359,7 @@ function SavedSetupsUI({ initialValue, onValueChange }) {
 		const existingIndex = setups.findIndex(s => s.id === id);
 		if (existingIndex !== -1) {
 			if (!confirm(
-				`${__('Setup', 'mosaic-layouts-for-elementor')} "${trimmed}" ${__('already exists. Overwrite?', 'mosaic-layouts-for-elementor')}`
+				`${__('Setup', 'mosaic-contents-for-elementor')} "${trimmed}" ${__('already exists. Overwrite?', 'mosaic-contents-for-elementor')}`
 			)) {
 				return;
 			}
@@ -364,13 +377,19 @@ function SavedSetupsUI({ initialValue, onValueChange }) {
 			onValueChange(id);
 			showToast(
 				existingIndex !== -1
-					? __('Setup updated!', 'mosaic-layouts-for-elementor')
-					: __('Setup saved!', 'mosaic-layouts-for-elementor')
+					? __('Setup updated!', 'mosaic-contents-for-elementor')
+					: __('Setup saved!', 'mosaic-contents-for-elementor')
 			);
 		}
 	}, [newSetupName, setups, persistSetups, onValueChange]);
 
 	// ── Load selected setup ──
+	/**
+	 * Apply the selected setup to the current widget model.
+	 *
+	 * @param {Event} e - Change event from the setup select element.
+	 * @returns {void}
+	 */
 	const handleSelect = useCallback((e) => {
 		const id = e.target.value;
 		setSelectedId(id);
@@ -385,10 +404,15 @@ function SavedSetupsUI({ initialValue, onValueChange }) {
 		if (!model) return;
 
 		applySettingsToModel(model, setup.settings);
-		showToast(`${__('Loaded:', 'mosaic-layouts-for-elementor')} ${setup.name}`);
+		showToast(`${__('Loaded:', 'mosaic-contents-for-elementor')} ${setup.name}`);
 	}, [setups, onValueChange]);
 
 	// ── Delete selected setup ──
+	/**
+	 * Delete the currently selected saved setup and persist the new list.
+	 *
+	 * @returns {Promise<void>}
+	 */
 	const handleDelete = useCallback(async () => {
 		if (!selectedId) return;
 
@@ -396,7 +420,7 @@ function SavedSetupsUI({ initialValue, onValueChange }) {
 		const name = setup?.name || selectedId;
 
 		if (!confirm(
-			`${__('Delete setup', 'mosaic-layouts-for-elementor')} "${name}"?`
+			`${__('Delete setup', 'mosaic-contents-for-elementor')} "${name}"?`
 		)) {
 			return;
 		}
@@ -407,31 +431,31 @@ function SavedSetupsUI({ initialValue, onValueChange }) {
 			setSetups(updated);
 			setSelectedId('');
 			onValueChange('');
-			showToast(__('Setup deleted.', 'mosaic-layouts-for-elementor'));
+			showToast(__('Setup deleted.', 'mosaic-contents-for-elementor'));
 		}
 	}, [selectedId, setups, persistSetups, onValueChange]);
 
 	// ── Render ──
 	if (isLoading) {
-		return <div className="ml4e-setups-loading">{__('Loading setups…', 'mosaic-layouts-for-elementor')}</div>;
+		return <div className="mc4e-setups-loading">{__('Loading setups…', 'mosaic-contents-for-elementor')}</div>;
 	}
 
 	return (
-		<div className="ml4e-saved-setups-ui">
-			{error && <div className="ml4e-setups-error">{error}</div>}
+		<div className="mc4e-saved-setups-ui">
+			{error && <div className="mc4e-setups-error">{error}</div>}
 
 			{/* Select saved setup */}
-			<div className="ml4e-setups-select-row">
+			<div className="mc4e-setups-select-row">
 				<select
-					className="ml4e-setups-select"
+					className="mc4e-setups-select"
 					value={selectedId}
 					onChange={handleSelect}
 					disabled={isSaving}
 				>
 					<option value="">{
 						setups.length
-							? __('— Select a setup —', 'mosaic-layouts-for-elementor')
-							: __('— No saved setups —', 'mosaic-layouts-for-elementor')
+							? __('— Select a setup —', 'mosaic-contents-for-elementor')
+							: __('— No saved setups —', 'mosaic-contents-for-elementor')
 					}</option>
 					{setups.map(s => (
 						<option key={s.id} value={s.id}>{s.name}</option>
@@ -441,10 +465,10 @@ function SavedSetupsUI({ initialValue, onValueChange }) {
 				{/* Delete button – only when a setup is selected */}
 				{selectedId && (
 					<button
-						className="ml4e-setups-delete-btn"
+						className="mc4e-setups-delete-btn"
 						onClick={handleDelete}
 						disabled={isSaving}
-						title={__('Delete selected setup', 'mosaic-layouts-for-elementor')}
+						title={__('Delete selected setup', 'mosaic-contents-for-elementor')}
 						type="button"
 					>
 						<i className="eicon-trash-o" />
@@ -453,26 +477,26 @@ function SavedSetupsUI({ initialValue, onValueChange }) {
 			</div>
 
 			{/* Save new setup */}
-			<div className="ml4e-setups-save-row">
+			<div className="mc4e-setups-save-row">
 				<input
 					ref={nameInputRef}
-					className="ml4e-setups-name-input"
+					className="mc4e-setups-name-input"
 					type="text"
-					placeholder={__('Setup name…', 'mosaic-layouts-for-elementor')}
+					placeholder={__('Setup name…', 'mosaic-contents-for-elementor')}
 					value={newSetupName}
 					onChange={(e) => setNewSetupName(e.target.value)}
 					onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); }}
 					disabled={isSaving}
 				/>
 				<button
-					className="ml4e-setups-save-btn"
+					className="mc4e-setups-save-btn"
 					onClick={handleSave}
 					disabled={isSaving}
 					type="button"
 				>
 					{isSaving
-						? __('Saving…', 'mosaic-layouts-for-elementor')
-						: __('Save', 'mosaic-layouts-for-elementor')
+						? __('Saving…', 'mosaic-contents-for-elementor')
+						: __('Save', 'mosaic-contents-for-elementor')
 					}
 				</button>
 			</div>
@@ -483,22 +507,37 @@ function SavedSetupsUI({ initialValue, onValueChange }) {
 
 // ── Elementor Control View Registration ───────────────────────────────────
 
+/**
+ * Initialize the saved setups control view within Elementor.
+ *
+ * @returns {void}
+ */
 function initSavedSetupsControl() {
 	if (typeof elementor === 'undefined' || !elementor.modules) return;
 
 	const BaseDataControl = elementor.modules.controls.BaseData;
 	if (!BaseDataControl) {
-		console.error('ML4E: BaseData control not found');
+		console.error('MC4E: BaseData control not found');
 		return;
 	}
 
 	const SavedSetupsControl = BaseDataControl.extend({
+		/**
+		 * Elementor control lifecycle callback when the control is ready.
+		 *
+		 * @returns {void}
+		 */
 		onReady() {
 			this.initSavedSetups();
 		},
 
+		/**
+		 * Mount the React saved setups UI into the control container.
+		 *
+		 * @returns {void}
+		 */
 		initSavedSetups() {
-			const container = this.$el.find('.ml4e-saved-setups-container');
+			const container = this.$el.find('.mc4e-saved-setups-container');
 			if (!container.length) return;
 
 			const initialValue = container.data('initial-value') || '';
@@ -519,12 +558,22 @@ function initSavedSetupsControl() {
 			this.setValue(value);
 		},
 
+		/**
+		 * Apply the saved control value from Elementor when the control is restored.
+		 *
+		 * @returns {void}
+		 */
 		applySavedValue() {
 			BaseDataControl.prototype.applySavedValue.apply(this, arguments);
 			// The React component manages its own state from WP options;
 			// the control value is just the selected setup ID for reference.
 		},
 
+		/**
+		 * Clean up and unmount the React root before control destruction.
+		 *
+		 * @returns {void}
+		 */
 		onBeforeDestroy() {
 			if (this._reactRoot) {
 				this._reactRoot.unmount();
@@ -533,7 +582,7 @@ function initSavedSetupsControl() {
 		},
 	});
 
-	elementor.addControlView('ml4e_saved_setups', SavedSetupsControl);
+	elementor.addControlView('mc4e_saved_setups', SavedSetupsControl);
 }
 
 // Initialize when Elementor is ready

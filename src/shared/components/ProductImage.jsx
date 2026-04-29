@@ -8,7 +8,7 @@ import PropTypes from 'prop-types';
 import placeholderImgForBuild from '../woocommerce-placeholder-300x300.png';
 
 // Get placeholder image URL from localized script data
-const placeholderImg = window.ML4E?.placeholderImg || '';
+const placeholderImg = window.MC4E?.placeholderImg || '';
 
 /**
  * Internal dependencies.
@@ -36,7 +36,7 @@ const ProductImage = ({ productId, postType = 'post', name, images, featuredImag
 	const fallback = (
 		<img
 			src={typeof wc === 'object' ? wc?.wcSettings?.PLACEHOLDER_IMG_SRC : placeholderImg}
-			alt={__('Content item has no featured image', 'mosaic-layouts-for-elementor')}
+			alt={__('Content item has no featured image', 'mosaic-contents-for-elementor')}
 		/>
 	);
 
@@ -44,7 +44,7 @@ const ProductImage = ({ productId, postType = 'post', name, images, featuredImag
 	const isAuto = featuredImageSize === 'automatic';
 
 	// Fallback for image alt attribute.
-	const altFallback = __('Product image', 'mosaic-layouts-for-elementor');
+	const altFallback = __('Product image', 'mosaic-contents-for-elementor');
 
 	// Get featured image using custom hook
 	// (only if not in 'automatic' mode, otherwise we get srcset and sizes from "images" prop)

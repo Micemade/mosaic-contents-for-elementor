@@ -724,7 +724,7 @@ External Dependencies (Not Bundled)
            ▼
 ┌─────────────────────────────┐
 │ wp_localize_script()        │
-│ window.ML4E = {            │
+│ window.MC4E = {            │
 │   storeApiNonce: '...',     │
 │   cartUrl: '...',           │
 │   placeholderImg: '...'     │
@@ -734,14 +734,14 @@ External Dependencies (Not Bundled)
            ▼
 ┌─────────────────────────────┐
 │ React Component             │
-│ Reads window.ML4E          │
+│ Reads window.MC4E          │
 └──────────┬──────────────────┘
            │
            ▼
 ┌─────────────────────────────┐
 │ Add to Request Headers      │
 │ {                           │
-│   'Nonce': window.ML4E     │
+│   'Nonce': window.MC4E     │
 │            .storeApiNonce   │
 │ }                           │
 └──────────┬──────────────────┘
@@ -817,7 +817,7 @@ External Dependencies (Not Bundled)
 ┌─────────────────────────────────────────────────────────────┐
 │ PHP: controls/focal-point.php                               │
 │ class Focal_Point extends Base_Data_Control {               │
-│   get_type() { return 'ml4e_focal_point'; }                │
+│   get_type() { return 'mc4e_focal_point'; }                │
 │   content_template() { /* Backbone template */ }            │
 │ }                                                            │
 └───────────────────────────┬─────────────────────────────────┘
@@ -857,7 +857,7 @@ External Dependencies (Not Bundled)
 ┌─────────────────────────────────────────────────────────────┐
 │ PHP: controls/saved-setups.php                              │
 │ class Saved_Setups extends Base_Data_Control {              │
-│   get_type() { return 'ml4e_saved_setups'; }               │
+│   get_type() { return 'mc4e_saved_setups'; }               │
 │   content_template() { /* hidden input + React mount div */ }│
 │   enqueue() { /* loads saved-setups-control.js */ }          │
 │ }                                                            │
@@ -874,7 +874,7 @@ External Dependencies (Not Bundled)
 │ • SavedSetupsUI component (select, input, save/delete btns) │
 │ • captureSettingsFromModel() → reads all widget settings     │
 │ • applySettingsToModel() → triggers mosaic:applySetup event  │
-│ • wp.apiFetch → /wp/v2/settings (read/write ml4e_...setups) │
+│ • wp.apiFetch → /wp/v2/settings (read/write mc4e_...setups) │
 └───────────────────────────┬─────────────────────────────────┘
                             │  On load setup:
                             │  elementor.channels.editor
@@ -883,7 +883,7 @@ External Dependencies (Not Bundled)
 ┌─────────────────────────────────────────────────────────────┐
 │ editor-hooks.js (preview iframe context)                    │
 │ 1. Disable renderOnChange                                   │
-│ 2. Disable change:ml4e_layout listener                     │
+│ 2. Disable change:mc4e_layout listener                     │
 │ 3. settingsModel.set(setupSettings) ← atomic batch           │
 │ 4. Restore renderOnChange                                   │
 │ 5. Restore layout listener                                  │
@@ -987,7 +987,7 @@ window
 │  ├─ updateInstance()                 Update React state
 │  └─ getModel()                       Get Elementor model
 │
-├─ ML4E ◄──────────────────────────── Localized PHP Data
+├─ MC4E ◄──────────────────────────── Localized PHP Data
 │  ├─ storeApiNonce                    WooCommerce auth
 │  ├─ cartUrl                          Cart page URL
 │  ├─ ajaxUrl                          AJAX endpoint

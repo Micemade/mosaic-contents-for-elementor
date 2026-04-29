@@ -221,6 +221,6 @@ class WidgetManager {
 const widgetManager = new WidgetManager();
 
 // Expose globally for React components to access
-window.MosaicLayoutsReact = widgetManager;
+window.MosaicContentsReact = widgetManager;
 
 export default widgetManager;

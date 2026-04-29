@@ -3,7 +3,7 @@ import archiver from 'archiver';
 import fs from 'fs';
 import path from 'path';
 
-const PLUGIN_SLUG = 'mosaic-product-layouts-for-elementor';
+const PLUGIN_SLUG = 'mosaic-contents-for-elementor';
 const ROOT = path.resolve('.');
 const OUT = path.resolve('..', `${PLUGIN_SLUG}.zip`);
 

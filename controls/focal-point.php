@@ -5,10 +5,10 @@
  * A custom Elementor control for selecting X/Y position using a focal point picker.
  * Used for positioning elements like sale badges within their parent container.
  *
- * @package Micemade\MosaicLayoutsElementor\Controls
+ * @package Micemade\MosaicContentsElementor\Controls
  */
 
-namespace Micemade\MosaicLayoutsElementor\Controls;
+namespace Micemade\MosaicContentsElementor\Controls;
 
 use Elementor\Base_Data_Control;
 
@@ -35,7 +35,7 @@ class Focal_Point extends Base_Data_Control {
 	 * @return string Control type.
 	 */
 	public function get_type() {
-		return 'ml4e_focal_point';
+		return 'mc4e_focal_point';
 	}
 
 	/**
@@ -83,7 +83,7 @@ class Focal_Point extends Base_Data_Control {
 	public function enqueue() {
 		// Enqueue the React-based control script
 		wp_enqueue_script(
-			'ml4e-focal-point-control',
+			'mc4e-focal-point-control',
 			plugins_url( 'assets/admin/js/focal-point-control.js', dirname( __FILE__ ) ),
 			array( 'jquery', 'react', 'react-dom' ),
 			'1.0.0',
@@ -92,7 +92,7 @@ class Focal_Point extends Base_Data_Control {
 
 		// Enqueue the control styles
 		wp_enqueue_style(
-			'ml4e-focal-point-control',
+			'mc4e-focal-point-control',
 			plugins_url( 'assets/admin/css/focal-point-control.css', dirname( __FILE__ ) ),
 			array(),
 			'1.0.0'
@@ -103,7 +103,7 @@ class Focal_Point extends Base_Data_Control {
 	 * Render control output in the editor.
 	 *
 	 * Used to generate the control HTML in the editor using Underscore JS template.
-	 * The React component will mount into the .ml4e-focal-point-container element.
+	 * The React component will mount into the .mc4e-focal-point-container element.
 	 *
 	 * @since 1.0.0
 	 * @access public
@@ -124,24 +124,24 @@ class Focal_Point extends Base_Data_Control {
 					50; #>
 
 					<!-- Hidden inputs for Elementor data binding -->
-					<input type="hidden" id="<?php echo esc_attr( $x_uid ); ?>" class="ml4e-focal-point-x"
+					<input type="hidden" id="<?php echo esc_attr( $x_uid ); ?>" class="mc4e-focal-point-x"
 						data-setting="x" value="{{ xValue }}" />
-					<input type="hidden" id="<?php echo esc_attr( $y_uid ); ?>" class="ml4e-focal-point-y"
+					<input type="hidden" id="<?php echo esc_attr( $y_uid ); ?>" class="mc4e-focal-point-y"
 						data-setting="y" value="{{ yValue }}" />
 
 					<!-- React mount container -->
-					<div class="ml4e-focal-point-container" data-control-uid="<?php echo esc_attr( $control_uid ); ?>"
+					<div class="mc4e-focal-point-container" data-control-uid="<?php echo esc_attr( $control_uid ); ?>"
 						data-initial-x="{{ xValue }}" data-initial-y="{{ yValue }}"
 						data-preview-image="{{ data.preview_image }}">
 					</div>
 
 					<!-- Value display -->
-					<div class="ml4e-focal-point-values">
-						<span class="ml4e-focal-point-value">
-							X: <span class="ml4e-x-value">{{ xValue }}</span>%
+					<div class="mc4e-focal-point-values">
+						<span class="mc4e-focal-point-value">
+							X: <span class="mc4e-x-value">{{ xValue }}</span>%
 						</span>
-						<span class="ml4e-focal-point-value">
-							Y: <span class="ml4e-y-value">{{ yValue }}</span>%
+						<span class="mc4e-focal-point-value">
+							Y: <span class="mc4e-y-value">{{ yValue }}</span>%
 						</span>
 					</div>
 			</div>
