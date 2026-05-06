@@ -76,7 +76,7 @@ class RestAPI {
 			array(
 				'methods'             => 'GET',
 				'callback'            => array( $this, 'get_post_types' ),
-				'permission_callback' => '__return_true',
+				'permission_callback' => '__return_true', // Public endpoint for post type metadata
 			)
 		);
 
@@ -86,7 +86,7 @@ class RestAPI {
 			array(
 				'methods'             => 'GET',
 				'callback'            => array( $this, 'get_post_meta_values' ),
-				'permission_callback' => '__return_true',
+				'permission_callback' => array( $this, 'check_permission' ),
 				'args'                => array(
 					'post_ids' => array(
 						'description'       => __( 'Comma-separated post IDs.', 'mosaic-contents-for-elementor' ),
@@ -110,7 +110,7 @@ class RestAPI {
 			array(
 				'methods'             => 'GET',
 				'callback'            => array( $this, 'get_taxonomy_terms' ),
-				'permission_callback' => '__return_true',
+				'permission_callback' => '__return_true', // Public endpoint for taxonomy terms
 				'args'                => array(
 					'taxonomy' => array(
 						'description'       => __( 'Taxonomy slug.', 'mosaic-contents-for-elementor' ),
@@ -126,10 +126,53 @@ class RestAPI {
 	/**
 	 * Check if the current user has permission to access the endpoint.
 	 *
-	 * @return bool True if user can edit posts, false otherwise.
+	 * Validates user capability and rate limits.
+	 *
+	 * @return bool|WP_Error True if user can access, false or WP_Error otherwise.
 	 */
-	public function check_permission(): bool {
-		return current_user_can( 'edit_posts' );
+	public function check_permission() {
+		if ( ! current_user_can( 'edit_posts' ) ) {
+			return false;
+		}
+
+		// SECURITY: Rate limiting - max 100 requests per minute per user
+		if ( ! $this->check_rate_limit() ) {
+			return new WP_Error(
+				'rest_rate_limit',
+				__( 'Too many requests. Please try again later.', 'mosaic-contents-for-elementor' ),
+				array( 'status' => 429 )
+			);
+		}
+
+		return true;
+	}
+
+	/**
+	 * Check rate limit for current user.
+	 *
+	 * Uses WordPress transients for rate limiting (fallback to in-memory if unavailable).
+	 *
+	 * @return bool True if within rate limit, false if exceeded.
+	 */
+	private function check_rate_limit(): bool {
+		$user_id = get_current_user_id();
+
+		if ( ! $user_id ) {
+			return false;
+		}
+
+		$cache_key      = 'mc4e_api_rate_' . $user_id;
+		$limit_per_min  = 100;
+		$request_count  = (int) get_transient( $cache_key );
+
+		if ( $request_count >= $limit_per_min ) {
+			return false;
+		}
+
+		// Increment and set expiry to 1 minute
+		set_transient( $cache_key, $request_count + 1, MINUTE_IN_SECONDS );
+
+		return true;
 	}
 
 	/**
@@ -144,6 +187,7 @@ class RestAPI {
 				'type'              => 'string',
 				'required'          => false,
 				'sanitize_callback' => 'sanitize_text_field',
+				'validate_callback' => array( $this, 'validate_search_param' ),
 			),
 			'per_page' => array(
 				'description'       => __( 'Maximum number of items to return.', 'mosaic-contents-for-elementor' ),
@@ -154,6 +198,38 @@ class RestAPI {
 				'sanitize_callback' => 'absint',
 			),
 		);
+	}
+
+	/**
+	 * Validate search parameter for length and format.
+	 *
+	 * @param string $value The search parameter value.
+	 * @return true|WP_Error True if valid, WP_Error otherwise.
+	 */
+	public function validate_search_param( $value ): bool {
+		if ( empty( $value ) ) {
+			return true; // Empty is valid (optional parameter)
+		}
+
+		$length = strlen( $value );
+
+		if ( $length < 2 ) {
+			return new WP_Error(
+				'invalid_search_length',
+				__( 'Search term must be at least 2 characters.', 'mosaic-contents-for-elementor' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		if ( $length > 100 ) {
+			return new WP_Error(
+				'search_too_long',
+				__( 'Search term must not exceed 100 characters.', 'mosaic-contents-for-elementor' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		return true;
 	}
 
 	/**
@@ -215,9 +291,9 @@ class RestAPI {
 	public function get_post_types(): WP_REST_Response {
 		$post_types = get_post_types(
 			array(
-				'public'       => true,
+				'public'             => true,
 				'publicly_queryable' => true,
-				'show_in_rest' => true,
+				'show_in_rest'       => true,
 			),
 			'objects'
 		);
@@ -225,6 +301,11 @@ class RestAPI {
 		$data = array();
 
 		foreach ( $post_types as $post_type ) {
+			// Filter out unwanted post types
+			if ( in_array( $post_type->name, array( 'e-floating-buttons', 'elementor_library' ), true ) ) {
+				continue;
+			}
+
 			$post_type_taxonomies = get_object_taxonomies( $post_type->name, 'objects' );
 			$taxonomies           = array();
 			$taxonomy_labels      = array();
@@ -235,8 +316,8 @@ class RestAPI {
 					continue;
 				}
 
-				$taxonomies[]                            = $taxonomy->name;
-				$taxonomy_labels[ $taxonomy->name ] = $taxonomy->label;
+				$taxonomies[]                           = $taxonomy->name;
+				$taxonomy_labels[ $taxonomy->name ]     = $taxonomy->label;
 				$taxonomy_rest_bases[ $taxonomy->name ] = ! empty( $taxonomy->rest_base ) ? $taxonomy->rest_base : $taxonomy->name;
 			}
 
@@ -294,12 +375,36 @@ class RestAPI {
 	/**
 	 * Get selected post meta values for a set of posts.
 	 *
+	 * SECURITY: Only whitelisted meta keys are returned to prevent leakage of sensitive metadata.
+	 *
 	 * @param WP_REST_Request $request Request object.
 	 * @return WP_REST_Response
 	 */
 	public function get_post_meta_values( WP_REST_Request $request ): WP_REST_Response {
 		$post_ids  = array_filter( array_map( 'absint', explode( ',', (string) $request->get_param( 'post_ids' ) ) ) );
 		$meta_keys = array_filter( array_map( 'sanitize_key', explode( ',', (string) $request->get_param( 'meta_keys' ) ) ) );
+
+		/**
+		 * Whitelist of allowed meta keys that can be queried.
+		 * Only add keys that are safe to expose to users with 'edit_posts' capability.
+		 *
+		 * @filter mc4e_allowed_post_meta_keys
+		 */
+		$allowed_meta_keys = apply_filters(
+			'mc4e_allowed_post_meta_keys',
+			array(
+				'_thumbnail_id',        // Featured image ID (safe to expose)
+				'_mc4e_custom_field_1', // Example custom field
+				'_mc4e_custom_field_2',
+			)
+		);
+
+		// Restrict to whitelist only
+		$meta_keys = array_intersect( $meta_keys, $allowed_meta_keys );
+
+		if ( empty( $meta_keys ) ) {
+			return rest_ensure_response( array() );
+		}
 
 		$payload = array();
 

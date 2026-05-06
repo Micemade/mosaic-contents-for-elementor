@@ -11,7 +11,7 @@
 /*
  * External dependencies.
  */
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, memo, useRef } from 'react';
 import DOMPurify from 'dompurify';
 
 /*
@@ -19,7 +19,7 @@ import DOMPurify from 'dompurify';
  */
 // Components.
 import GridLayout from '../../shared/components/GridLayout.jsx';
-import ProductImage from '../../shared/components/ProductImage.jsx';
+import FeaturedImage from '../../shared/components/FeaturedImage.jsx';
 import ItemControls from '../../shared/components/ItemControls.jsx';
 import GridHelper from '../../shared/components/GridHelper.jsx';
 import Pagination from '../../shared/components/Pagination.jsx';
@@ -38,7 +38,14 @@ import { getVisibleLayout } from '../../shared/utils/visibleLayout.js';
 import './content-layout.scss';
 
 // Sanitize HTML content.
-const Sanitizer = DOMPurify.sanitize;
+// Configure DOMPurify with strict whitelist for safe HTML
+const DOMPurifyConfig = {
+	ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'br', 'p', 'a'],
+	ALLOWED_ATTR: ['href', 'target', 'rel'],
+	KEEP_CONTENT: true,
+};
+
+const Sanitizer = (html) => DOMPurify.sanitize(html, DOMPurifyConfig);
 
 // Cache: LRU in editor, plain object on frontend.
 const productsCache = createCache();
@@ -92,9 +99,10 @@ async function resolvePostTypeRestBase(postType) {
  * Pattern adapted from mosaic-product-layouts apiFetchQuery.
  *
  * @param {Object} querySettings - Query parameters from Elementor controls.
+ * @param {AbortSignal} signal - Abort signal for canceling the request.
  * @returns {Promise<Object>} Product result with items and pagination metadata.
  */
-async function fetchProducts(querySettings) {
+async function fetchProducts(querySettings, signal) {
 	const {
 		layoutItemLimit,
 		mc4e_post_type,
@@ -132,7 +140,7 @@ async function fetchProducts(querySettings) {
 	const postType = mc4e_post_type || 'post';
 	const restBase = await resolvePostTypeRestBase(postType);
 	const endpoint = `${getRestRoot()}wp/v2/${encodeURIComponent(restBase)}?${params.toString()}`;
-	const response = await fetch(endpoint);
+	const response = await fetch(endpoint, { signal });
 
 	if (!response.ok) {
 		throw new Error(`WordPress REST API error: ${response.status}`);
@@ -149,8 +157,8 @@ async function fetchProducts(querySettings) {
 
 		return {
 			id: item.id,
-			name: item?.title?.rendered || '',
-			shortDescription: item?.excerpt?.rendered || '',
+			name: Sanitizer(item?.title?.rendered || ''),
+			shortDescription: Sanitizer(item?.excerpt?.rendered || ''),
 			permalink: item?.link || '#',
 			meta: item?.meta || {},
 			terms,
@@ -211,12 +219,23 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 	// Determine if we're in edit mode (from prop, not runtime detection)
 	const isEditMode = mode === 'edit';
 
+	const abortControllerRef = useRef(null);
+	const debounceTimeoutRef = useRef(null);
+
 	const [products, setProducts] = useState([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [isFetching, setIsFetching] = useState(false);
 	const [error, setError] = useState(null);
 	const [currentPage, setCurrentPage] = useState(1);
 	const [paginationMeta, setPaginationMeta] = useState({ total: 0, totalPages: 1 });
+
+	// Debounced page change to prevent rapid API calls
+	const debouncedSetCurrentPage = useCallback((page) => {
+		if (debounceTimeoutRef.current) {
+			clearTimeout(debounceTimeoutRef.current);
+		}
+		debounceTimeoutRef.current = setTimeout(() => setCurrentPage(page), 100);
+	}, []);
 
 	// Generate CSS custom properties from responsive settings
 	const cssVariables = useCssVariables(widgetData);
@@ -227,18 +246,19 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 		return getBreakpointTextAlignVars(widgetData?.mc4e_product_align, '--mc4e-product-align-text-');
 	}, [widgetData?.mc4e_product_align]);
 
-	// Extract settings with defaults
+	// ── Settings extraction ──────────────────────────────────────────
 	const layoutId = widgetData?.mc4e_layout || 'default';
 	const customLayoutData = widgetData?.mc4e_custom_layout || '';
 	const contentLayoutVariant = widgetData?.mc4e_product_layout || 'vertical';
-	const saleBadgePosition = widgetData?.mc4e_sale_badge_position || { x: 10, y: 10 };
 	const featuredImageSize = widgetData?.mc4e_featured_image_size || 'automatic';
 	const featuredImagePosition = widgetData?.mc4e_featured_image_position || { x: 50, y: 50 };
 	const featuredImageFit = widgetData?.mc4e_image_fit || 'cover';
+	const excerptTruncate = widgetData?.mc4e_excerpt_truncate ?? true;
 	const helperType = widgetData?.mc4e_helper_grid || 'none';
 	const enablePagination = widgetData?.mc4e_enable_pagination || false;
 	const selectedTerms = widgetData?.mc4e_terms || [];
 	const selectedPostType = widgetData?.mc4e_post_type || 'post';
+	const customButtonClassName = widgetData?.mc4e_custom_button_class || '';
 
 	// Element ordering from repeater control
 	const elementOrdering = useMemo(
@@ -258,6 +278,7 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 	// Track Elementor's device mode switcher for the grid helper column calculation.
 	const deviceType = useElementorDevice();
 
+	// ── Layout data ──────────────────────────────────────────────────
 	// Get layout from predefined layouts (layout is source of truth for grid structure)
 	// If custom_layout exists, parse and use it; otherwise use predefined layout
 	const layoutData = useMemo(() => {
@@ -331,6 +352,15 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 
 	useEffect(() => {
 		const loadProducts = async () => {
+			// Abort previous request
+			if (abortControllerRef.current) {
+				abortControllerRef.current.abort();
+			}
+
+			// Create new abort controller
+			abortControllerRef.current = new AbortController();
+			const signal = abortControllerRef.current.signal;
+
 			// Create cache key from query settings
 			const cacheKey = JSON.stringify(querySettings);
 
@@ -339,7 +369,7 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 			await loadCachedData({
 				cache: productsCache,
 				cacheKey,
-				fetcher: () => fetchProducts(querySettings),
+				fetcher: () => fetchProducts(querySettings, signal),
 				onCacheHit: (cachedData) => {
 					if (Array.isArray(cachedData)) {
 						// Backward-compatibility for old cache shape.
@@ -359,6 +389,10 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 					setPaginationMeta({ total: result.total || 0, totalPages: result.totalPages || 1 });
 				},
 				onError: (err) => {
+					if (err.name === 'AbortError') {
+						// Request was aborted, ignore
+						return;
+					}
 					console.error('Error fetching content:', err);
 					setError('Failed to fetch content.Please try again later.');
 					setPaginationMeta({ total: 0, totalPages: 1 });
@@ -370,6 +404,13 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 		};
 
 		loadProducts();
+
+		// Cleanup: abort on unmount or dependency change
+		return () => {
+			if (abortControllerRef.current) {
+				abortControllerRef.current.abort();
+			}
+		};
 	}, [querySettings]);
 
 	// Handle layout changes in editor (drag/resize)
@@ -442,6 +483,14 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 		);
 	}
 
+	// Button classes following WooCommerce's pattern
+	const buttonClasses = [
+		'wp-block-button__link',
+		'wp-element-button',
+		'wc-block-components-product-button__button',
+		customButtonClassName,
+	].filter(Boolean).join(' ');
+
 	return (
 		<>
 			<div
@@ -449,8 +498,9 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 				data-widget-id={widgetId}
 				style={{ ...cssVariables, ...alignTextVars }}
 			>
+
 				{isFetching && (
-					<p className="layout-loading">Fetching posts...</p>
+					<p className="layout-loading">Fetching content...</p>
 				)}
 				<GridLayout
 					layouts={visibleLayoutData}
@@ -468,11 +518,11 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 				>
 					{/* Map over visible layout items only — items without a matching product are hidden */}
 					{visibleLayoutData.mobile.map((layoutItem) => {
-						const matchedProduct = productsData.find((p) => p.i === layoutItem.i);
+						const matchedPost = productsData.find((p) => p.i === layoutItem.i);
 						const zIndex = layoutData.zindex?.[layoutItem.i] || 0;
 
 						// Skip empty items (no product assigned)
-						if (!matchedProduct || matchedProduct.empty) {
+						if (!matchedPost || matchedPost.empty) {
 							return (
 								<div
 									key={layoutItem.i}
@@ -517,22 +567,25 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 								)}
 								<div className={`item-wrapper ${contentLayoutVariant}`}>
 
-									<figure className="product-image product-featured-image gradient-preloader">
-										<ProductImage
-											productId={matchedProduct.id}
-											postType={selectedPostType}
-											name={matchedProduct.name}
-											images={matchedProduct.images}
-											featuredImageSize={featuredImageSize}
-											style={{
-												'object-position': `${featuredImagePosition.x}% ${featuredImagePosition.y}%`,
-												'object-fit': featuredImageFit,
-											}}
-										/>
+									{ /* If no featured image, skip */}
+									{matchedPost.images.length > 0 && (
+										<figure className="product-image product-featured-image gradient-preloader">
+											<FeaturedImage
+												postId={matchedPost.id}
+												postType={selectedPostType}
+												name={matchedPost.name}
+												images={matchedPost.images}
+												featuredImageSize={featuredImageSize}
+												style={{
+													'object-position': `${featuredImagePosition.x}% ${featuredImagePosition.y}%`,
+													'object-fit': featuredImageFit,
+												}}
+											/>
+										</figure>
+									)}
 
-									</figure>
 
-									<div className='flex-wrapper'>
+									<div className='flex-wrapper' style={{ ...!matchedPost.images.length && { flexBasis: "100%" } }}>
 										<div className="product-info product-elements">
 
 											{elementOrdering.map((el) => {
@@ -541,29 +594,32 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 													case 'title':
 														return (
 															<h3 key={el.key} className={`name${elClasses}`}>
-																<a href={matchedProduct.permalink}>{decode(matchedProduct.name)}</a>
+																<a href={matchedPost.permalink}>{decode(matchedPost.name)}</a>
 															</h3>
 														);
 													case 'excerpt':
-														return matchedProduct.shortDescription ? (
+														return matchedPost.shortDescription ? (
 															<div
 																key={el.key}
-																	className={`excerpt${elClasses}`}
-																	dangerouslySetInnerHTML={{ __html: Sanitizer(matchedProduct.shortDescription) }}
+																className={`excerpt${elClasses} ${excerptTruncate ? 'truncated' : ''}`}
+																dangerouslySetInnerHTML={{ __html: Sanitizer(matchedPost.shortDescription) }}
 															/>
 														) : null;
 													case 'read_more':
 														return (
-															<div key={el.key} className={`read-more-wrapper${elClasses}`}>
-																<a className="read-more-link" href={matchedProduct.permalink}>
+															<div
+																key={el.key}
+																className={`read-more-wrapper${elClasses}`}
+															>
+																<a className={`read-more-link ${buttonClasses}`} href={matchedPost.permalink}>
 																	Read More
 																</a>
 															</div>
 														);
 													case 'terms':
-														return matchedProduct.terms && matchedProduct.terms.length > 0 ? (
+														return matchedPost.terms && matchedPost.terms.length > 0 ? (
 															<div key={el.key} className={`taxonomy terms${elClasses}`}>
-																{matchedProduct.terms.flatMap((term, index) => [
+																{matchedPost.terms.flatMap((term, index) => [
 																	...(index > 0 ? [', '] : []),
 																	<a
 																		key={`${term.taxonomy}-${term.id}`}
@@ -579,7 +635,7 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 														const rows = (widgetData?.mc4e_post_meta || []).filter((metaDef) => {
 															const key = metaDef?.meta_key;
 															if (!key) return false;
-															const value = `${matchedProduct?.meta?.[key] ?? ''}`;
+															const value = `${matchedPost?.meta?.[key] ?? ''}`;
 															const condition = metaDef?.meta_condition || 'always';
 															const expected = `${metaDef?.meta_condition_value ?? ''}`;
 
@@ -595,16 +651,16 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 															<div key={el.key} className={`post-meta${elClasses}`}>
 																{rows.map((metaDef) => {
 																	const key = metaDef.meta_key;
-																	const value = `${matchedProduct?.meta?.[key] ?? ''}`;
+																	const value = `${matchedPost?.meta?.[key] ?? ''}`;
 																	const label = metaDef?.meta_label || key;
 
-																		return (
-																			<div key={key} className="post-meta-row">
-																				<span className="post-meta-label">{label}:</span>{' '}
-																				<span className="post-meta-value">{metaDef?.meta_prefix || ''}{value}{metaDef?.meta_suffix || ''}</span>
-																			</div>
-																		);
-																	})}
+																	return (
+																		<div key={key} className="post-meta-row">
+																			<span className="post-meta-label">{label}:</span>{' '}
+																			<span className="post-meta-value">{metaDef?.meta_prefix || ''}{value}{metaDef?.meta_suffix || ''}</span>
+																		</div>
+																	);
+																})}
 															</div>
 														);
 													}
@@ -652,11 +708,11 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 					totalPages={paginationMeta.totalPages}
 					total={paginationMeta.total}
 					itemsPerLayout={layoutItemCount}
-					onPageChange={setCurrentPage}
+					onPageChange={debouncedSetCurrentPage}
 				/>
 			)}
 		</>
 	);
 };
 
-export default ContentLayoutWidget;
+export default memo(ContentLayoutWidget);

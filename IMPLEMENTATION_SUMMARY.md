@@ -2,7 +2,7 @@
 
 ## ✅ Completed
 
-All three widgets are fully implemented and the architecture is production-ready.
+The content-layout widget is fully implemented and the architecture is production-ready.
 
 ## 📁 Source File Structure
 
@@ -10,41 +10,28 @@ All three widgets are fully implemented and the architecture is production-ready
 src/
 ├── main-frontend.jsx            # Lightweight frontend entry point
 ├── main-editor.jsx              # Full-featured editor entry point
-├── globalStyles.scss            # Global styles for all widgets
+├── globalStyles.scss            # Global styles for the widget
 ├── core/
-│   ├── widget-registry.js       # Central registry (all widget types + settings mappers)
+│   ├── widget-registry.js       # Central registry (content-layout widget + settings mapper)
 │   ├── widget-manager.jsx       # Singleton — mounts/updates/unmounts React instances
 │   ├── widget-initializer.js    # Factory — creates per-widget init functions
 │   ├── frontend-hooks.js        # Frontend-only hooks (display mode)
 │   ├── editor-hooks.js          # Editor hooks (live sync, channel events, MutationObserver)
 │   └── elementor-utils.js       # Shared utilities: breakpoints, CSS injection, panel helpers
 ├── widgets/
-│   ├── settings-mappers.js      # createSettingsMapper() factory — drives all widgets
-│   ├── content-layout/
-│   │   ├── content-layout.jsx
-│   │   ├── content-layout.scss
-│   │   └── react-settings.json  # ← settings source of truth
-│   ├── categories-layout/
-│   │   ├── categories-layout.jsx
-│   │   ├── categories-layout.scss
-│   │   └── react-settings.json
-│   └── single-product-layout/
-│       ├── single-product-layout.jsx
-│       ├── single-product-layout.scss
-│       ├── react-settings.json
-│       └── utils/
-│           └── single-product-layouts.json  # Predefined SP layouts
+│   ├── settings-mappers.js      # createSettingsMapper() factory — drives the widget
+│   └── content-layout/
+│       ├── content-layout.jsx
+│       ├── content-layout.scss
+│       └── react-settings.json  # ← settings source of truth
 ├── shared/
-│   ├── layouts.json             # Predefined grid layouts (products/categories)
+│   ├── layouts.json             # Predefined grid layouts
 │   ├── components/
 │   │   ├── GridLayout.jsx       # react-grid-layout wrapper
-│   │   ├── ProductImage.jsx     # Image with focal-point support
-│   │   ├── RatingStars.jsx      # WooCommerce star ratings
-│   │   ├── AddToCartButton.jsx  # Store API cart integration
+│   │   ├── Pagination.jsx       # Shared pagination component
 │   │   ├── ZIndexControls.jsx   # Per-item z-index editor controls
 │   │   ├── GridHelper.jsx       # Shared grid sizing helpers
 │   │   ├── ItemControls.jsx     # Shared in-canvas item controls
-│   │   ├── Pagination.jsx       # Shared pagination component
 │   │   └── utils/events.js      # Custom DOM event helpers
 │   ├── utils/
 │   │   ├── hooks.js             # useCssVariables(), useGridSettings()
@@ -56,33 +43,26 @@ src/
 │   │   ├── elementOrdering.js   # Element order/visibility parser
 │   │   ├── LRUCache.js          # LRU cache (editor) / plain object (frontend)
 │   │   ├── fetchHelpers.js      # Shared REST helper functions
-│   │   ├── productUtils.js      # WooCommerce data helpers
+│   │   ├── contentUtils.js      # Content data helpers
 │   │   ├── transformationUtils.js # Shared snake_case -> camelCase mapper
 │   │   ├── visibleLayout.js     # Visibility-aware layout resolver
 │   │   └── generalUtils.js      # General helpers (decode, etc.)
 │   └── assets/
 │       ├── _gridLayout.scss
 │       ├── _itemControls.scss
-│       ├── _productElements.scss
 │       └── (shared partials imported by widget styles)
 └── controls/
     ├── focal-point-control.jsx      # Image focal-point picker React component
     ├── FocalPointControlView.jsx    # Elementor BaseData view extension
     ├── focal-point-control.scss
-    ├── product-select-control.jsx   # Product selector React component
-    ├── ProductSelectView.jsx        # Elementor BaseData view extension
-    ├── product-select-control.scss
     ├── saved-setups-control.jsx     # Save/load/delete presets React component
     └── saved-setups-control.scss
 
 widgets/                         # PHP widget classes (all use WidgetHelpers trait)
-├── content-layout.php
-├── categories-layout.php
-└── single-product-layout.php
+└── content-layout.php
 
 controls/                        # PHP custom control classes
 ├── focal-point.php
-├── product-select.php
 ├── element-sorting.php
 └── saved-setups.php
 
@@ -118,7 +98,7 @@ Panel change → `model.on('change')` → `settingsMapper(model)` → `updateIns
 ### Responsive CSS Variables ✓
 `useCssVariables(widgetData)` in `src/shared/utils/hooks.js` converts responsive settings into scoped CSS custom properties: `--mc4e-title-size-desktop`, `--mc4e-title-size-tablet`, etc.
 
-`injectBreakpointStylesheet()` in `elementor-utils.js` injects media queries using those variables, including `.product-elements { text-align: var(--mc4e-product-align-text-{bp}) }` derived from the `mc4e_product_align` flex-to-text-align mapping.
+`injectBreakpointStylesheet()` in `elementor-utils.js` injects media queries using those variables, including `.content-elements { text-align: var(--mc4e-content-align-text-{bp}) }` derived from the `mc4e_content_align` flex-to-text-align mapping.
 
 ### Saved Setups ✓
 Custom panel control saves/loads/deletes full layout+style presets via `wp.apiFetch → /wp/v2/settings`. Batch apply uses `mosaic:applySetup` channel event with atomic `settingsModel.set()`.

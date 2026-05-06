@@ -71,14 +71,11 @@
 		"type": "responsive",
 		"default": ""
 	},
-
-	"mc4e_sale_badge_position": {
-		"type": "object",
-		"default": {
-			"x": 10,
-			"y": 10
-		}
+	"mc4e_excerpt_truncate": {
+		"type": "boolean",
+		"default": false
 	},
+
 	"mc4e_featured_image_size": {
 		"type": "string",
 		"default": "automatic"

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Each widget's settings are defined in a **single `react-settings.json` file** that acts as the source of truth for all three places where settings are consumed:
+The widget's settings are defined in a **single `react-settings.json` file** that acts as the source of truth for all three places where settings are consumed:
 
 1. **PHP `render()`** — Frontend HTML, serializes settings into a hidden input for React hydration
 2. **PHP `content_template()`** — Elementor editor Backbone template, generates the JS settings object inline
@@ -14,13 +14,7 @@ All three consumers are driven generically from the same JSON; adding or modifyi
 
 ## Settings Schema Files
 
-**Location:** `src/widgets/{widget-name}/react-settings.json`
-
-| Widget | Schema File |
-|--------|-------------|
-| Content Layout | `src/widgets/content-layout/react-settings.json` |
-| Categories Layout | `src/widgets/categories-layout/react-settings.json` |
-| Single Product Layout | `src/widgets/single-product-layout/react-settings.json` |
+**Location:** `src/widgets/content-layout/react-settings.json`
 
 **Structure:**
 ```json
@@ -137,15 +131,11 @@ Uses the `createSettingsMapper(settingsDef)` **factory function**, driven entire
 ```javascript
 import { createSettingsMapper } from './settings-mappers';
 
-import productsSettingsDef       from './content-layout/react-settings.json';
-import categoriesSettingsDef     from './categories-layout/react-settings.json';
-import singleProductSettingsDef  from './single-product-layout/react-settings.json';
+import contentLayoutSettingsDef from './content-layout/react-settings.json';
 
 // Each widget gets a mapper built from its own JSON schema
 export const WIDGET_REGISTRY = {
-    'content-layout':       { ..., settingsMapper: createSettingsMapper(productsSettingsDef) },
-    'categories-layout':     { ..., settingsMapper: createSettingsMapper(categoriesSettingsDef) },
-    'single-product-layout': { ..., settingsMapper: createSettingsMapper(singleProductSettingsDef) },
+    'content-layout': { ..., settingsMapper: createSettingsMapper(contentLayoutSettingsDef) },
 };
 ```
 

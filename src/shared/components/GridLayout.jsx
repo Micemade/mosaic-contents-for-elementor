@@ -226,6 +226,31 @@ function GridLayout(props) {
 
 	const currentBreakpoint = getBreakpointFromWidth();
 
+	/* // Prepare layoutsState for debugging
+	const debugLayoutsState = () => {
+		const cleaned = {};
+		Object.entries(layoutsState).forEach(([breakpoint, value]) => {
+			// Skip zindex
+			console.log(breakpoint);
+
+			if (breakpoint === 'zindex') return;
+			// Capitalize breakpoint name
+			const capitalizedBreakpoint = breakpoint.charAt(0).toUpperCase() + breakpoint.slice(1);
+			// Remove 'moved' and 'static' from each item
+			cleaned[capitalizedBreakpoint] = Array.isArray(value)
+				? value.map(item => {
+					const { moved, static: staticProp, ...cleanItem } = item;
+					return cleanItem;
+				})
+				: value;
+		});
+		// Convert to JSON string with escaped double quotes
+		const jsonString = JSON.stringify(cleaned).replace(/"/g, '\\"');
+		console.log(jsonString);
+	};
+	debugLayoutsState();
+ */
+
 	return (
 		<RGL
 			{...defaultProps}

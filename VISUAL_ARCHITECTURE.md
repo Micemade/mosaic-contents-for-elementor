@@ -1,6 +1,6 @@
 # Visual Architecture Diagrams
 
-> **Companion to ARCHITECTURE.md** — Visual representations of the codebase structure, data flows, and component interactions.
+> **Companion to ARCHITECTURE.md** — Visual representations of the codebase structure, data flows, and component interactions for the Mosaic Contents for Elementor plugin.
 
 ---
 
@@ -11,7 +11,7 @@
 4. [Data Flow Diagrams](#data-flow-diagrams)
 5. [Widget Lifecycle](#widget-lifecycle)
 6. [File Structure](#file-structure)
-7. [WooCommerce Integration](#woocommerce-integration)
+7. [WordPress Integration](#wordpress-integration)
 8. [Saved Setups Feature](#saved-setups-feature)
 
 ---
@@ -20,7 +20,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                     Mosaic Product Layouts Plugin                       │
+│                     Mosaic Contents for Elementor Plugin                │
 └─────────────────────────────────────────────────────────────────────────┘
                                     │
                 ┌───────────────────┴──────────────────┐
@@ -33,12 +33,12 @@
     ┌──────────┼────────────┐          ┌───────────────┼──────────────┐
     │          │            │          │               │              │
 ┌───▼───┐  ┌───▼────┐  ┌────▼────┐  ┌─────▼────┐ ┌─────▼─────┐ ┌──────▼──────┐
-│Widget │  │Control │  │ Script  │  │ Frontend │ │   Editor  │ │ WooCommerce │
-│Classes│  │Classes │  │Enqueuing│  │  Bundle  │ │   Bundle  │ │  Store API  │
+│Widget │  │Control │  │ Script  │  │ Frontend │ │   Editor  │ │  WordPress  │
+│Classes│  │Classes │  │Enqueuing│  │  Bundle  │ │   Bundle  │ │  REST API   │
 └───────┘  └────────┘  └─────────┘  └──────────┘ └───────────┘ └─────────────┘
                 │
             ┌───▼────────────────────────────────────────┐
-            │ Custom Controls (Panel)                    │
+            │   Custom Controls (Panel)                  │
             ├─────────────────┬──────────────────────────┤
             │  Focal Point    │  Saved Setups            │
             │  (image picker) │  (presets manager)       │
@@ -126,7 +126,7 @@
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
 │                          Widget Registry                             │
-│  { 'content-layout': { component, settingsMapper } }                │
+│   { 'content-layout': { component, settingsMapper } }                │
 └────────────────────────────┬─────────────────────────────────────────┘
                              │ Maps widget types
                              │
@@ -205,20 +205,20 @@
            ▼
 ┌────────────────────────────┐
 │ registerFrontendHooks()    │
-│ Registers all widget types │
+│ Registers content-layout   │
 └──────────┬─────────────────┘
            │
            ▼
 ┌───────────────────────────────────┐
 │ frontend/element_ready/           │
-│ {widget-type}.default             │
+│ content-layout.default            │
 └──────────┬────────────────────────┘
            │
            ▼
-┌──────────────────────────┐
-│ createWidgetInitializer  │
-│ (widgetType, 'display')  │
-└──────────┬───────────────┘
+┌─────────────────────────────┐
+│ createWidgetInitializer     │
+│ (content-layout, 'display') │
+└──────────┬──────────────────┘
            │
            ▼
 ┌─────────────────────┐
@@ -237,8 +237,8 @@
            │
            ▼
 ┌──────────────────────────┐
-│ Render Widget Component  │
-│ (Display Mode)           │
+│ Render ContentLayout     │
+│ Component (Display Mode) │
 └──────────────────────────┘
 ```
 
@@ -319,7 +319,7 @@
            ▼
 ┌───────────────────────────────────┐
 │ updateElementorSetting()          │
-│ ('content-layout', id,           │
+│ ('content-layout', id,            │
 │  'custom_layout', JSON)           │
 └──────────┬────────────────────────┘
            │
@@ -458,28 +458,16 @@ src/
 │                                       │
 ├─ widgets/ ◄───────────────────────────┤ Widget Components
 │  ├─ settings-mappers.js              │ createSettingsMapper() factory
-│  ├─ content-layout/                 │
-│  │  ├─ content-layout.jsx           │
-│  │  ├─ content-layout.scss          │
-│  │  └─ react-settings.json ◄─────────┤ Settings source of truth
-│  ├─ categories-layout/               │
-│  │  ├─ categories-layout.jsx         │
-│  │  ├─ categories-layout.scss        │
-│  │  └─ react-settings.json           │
-│  └─ single-product-layout/           │
-│     ├─ single-product-layout.jsx     │
-│     ├─ single-product-layout.scss    │
-│     ├─ react-settings.json           │
-│     └─ utils/                        │
-│        └─ single-product-layouts.json│
+│  └─ content-layout/                  │
+│     ├─ content-layout.jsx            │
+│     ├─ content-layout.scss           │
+│     └─ react-settings.json ◄─────────┤ Settings source of truth
 │                                       │
 ├─ shared/ ◄────────────────────────────┤ Shared Resources
 │  ├─ layouts.json                     │
 │  ├─ components/                      │
 │  │  ├─ GridLayout.jsx                │
-│  │  ├─ ProductImage.jsx              │
-│  │  ├─ RatingStars.jsx               │
-│  │  ├─ AddToCartButton.jsx           │
+│  │  ├─ Pagination.jsx                │
 │  │  ├─ ZIndexControls.jsx            │
 │  │  └─ utils/events.js               │
 │  ├─ utils/                           │
@@ -492,22 +480,18 @@ src/
 │  │  ├─ elementOrdering.js            │
 │  │  ├─ LRUCache.js                   │
 │  │  ├─ fetchHelpers.js               │
-│  │  ├─ productUtils.js               │
 │  │  ├─ transformationUtils.js        │
 │  │  ├─ visibleLayout.js              │
 │  │  └─ generalUtils.js               │
 │  └─ assets/                          │
 │     ├─ _gridLayout.scss              │
-│     ├─ _productElements.scss         │
-│     └─ _itemControls.scss            │
+│     ├─ _itemControls.scss            │
+│     └─ _contentElements.scss         │
 │                                       │
 └─ controls/ ◄──────────────────────────┤ Custom Controls
    ├─ focal-point-control.jsx          │
    ├─ FocalPointControlView.jsx        │
    ├─ focal-point-control.scss         │
-   ├─ product-select-control.jsx       │
-   ├─ ProductSelectView.jsx            │
-   ├─ product-select-control.scss      │
    ├─ saved-setups-control.jsx         │
    └─ saved-setups-control.scss        │
 
@@ -515,22 +499,17 @@ src/
 PHP Files (Root Level)                  │
 │                                       │
 ├─ widgets/ ◄───────────────────────────┤ PHP Widgets
-│  ├─ content-layout.php              │
-│  ├─ categories-layout.php            │
-│  └─ single-product-layout.php        │
+│  └─ content-layout.php               │
 │                                       │
 ├─ controls/ ◄──────────────────────────┤ PHP Controls
 │  ├─ focal-point.php                  │
-│  ├─ product-select.php               │
-│  ├─ element-sorting.php              │
 │  └─ saved-setups.php                 │
 │                                       │
 ├─ includes/                            │
 │  ├─ trait-widget-helpers.php         │ Shared render(), content_template()
 │  └─ class-rest-api.php               │
 │                                       │
-└─ mosaic-product-layouts-for-         │
-   elementor.php ◄──────────────────────┘ Main Plugin File
+└─ mosaic-contents-for-elementor.php ◄──┘ Main Plugin File
 
 
 Build Output (Generated)
@@ -544,12 +523,10 @@ assets/
    ├─ js/
    │  ├─ main-editor.js ◄── Editor Bundle
    │  ├─ focal-point-control.js
-   │  ├─ product-select-control.js
    │  └─ saved-setups-control.js
    └─ css/
       ├─ main-editor.css
       ├─ focal-point-control.css
-      ├─ product-select-control.css
       └─ saved-setups-control.css
 ```
 
@@ -595,9 +572,9 @@ External Dependencies (Not Bundled)
 
 ---
 
-## WooCommerce Integration
+## WordPress Integration
 
-### Product Fetch Flow
+### Post Fetch Flow
 
 ```
 ┌──────────────────────┐
@@ -608,102 +585,44 @@ External Dependencies (Not Bundled)
            ▼
 ┌───────────────────────────────┐
 │ Extract Query Parameters      │
-│ • category_ids                │
+│ • post_type                   │
 │ • per_page                    │
 │ • orderby, order              │
-│ • on_sale, featured           │
+│ • category_ids                │
 └──────────┬────────────────────┘
            │
            ▼
 ┌────────────────────────────────────┐
-│ fetch('/wp-json/wc/store/products')│
+│ fetch('/wp-json/wp/v2/posts')      │
 │ + URLSearchParams                  │
 │ + Headers: { Nonce: ... }          │
 └──────────┬─────────────────────────┘
            │
            ▼
 ┌─────────────────────────┐
-│ WooCommerce Store API   │
+│ WordPress REST API      │
 │ Processes Request       │
 └──────────┬──────────────┘
            │
            ▼
 ┌─────────────────────────┐
-│ Returns Product Array   │
-│ [{id, name, price,      │
-│   images, rating...}]   │
+│ Returns Post Array      │
+│ [{id, title, content,    │
+│   excerpt, featured_media}] │
 └──────────┬──────────────┘
            │
            ▼
 ┌─────────────────────────┐
 │ Component setState      │
-│ Stores products         │
+│ Stores posts            │
 └──────────┬──────────────┘
            │
            ▼
 ┌─────────────────────────┐
-│ Render Product Grid     │
-│ Map over products       │
+│ Render Post Grid        │
+│ Map over posts          │
 │ Assign to layout items  │
 └─────────────────────────┘
-```
-
-### Add to Cart Flow
-
-```
-┌──────────────────────┐
-│ User Clicks Button   │
-│ <AddToCartButton/>   │
-└──────────┬───────────┘
-           │
-           ▼
-┌─────────────────────────────┐
-│ Prepare Request             │
-│ {                           │
-│   id: productId,            │
-│   quantity: 1               │
-│ }                           │
-└──────────┬──────────────────┘
-           │
-           ▼
-┌──────────────────────────────────┐
-│ POST /wp-json/wc/store/cart/     │
-│      add-item                    │
-│ Headers: { Nonce: ... }          │
-└──────────┬───────────────────────┘
-           │
-           ▼
-┌─────────────────────────┐
-│ WooCommerce Validates   │
-│ • Nonce                 │
-│ • Product exists        │
-│ • Stock available       │
-└──────────┬──────────────┘
-           │
-     ┌─────┴─────┐
-     │           │
-   SUCCESS     ERROR
-     │           │
-     ▼           ▼
-┌─────────┐  ┌────────────┐
-│ Add to  │  │ Return     │
-│ Cart    │  │ Error Msg  │
-└────┬────┘  └──────┬─────┘
-     │              │
-     ▼              ▼
-┌─────────┐  ┌────────────┐
-│ Return  │  │ Component  │
-│ Success │  │ Shows Error│
-│ Response│  └────────────┘
-└────┬────┘
-     │
-     ▼
-┌──────────────────┐
-│ Component Shows  │
-│ • Success notice │
-│ • Update cart    │
-│   count (if any) │
-└──────────────────┘
 ```
 
 ### Authentication Flow
@@ -711,13 +630,13 @@ External Dependencies (Not Bundled)
 ```
 ┌──────────────────────────┐
 │ PHP Plugin Init          │
-│ enqueue_store_api_nonce()│
+│ enqueue_rest_api_nonce() │
 └──────────┬───────────────┘
            │
            ▼
 ┌─────────────────────────────┐
 │ wp_create_nonce(            │
-│   'wc_store_api'            │
+│   'wp_rest'                 │
 │ )                           │
 └──────────┬──────────────────┘
            │
@@ -725,8 +644,8 @@ External Dependencies (Not Bundled)
 ┌─────────────────────────────┐
 │ wp_localize_script()        │
 │ window.MC4E = {            │
-│   storeApiNonce: '...',     │
-│   cartUrl: '...',           │
+│   restApiNonce: '...',      │
+│   ajaxUrl: '...',           │
 │   placeholderImg: '...'     │
 │ }                           │
 └──────────┬──────────────────┘
@@ -741,14 +660,14 @@ External Dependencies (Not Bundled)
 ┌─────────────────────────────┐
 │ Add to Request Headers      │
 │ {                           │
-│   'Nonce': window.MC4E     │
-│            .storeApiNonce   │
+│   'X-WP-Nonce': window.MC4E│
+│               .restApiNonce │
 │ }                           │
 └──────────┬──────────────────┘
            │
            ▼
 ┌─────────────────────────────┐
-│ WooCommerce Verifies Nonce  │
+│ WordPress Verifies Nonce    │
 │ wp_verify_nonce()           │
 └─────────────────────────────┘
 ```
@@ -988,8 +907,7 @@ window
 │  └─ getModel()                       Get Elementor model
 │
 ├─ MC4E ◄──────────────────────────── Localized PHP Data
-│  ├─ storeApiNonce                    WooCommerce auth
-│  ├─ cartUrl                          Cart page URL
+│  ├─ restApiNonce                     WordPress REST API auth
 │  ├─ ajaxUrl                          AJAX endpoint
 │  └─ placeholderImg                   Default image
 │
@@ -1038,10 +956,10 @@ updateModelSetting → model.setSetting → setFlagEditorChange →
 Enable Update Button
 ```
 
-### Path 4: WooCommerce Products
+### Path 4: WordPress Posts
 ```
-Component Mount → useEffect → fetch Store API → Parse Response →
-setState(products) → Map to Grid → Render
+Component Mount → useEffect → fetch REST API → Parse Response →
+setState(posts) → Map to Grid → Render
 ```
 
 ### Path 5: Saved Setup Load

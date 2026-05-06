@@ -13,19 +13,19 @@ import { addItemToLayout } from '../shared/utils/addItem';
 import { getComputedLayout } from '../shared/utils/layoutUtils';
 
 // Style presets for applying batch style changes from the Saved Setups control
-import productsStylePresets from '../../assets/presets/content-layout/style-presets.json';
+import stylePresets from '../../assets/presets/content-layout/style-presets.json';
 
 
-const PRODUCTS_STYLE_PRESET_MAP = productsStylePresets.reduce((acc, preset) => {
+const STYLE_PRESET_MAP = stylePresets.reduce((acc, preset) => {
 	if (preset?.id && preset?.settings) {
 		acc[preset.id] = preset.settings;
 	}
 	return acc;
 }, {});
 
-const PRODUCTS_STYLE_PRESET_SETTING_KEYS = Array.from(
+const STYLE_PRESET_SETTING_KEYS = Array.from(
 	new Set(
-		productsStylePresets.flatMap((preset) => {
+		stylePresets.flatMap((preset) => {
 			if (!preset?.settings || typeof preset.settings !== 'object') {
 				return [];
 			}
@@ -46,8 +46,8 @@ const WIDGET_KEYS = {
 		customLayoutKey: 'mc4e_custom_layout',
 		savedSetupKey: 'mc4e_saved_setup',
 		stylePresetKey: 'mc4e_style_preset',
-		presetSettingKeys: PRODUCTS_STYLE_PRESET_SETTING_KEYS,
-		stylePresetMap: PRODUCTS_STYLE_PRESET_MAP,
+		presetSettingKeys: STYLE_PRESET_SETTING_KEYS,
+		stylePresetMap: STYLE_PRESET_MAP,
 		resetEvent: 'mosaic:resetLayout',
 		applySetupEvent: 'mosaic:applySetup',
 		addItemEvent: 'mosaic:addItem',

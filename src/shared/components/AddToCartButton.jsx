@@ -17,25 +17,22 @@ import './AddToCartButton.scss';
 
 /**
  * Get the WC Store API nonce from the page
- * Priority: 1) Our localized script, 2) WC Blocks middleware, 3) wcSettings
+ *
+ * SECURITY FIX: Use single, reliable nonce source.
+ * Falls back gracefully but warns if nonce is missing.
  */
 const getStoreApiNonce = () => {
-	// Our plugin's localized nonce (primary source)
-	if (window.MC4E?.storeApiNonce) {
-		return window.MC4E.storeApiNonce;
+	// Primary source: Our plugin's localized nonce (most reliable)
+	const nonce = window.MC4E?.storeApiNonce;
+
+	if (!nonce) {
+		console.warn(
+			'MC4E: Store API nonce not available. Add-to-cart may fail. ' +
+			'Ensure wp_localize_script() is called with storeApiNonce.'
+		);
 	}
-	// WooCommerce Blocks middleware config
-	if (window.wcBlocksMiddlewareConfig?.storeApiNonce) {
-		return window.wcBlocksMiddlewareConfig.storeApiNonce;
-	}
-	// wcSettings (alternative location)
-	if (window.wcSettings?.admin?.storeApiNonce) {
-		return window.wcSettings.admin.storeApiNonce;
-	}
-	if (window.wcSettings?.storeApiNonce) {
-		return window.wcSettings.storeApiNonce;
-	}
-	return '';
+
+	return nonce || '';
 };
 
 /**

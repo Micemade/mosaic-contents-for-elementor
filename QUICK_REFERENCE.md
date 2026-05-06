@@ -161,48 +161,27 @@ createWidgetInitializer(widgetType, 'edit')
 Initialize new instance (see #1)
 ```
 
-### 6. WooCommerce Product Fetch
+### 6. WordPress Post Fetch
 
 ```
 Widget component mounts (useEffect)
   ↓
 Extract query params from widgetData
   ↓
-Fetch /wp-json/wc/store/products
-  ├─→ Include query params (category, per_page, orderby, etc.)
-  └─→ Add nonce header (window.MC4E.storeApiNonce)
+Fetch /wp-json/wp/v2/posts
+  ├─→ Include query params (post_type, per_page, orderby, etc.)
+  └─→ Add nonce header (window.MC4E.restApiNonce)
   ↓
-WooCommerce Store API processes request
+WordPress REST API processes request
   ↓
-Return product data (JSON)
+Return post data (JSON)
   ↓
-Component setState with products
+Component setState with posts
   ↓
-Render product grid
+Render post grid
 ```
 
-### 7. Add to Cart
-
-```
-User clicks Add to Cart button
-  ↓
-AddToCartButton component
-  ↓
-POST /wp-json/wc/store/cart/add-item
-  ├─→ product_id: productId
-  ├─→ quantity: 1
-  └─→ Nonce header
-  ↓
-WooCommerce adds to cart
-  ↓
-Success response
-  ↓
-Show confirmation notification
-  ↓
-Update cart count (if present in DOM)
-```
-
-### 8. Saved Setup Load
+### 7. Saved Setup Load
 
 ```
 User selects a saved setup from dropdown
@@ -230,7 +209,7 @@ view.renderUI() → CSS regeneration from selectors
 saver.setFlagEditorChange(true) → Enable Update button
 ```
 
-### 9. Saved Setup Save
+### 8. Saved Setup Save
 
 ```
 User types setup name + clicks Save
@@ -368,18 +347,19 @@ const MyWidget = ({ widgetData, widgetId, mode }) => {
         }
     };
     
-    // Fetch products (both modes)
+    // Fetch posts (both modes)
     useEffect(() => {
-        fetch('/wp-json/wc/store/products?' + new URLSearchParams({
+        fetch('/wp-json/wp/v2/posts?' + new URLSearchParams({
             per_page: widgetData?.per_page || 12,
-            category: widgetData?.category_ids || '',
+            categories: widgetData?.category_ids || '',
+            post_type: widgetData?.post_type || 'post',
         }), {
             headers: {
-                'Nonce': window.MC4E?.storeApiNonce || ''
+                'X-WP-Nonce': window.MC4E?.restApiNonce || ''
             }
         })
         .then(res => res.json())
-        .then(data => setProducts(data));
+        .then(data => setPosts(data));
     }, [widgetData]);
     
     return <div>{/* ... */}</div>;
@@ -468,26 +448,15 @@ src/
 │   └── elementor-utils.js
 ├── widgets/
 │   ├── settings-mappers.js       # createSettingsMapper() factory
-│   ├── content-layout/
-│   │   ├── content-layout.jsx
-│   │   ├── content-layout.scss
-│   │   └── react-settings.json   # Settings source of truth
-│   ├── categories-layout/
-│   │   ├── categories-layout.jsx
-│   │   ├── categories-layout.scss
-│   │   └── react-settings.json
-│   └── single-product-layout/
-│       ├── single-product-layout.jsx
-│       ├── single-product-layout.scss
-│       ├── react-settings.json
-│       └── utils/single-product-layouts.json
+│   └── content-layout/
+│       ├── content-layout.jsx
+│       ├── content-layout.scss
+│       └── react-settings.json   # Settings source of truth
 ├── shared/
 │   ├── layouts.json
 │   ├── components/
 │   │   ├── GridLayout.jsx
-│   │   ├── ProductImage.jsx
-│   │   ├── RatingStars.jsx
-│   │   ├── AddToCartButton.jsx
+│   │   ├── Pagination.jsx
 │   │   ├── ZIndexControls.jsx
 │   │   └── utils/events.js
 │   ├── utils/
@@ -500,34 +469,26 @@ src/
 │   │   ├── elementOrdering.js
 │   │   ├── LRUCache.js
 │   │   ├── fetchHelpers.js
-│   │   ├── productUtils.js
 │   │   ├── transformationUtils.js
 │   │   ├── visibleLayout.js
 │   │   └── generalUtils.js
 │   └── assets/
 │       ├── _gridLayout.scss
 │       ├── _itemControls.scss
-│       ├── _productElements.scss
+│       ├── _contentElements.scss
 │       └── (shared partials)
 └── controls/
     ├── focal-point-control.jsx
     ├── FocalPointControlView.jsx
     ├── focal-point-control.scss
-    ├── product-select-control.jsx
-    ├── ProductSelectView.jsx
-    ├── product-select-control.scss
     ├── saved-setups-control.jsx
     └── saved-setups-control.scss
 
 widgets/                          # PHP widget classes
-├── content-layout.php
-├── categories-layout.php
-└── single-product-layout.php
+└── content-layout.php
 
 controls/                         # PHP custom controls
 ├── focal-point.php
-├── product-select.php
-├── element-sorting.php
 └── saved-setups.php
 
 includes/
@@ -541,7 +502,6 @@ assets/                           # Built (Vite output)
     ├── js/
     │   ├── main-editor.js
     │   ├── focal-point-control.js
-    │   ├── product-select-control.js
     │   └── saved-setups-control.js
     └── css/
 ```
@@ -556,7 +516,7 @@ console.log(window.MosaicLayoutsReact);
 // Check instances
 console.log(window.MosaicLayoutsReact.instances);
 
-// Check WooCommerce config
+// Check WordPress config
 console.log(window.MC4E);
 ```
 

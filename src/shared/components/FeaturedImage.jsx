@@ -27,10 +27,10 @@ const getImageProperties = (images) => {
 	};
 };
 
-const ProductImage = ({ productId, postType = 'post', name, images, featuredImageSize, style = {} }) => {
+const FeaturedImage = ({ postId, postType = 'post', name, images, featuredImageSize, style = {} }) => {
 
-	// No productId, no image.
-	if (!productId) return null;
+	// No postId, no image.
+	if (!postId) return null;
 
 	// Image fallback (WC placeholder image or notice.)
 	const fallback = (
@@ -50,7 +50,7 @@ const ProductImage = ({ productId, postType = 'post', name, images, featuredImag
 	// (only if not in 'automatic' mode, otherwise we get srcset and sizes from "images" prop)
 	const { loadingFeaturedImg, featuredImage } = isAuto
 		? { loadingFeaturedImg: false, featuredImage: null }
-		: getFeaturedImage(productId, featuredImageSize, postType);
+		: getFeaturedImage(postId, featuredImageSize, postType);
 
 	// if (loadingFeaturedImg) {
 	// 	return <div className='gradient-preloader' />;
@@ -75,11 +75,11 @@ const ProductImage = ({ productId, postType = 'post', name, images, featuredImag
 	);
 };
 
-ProductImage.propTypes = {
+FeaturedImage.propTypes = {
 	postType: PropTypes.string,
 
 	// Required props
-	productId: PropTypes.oneOfType([
+	postId: PropTypes.oneOfType([
 		PropTypes.string,
 		PropTypes.number
 	]).isRequired,
@@ -103,11 +103,11 @@ ProductImage.propTypes = {
 };
 
 // Default props (optional)
-ProductImage.defaultProps = {
+FeaturedImage.defaultProps = {
 	images: [],
 	postType: 'post',
 	featuredImageSize: 'automatic',
 	style: {}
 };
 
-export default memo(ProductImage);
+export default memo(FeaturedImage);

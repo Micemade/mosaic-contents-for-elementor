@@ -26,6 +26,7 @@ const ItemControls = ({
 }) => (
 
 	<div className="mc4e-item-controls">
+		<span style={{ fontSize: "14px" }}>{itemId}</span>
 		<ZIndexControls
 			itemId={itemId}
 			layoutData={layoutData}

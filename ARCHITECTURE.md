@@ -1,15 +1,14 @@
-# Multi-Widget Architecture
+# Single Widget Architecture
 
 ## Overview
 
-The codebase has been refactored to support multiple widget types using a shared generic architecture. This allows easy addition of new widgets (categories-layout, single-product-layout, etc.) without code duplication.
+The codebase implements a streamlined architecture for a single Elementor widget called "content-layout". This widget displays general-purpose WordPress content using React rendering with the WordPress REST API.
 
-The architecture uses **two separate build outputs** plus **three custom control bundles**:
+The architecture uses **two separate build outputs** plus **two custom control bundles**:
 - **Frontend Bundle** (`main-frontend.jsx`) - Lightweight, display-only for published pages
 - **Editor Bundle** (`main-editor.jsx`) - Full-featured with drag/resize, add/remove items, and live settings sync for Elementor editor
 - **Focal Point Control** (`focal-point-control.jsx`) - Custom image focal-point picker for the editor panel
 - **Saved Setups Control** (`saved-setups-control.jsx`) - Save/load/delete layout+style presets via the editor panel
-- **Product Select Control** (`product-select-control.jsx`) - Searchable single-product picker for the editor panel
 
 ## Dual-Bundle Strategy
 
@@ -115,12 +114,11 @@ The global `editor/widget/renderOnChange` filter returns `false` for registered 
 - `mosaic:applySetup` — Batch-applies all settings from a saved setup (layout, styles, CSS)
 
 ### 5. Settings Mappers (`src/widgets/settings-mappers.js`)
-Extract and format widget settings from Elementor models.
+Extract and format widget settings from Elementor models for the content-layout widget.
 
-Each widget has its own mapper function:
+The mapper function:
 ```javascript
 export const mapContentLayoutSettings = (model) => { /* ... */ }
-export const mapCategoriesLayoutSettings = (model) => { /* ... */ }
 ```
 
 ### 6. Elementor Utils (`src/core/elementor-utils.js`)
@@ -173,26 +171,24 @@ User drags/resizes grid item
     → Auto-save/dirty flag handled by Elementor APIs
 ```
 
-### WooCommerce Products: Store API → React
+### WordPress Posts: REST API → React
 ```
 React component mounts 
-  → useEffect() triggers WC Store API fetch 
-  → Endpoint: /wp-json/wc/store/products 
-  → Query params from widgetData (category, limit, order, etc.) 
-  → Nonce from window.MC4E.storeApiNonce 
-  → Products setState() 
-  → Component renders product grid
+  → useEffect() triggers WP REST API fetch 
+  → Endpoint: /wp-json/wp/v2/posts 
+  → Query params from widgetData (post_type, per_page, orderby, etc.) 
+  → Nonce from window.MC4E.restApiNonce 
+  → Posts setState() 
+  → Component renders post grid
 ```
 
-### Add to Cart: React → WooCommerce
+### Content Interaction: React → WordPress
 ```
-User clicks Add to Cart button 
-  → AddToCartButton component 
-  → POST to /wp-json/wc/store/cart/add-item 
-  → Includes product_id, quantity, nonce 
-  → WooCommerce updates cart 
-  → Success: Show confirmation, update cart count 
-  → Error: Show error message
+User clicks content item
+  → Content component
+  → Navigate to post permalink
+  → WordPress displays full post
+  → User can read, comment, share
 ```
 
 ## File Structure
@@ -210,31 +206,18 @@ src/
 │   ├── editor-hooks.js              # Editor hooks (full functionality + channel events)
 │   └── elementor-utils.js           # Shared utilities: breakpoints, CSS injection, panel helpers
 ├── widgets/
-│   ├── settings-mappers.js          # createSettingsMapper() factory for all widgets
-│   ├── content-layout/
-│   │   ├── content-layout.jsx      # Products widget component
-│   │   ├── content-layout.scss     # Widget-specific styles
-│   │   └── react-settings.json     # Settings schema (source of truth)
-│   ├── categories-layout/
-│   │   ├── categories-layout.jsx
-│   │   ├── categories-layout.scss
-│   │   └── react-settings.json
-│   └── single-product-layout/
-│       ├── single-product-layout.jsx
-│       ├── single-product-layout.scss
-│       ├── react-settings.json
-│       └── utils/
-│           └── single-product-layouts.json  # Predefined SP layouts
+│   ├── settings-mappers.js          # createSettingsMapper() factory
+│   └── content-layout/
+│       ├── content-layout.jsx       # Content widget component
+│       ├── content-layout.scss      # Widget-specific styles
+│       └── react-settings.json      # Settings schema (source of truth)
 ├── shared/
-│   ├── layouts.json                 # Predefined grid layouts (products/categories)
+│   ├── layouts.json                 # Predefined grid layouts
 │   ├── components/
 │   │   ├── GridLayout.jsx           # react-grid-layout wrapper
 │   │   ├── GridHelper.jsx           # Shared grid sizing helpers
 │   │   ├── ItemControls.jsx         # Shared per-item controls UI
 │   │   ├── Pagination.jsx           # Shared pagination UI
-│   │   ├── ProductImage.jsx         # Image with focal-point support
-│   │   ├── RatingStars.jsx          # WooCommerce star ratings
-│   │   ├── AddToCartButton.jsx      # Store API cart integration
 │   │   ├── ZIndexControls.jsx       # Per-item z-index editor controls
 │   │   └── utils/
 │   │       └── events.js            # Custom DOM event helpers
@@ -248,7 +231,6 @@ src/
 │   │   ├── elementOrdering.js      # Element order/visibility parser
 │   │   ├── LRUCache.js             # LRU cache (editor) / plain object (frontend)
 │   │   ├── fetchHelpers.js         # Shared REST nonce + JSON parsing helpers
-│   │   ├── productUtils.js         # WooCommerce product helpers
 │   │   ├── transformationUtils.js  # Shared snake_case → camelCase mapping
 │   │   ├── visibleLayout.js        # Visibility-aware layout resolver
 │   │   └── generalUtils.js         # General helper functions
@@ -268,14 +250,10 @@ src/
     └── saved-setups-control.scss
 
 widgets/                              # PHP widget classes (all use WidgetHelpers trait)
-├── content-layout.php
-├── categories-layout.php
-└── single-product-layout.php
+└── content-layout.php
 
 controls/                             # PHP custom control classes
 ├── focal-point.php
-├── product-select.php
-├── element-sorting.php
 └── saved-setups.php
 
 includes/
@@ -291,12 +269,10 @@ assets/                               # Built output (generated by Vite)
     ├── js/
     │   ├── main-editor.js           # Compiled editor bundle
     │   ├── focal-point-control.js
-    │   ├── product-select-control.js
     │   └── saved-setups-control.js
     └── css/
         ├── main-editor.css
         ├── focal-point-control.css
-        ├── product-select-control.css
         └── saved-setups-control.css
 ```
 
@@ -328,45 +304,23 @@ assets/                               # Built output (generated by Vite)
 - Settings captured: layout keys, style keys, responsive variants, selector-only CSS keys, group control sub-keys
 - Batch apply mechanism: temporarily disables `renderOnChange` and `change:mc4e_layout` listener, calls `settingsModel.set()` atomically, then `renderUI()` for CSS + `updateInstance()` for React
 
-## Adding a New Widget
+## Extending the Content Layout Widget
 
-1. **Create settings schema** (`src/widgets/new-widget/react-settings.json`)
-   - Define all widget settings with types, defaults, and responsive config
-   - This file is read by both PHP (`trait-widget-helpers.php`) and JS (`widget-registry.js`)
+The content-layout widget is designed to be extensible. To add new features or modify existing functionality:
 
-2. **Create React component** (`src/widgets/new-widget/new-widget.jsx`)
-   - Accept `widgetData`, `widgetId`, and `mode` props
-   - Use `useCssVariables(widgetData)` from `src/shared/utils/hooks.js` for responsive CSS vars
+1. **Modify settings schema** (`src/widgets/content-layout/react-settings.json`)
+   - Add new settings with appropriate types, defaults, and responsive config
+   - The schema drives both PHP controls and React component props
 
-3. **Register in registry** (add to `src/core/widget-registry.js`)
-   ```javascript
-   import NewWidget from '../widgets/new-widget/new-widget';
-   import newWidgetSettings from '../widgets/new-widget/react-settings.json';
-   import { createSettingsMapper } from '../widgets/settings-mappers';
-   
-   export const WIDGET_REGISTRY = {
-       'new-widget': {
-           component: NewWidget,
-           settingsMapper: createSettingsMapper(newWidgetSettings)
-       }
-   };
-   ```
+2. **Update React component** (`src/widgets/content-layout/content-layout.jsx`)
+   - Add new props handling and UI elements
+   - Use existing hooks and utilities for consistency
 
-4. **Create PHP widget** (`widgets/new-widget.php`)
-   - Extend `\Elementor\Widget_Base` and use the `WidgetHelpers` trait
-   - `get_name()` must return `'new-widget'` (must match the registry key exactly)
-   - Define controls using `register_controls()`
-   - The trait provides `render()`, `content_template()`, and `get_widget_settings()`
+3. **Update PHP widget** (`widgets/content-layout/content-layout.php`)
+   - Add new controls in `register_controls()` method
+   - The WidgetHelpers trait handles the rest automatically
 
-5. **Register in main plugin** (`mosaic-contents-for-elementor.php`)
-   ```php
-   public function init_widgets( $widgets_manager ) {
-       require_once __DIR__ . '/widgets/new-widget.php';
-       $widgets_manager->register( new NewWidget() );
-   }
-   ```
-
-**That's it!** All initialization, hooks, and lifecycle management is handled automatically.
+The architecture supports easy extension while maintaining the dual-bundle optimization and live editing features.
 
 ## Global Variables
 
@@ -386,10 +340,9 @@ assets/                               # Built output (generated by Vite)
 
 ### `window.MC4E` (Localized PHP Data)
 Provided by `wp_localize_script()` in PHP:
-- `.storeApiNonce` - WooCommerce Store API authentication nonce
-- `.cartUrl` - WooCommerce cart page URL
+- `.restApiNonce` - WordPress REST API authentication nonce
 - `.ajaxUrl` - WordPress AJAX endpoint URL
-- `.placeholderImg` - Placeholder image URL for products without images
+- `.placeholderImg` - Placeholder image URL for content without images
 
 ### `window.elementorFrontend` (Elementor Frontend API)
 - `.hooks.addAction()` - Register frontend hooks for widget initialization
@@ -420,7 +373,7 @@ Provided by `wp_localize_script()` in PHP:
 - `assets/js/main-frontend.js` - Lightweight display-only bundle
 - `assets/css/main-frontend.css` - Frontend styles
 - React/ReactDOM from WordPress
-- WooCommerce Store API nonce
+- WordPress REST API nonce
 
 ### Editor Preview (`elementor/preview/enqueue_scripts` hook)
 **When:** Inside Elementor editor preview iframe
@@ -428,7 +381,7 @@ Provided by `wp_localize_script()` in PHP:
 - `assets/admin/js/main-editor.js` - Full-featured editor bundle
 - `assets/admin/css/main-editor.css` - Editor styles
 - React/ReactDOM from WordPress
-- WooCommerce Store API nonce
+- WordPress REST API nonce
 
 ### Editor Panel (`elementor/editor/after_enqueue_scripts` hook)
 **When:** Elementor editor interface (not preview)
@@ -562,99 +515,103 @@ These are consumed by all three widget components. Responsive breakpoint CSS is 
 - **Responsive settings expansion**: Widget manager expands responsive keys to include breakpoint variants for accurate change detection
 - **Two-bundle strategy**: Reduces frontend payload by ~50% compared to single bundle
 
-## WooCommerce Integration
+## WordPress REST API Integration
 
-### Store API
+### REST API
 
-The plugin uses WooCommerce's REST API (Store API) for all product operations:
+The plugin uses WordPress's REST API for all content operations:
 
 **Endpoints Used:**
-- `GET /wp-json/wc/store/products` - Fetch products with query parameters
-- `POST /wp-json/wc/store/cart/add-item` - Add product to cart
+- `GET /wp-json/wp/v2/posts` - Fetch posts with query parameters
+- `GET /wp-json/wp/v2/{post_type}` - Fetch custom post types
 
 **Authentication:**
-- Uses WordPress nonce system via `wp_create_nonce('wc_store_api')`
-- Nonce passed to React via `window.MC4E.storeApiNonce`
-- Included in request headers: `Nonce: {nonce}`
+- Uses WordPress nonce system via `wp_create_nonce('wp_rest')`
+- Nonce passed to React via `window.MC4E.restApiNonce`
+- Included in request headers: `X-WP-Nonce: {nonce}`
 
-**Query Parameters (Products):**
+**Query Parameters (Posts):**
 ```javascript
 {
-    per_page: 12,              // Products per page
-    category: '15,23',         // Comma-separated category IDs
-    orderby: 'popularity',     // Sort: date, popularity, rating, price
+    per_page: 12,              // Posts per page
+    page: 1,                   // Current page
+    orderby: 'date',           // Sort: date, title, modified, etc.
     order: 'desc',             // asc or desc
-    on_sale: true,             // Filter sale items
-    featured: true,            // Filter featured items
+    post_type: 'post',         // Post type to fetch
+    categories: '15,23',       // Comma-separated category IDs
+    tags: '10,20',             // Comma-separated tag IDs
+    search: 'keyword',         // Search term
 }
 ```
 
-### Product Data Structure
+### Post Data Structure
 
-Products fetched from Store API include:
+Posts fetched from REST API include:
 
 ```javascript
 {
     id: 123,
-    name: "Product Name",
-    permalink: "https://...",
-    price: "29.99",
-    regular_price: "39.99",
-    sale_price: "29.99",
-    on_sale: true,
-    images: [
-        {
-            id: 456,
-            src: "https://...",
-            thumbnail: "https://...",
-        }
-    ],
-    average_rating: "4.5",
-    rating_count: 42,
-    categories: [...],
+    title: {
+        rendered: "Post Title"
+    },
+    excerpt: {
+        rendered: "Post excerpt..."
+    },
+    content: {
+        rendered: "Full post content..."
+    },
+    date: "2024-01-15T10:30:00",
+    modified: "2024-01-16T14:20:00",
+    link: "https://...",
+    featured_media: 456,       // Featured image ID
+    categories: [15, 23],
+    tags: [10, 20],
+    author: 1,
+    _embedded: {
+        "wp:featuredmedia": [{
+            source_url: "https://...",
+            media_details: { /* image sizes */ }
+        }],
+        "author": [{ /* author data */ }]
+    }
 }
 ```
 
-### Add to Cart Flow
+### Content Fetch Flow
 
-1. User clicks "Add to Cart" button
-2. `AddToCartButton` component sends POST request
-3. Request includes:
-   - Product ID
-   - Quantity (default: 1)
-   - Variations (if applicable)
-   - Nonce for authentication
-4. WooCommerce processes request
-5. Success: Show notification, update cart count (if header cart exists)
-6. Error: Display error message to user
+1. Widget initializes with post type and query settings
+2. `fetchPosts()` function builds REST API URL with parameters
+3. Request includes nonce for authentication
+4. WordPress processes request and returns post data
+5. React component renders posts in grid layout
+6. Pagination handled via page parameter
 
 ### Placeholder Images
 
-Fallback for products without images:
+Fallback for posts without featured images:
 ```javascript
 // Provided via wp_localize_script
-window.MC4E.placeholderImg = 'plugins/.../woocommerce-placeholder-300x300.png';
+window.MC4E.placeholderImg = 'plugins/.../placeholder-300x300.png';
 
-// Used in ProductImage component
-<img src={imageUrl || window.MC4E?.placeholderImg} />
+// Used in content components
+<img src={featuredImageUrl || window.MC4E?.placeholderImg} />
 ```
 
-### WooCommerce Compatibility
+### WordPress Compatibility
 
 **Minimum Requirements:**
-- WooCommerce 5.0+ (Store API availability)
 - WordPress 5.8+ (modern REST API)
 - PHP 7.0+
 
 **Tested With:**
-- WooCommerce 8.0+
-- Block-based themes
-- Classic themes with WooCommerce support
+- WordPress 6.9+
+- All post types and taxonomies
+- Custom post types
 
 **Known Limitations:**
-- Does not support variable products with complex variations (yet)
-- Grouped products display as simple products
-- External/affiliate products redirect to external URL on click
+- Does not support password-protected posts
+- Private posts require authentication
+- Large content may need excerpt truncation
 
 ## Build Configuration
 
@@ -807,7 +764,7 @@ watch: {
 1. Check browser console for errors
 2. Verify `main-frontend.js` loads correctly
 3. Check `window.MosaicLayoutsReact` is defined
-4. Verify WooCommerce Store API responses
+4. Verify WordPress REST API responses
 
 **Editor Issues:**
 1. Open Elementor editor preview iframe console

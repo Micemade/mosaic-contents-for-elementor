@@ -447,8 +447,9 @@ trait WidgetHelpers {
 				$default_json  = wp_json_encode( $default );
 				$js_settings[] = "\t{$key}: settings.{$key} || {$default_json}";
 			} else {
-				$default_escaped = addslashes( (string) $definition['default'] );
-				$js_settings[]   = "\t{$key}: settings.{$key} || '{$default_escaped}'";
+				// SECURITY FIX: Use wp_json_encode for proper JavaScript escaping instead of addslashes
+				$default_json  = wp_json_encode( (string) $definition['default'] );
+				$js_settings[] = "\t{$key}: settings.{$key} || {$default_json}";
 			}
 		}
 

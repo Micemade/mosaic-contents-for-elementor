@@ -57,6 +57,9 @@ final class MosaicContentsElementor {
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'rest_api_init', array( $this, 'register_settings' ) );
 
+		// SECURITY: Add security headers
+		add_action( 'wp_headers', array( $this, 'add_security_headers' ) );
+
 		// Initialize custom REST API endpoints.
 		$this->init_rest_api();
 	}
@@ -82,6 +85,27 @@ final class MosaicContentsElementor {
 		// check if elementor is installed
 		// bring in the widget classes
 		// bring in the controls
+	}
+
+	/**
+	 * Add security headers to prevent XSS and clickjacking attacks.
+	 *
+	 * @param array $headers The headers array.
+	 * @return array Modified headers array.
+	 */
+	public function add_security_headers( $headers ) {
+		// Prevent browsers from MIME-sniffing the content type
+		$headers['X-Content-Type-Options'] = 'nosniff';
+
+		// Prevent clickjacking attacks
+		$headers['X-Frame-Options'] = 'SAMEORIGIN';
+
+		// Remove version information
+		if ( isset( $headers['X-Powered-By'] ) ) {
+			unset( $headers['X-Powered-By'] );
+		}
+
+		return $headers;
 	}
 
 	/**
@@ -240,6 +264,8 @@ final class MosaicContentsElementor {
 			'restNonce'      => wp_create_nonce( 'wp_rest' ),
 			'ajaxUrl'        => admin_url( 'admin-ajax.php' ),
 			'placeholderImg' => plugins_url( 'assets/images/woocommerce-placeholder-300x300.png', __FILE__ ),
+			// SECURITY FIX: Include Store API nonce for reliable cart operations
+			'storeApiNonce'  => wp_create_nonce( 'wc_store_api' ),
 		);
 
 		wp_localize_script( 'mc4e-frontend-js', 'MC4E', $localize_data );

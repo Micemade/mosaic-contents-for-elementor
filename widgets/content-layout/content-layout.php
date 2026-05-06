@@ -534,7 +534,7 @@ class ContentLayout extends Widget_Base {
 				),
 				$this->default_elements_visibility(
 					__( 'Excerpt', 'mosaic-contents-for-elementor' ),
-					array( true, true, true, true, true )
+					array( false, false, false, false, false )
 				),
 				$this->default_elements_visibility(
 					__( 'Featured Image', 'mosaic-contents-for-elementor' ),
@@ -644,34 +644,34 @@ class ContentLayout extends Widget_Base {
 		);
 
 		$this->add_responsive_control(
-			'mc4e_price_size',
+			'mc4e_excerpt_size',
 			array(
-				'label'     => esc_html__( 'Price size', 'mosaic-contents-for-elementor' ),
+				'label'     => esc_html__( 'Excerpt size', 'mosaic-contents-for-elementor' ),
 				'type'      => Controls_Manager::SLIDER,
 				'size_units' => array( 'px', 'em', 'rem', 'vw', 'vh' ),
 				'default'   => array(
-					'size' => 20,
+					'size' => 16,
 					'unit' => 'px',
 				),
 				'tablet_default' => [
-					'size' => 18,
+					'size' => 16,
 					'unit' => 'px',
 				],
 				'mobile_default' => [
-					'size' => 18,
+					'size' => 14,
 					'unit' => 'px',
 				],
 				'range'     => self::get_range(),
 				'selectors' => array(
-					'#mc4e-{{ID}} .flex-wrapper .product-elements .price' => 'font-size:{{SIZE}}{{UNIT}};',
+					'#mc4e-{{ID}} .flex-wrapper .product-elements .excerpt' => 'font-size:{{SIZE}}{{UNIT}};',
 				),
 			)
 		);
 
 		$this->add_responsive_control(
-			'mc4e_button_size',
+			'mc4e_readmore_size',
 			array(
-				'label'     => esc_html__( 'Button text size', 'mosaic-contents-for-elementor' ),
+				'label'     => esc_html__( 'Read more text size', 'mosaic-contents-for-elementor' ),
 				'type'      => Controls_Manager::SLIDER,
 				'size_units' => array( 'px', 'em', 'rem', 'vw', 'vh' ),
 				'default'   => array(
@@ -688,7 +688,7 @@ class ContentLayout extends Widget_Base {
 				],
 				'range'     => self::get_range(),
 				'selectors' => array(
-					'#mc4e-{{ID}} .flex-wrapper .product-elements .add_to_cart_button' => 'font-size:{{SIZE}}{{UNIT}} !important;',
+					'#mc4e-{{ID}} .flex-wrapper .product-elements .read-more-link' => 'font-size:{{SIZE}}{{UNIT}} !important;',
 				),
 			)
 		);
@@ -717,6 +717,36 @@ class ContentLayout extends Widget_Base {
 				),
 			)
 		);
+
+		$this->add_control(
+				'mc4e_excerpt_truncate',
+				array(
+					'label'        => esc_html__( 'Truncate excerpt', 'mosaic-contents-for-elementor' ),
+					'type'         => Controls_Manager::SWITCHER,
+					'label_on'     => __( 'Yes', 'mosaic-contents-for-elementor' ),
+					'label_off'    => __( 'No', 'mosaic-contents-for-elementor' ),
+					'return_value' => 'yes',
+					'default'      => 'yes',
+					'separator'    => 'before',
+				)
+			);
+
+			$this->add_control(
+				'mc4e_excerpt_truncate_lines',
+				array(
+					'label'     => esc_html__( 'Truncate lines', 'mosaic-contents-for-elementor' ),
+					'type'      => Controls_Manager::NUMBER,
+					'min'       => 1,
+					'max'       => 20,
+					'default'   => 2,
+					'selectors' => array(
+						'{{WRAPPER}} .product-elements .excerpt.truncated' => '-webkit-line-clamp: {{VALUE}};',
+					),
+					'condition' => array(
+						'mc4e_excerpt_truncate' => 'yes',
+					),
+				)
+			);
 		$this->end_controls_tab();
 
 		
@@ -1002,112 +1032,6 @@ class ContentLayout extends Widget_Base {
 		$this->end_controls_tab();
 
 		$this->end_controls_tabs();
-
-		$this->add_control(
-			'special_elements_heading',
-			array(
-				'label' => esc_html__( 'Special Elements', 'mosaic-contents-for-elementor' ),
-				'type' => Controls_Manager::HEADING,
-				'separator' => 'before',
-			)
-		);
-
-		// Additional Tabs.
-		$this->start_controls_tabs( 'additional_tabs' );
-
-		// Badges tab.
-		$this->start_controls_tab(
-			'badges_sale_tab',
-			array(
-				'label' => esc_html__( 'Badges', 'mosaic-contents-for-elementor' ),
-			)
-		);
-
-		$this->add_responsive_control(
-			'mc4e_sale_badge_size',
-			array(
-				'label'      => esc_html__( 'Sale badge text size', 'mosaic-contents-for-elementor' ),
-				'type'       => Controls_Manager::SLIDER,
-				'size_units' => array( 'px', 'em', 'rem', 'vw', 'vh' ),
-				'range'      => self::get_range(),
-				'default'    => array(
-					'size' => 14,
-					'unit' => 'px',
-				),
-				'selectors'  => array(
-					'{{WRAPPER}} .sale-badge' => 'font-size: {{SIZE}}{{UNIT}};',
-				),
-			)
-		);
-
-		$this->add_control(
-			'mc4e_sale_badge_color',
-			array(
-				'label'     => esc_html__( 'Sale badge text color', 'mosaic-contents-for-elementor' ),
-				'type'      => Controls_Manager::COLOR,
-				'default'   => '#FFFFFF',
-				'selectors' => array(
-					'{{WRAPPER}} .sale-badge' => 'color: {{VALUE}};',
-				),
-			)
-		);
-
-		$this->add_control(
-			'mc4e_sale_badge_backcolor',
-			array(
-				'label'     => esc_html__( 'Sale badge background color', 'mosaic-contents-for-elementor' ),
-				'type'      => Controls_Manager::COLOR,
-				'default'   => '#CC0000',
-				'selectors' => array(
-					'{{WRAPPER}} .sale-badge' => 'background-color: {{VALUE}};',
-				),
-			)
-		);
-
-		$this->add_control(
-			'mc4e_sale_badge_position',
-			array(
-				'label'       => esc_html__( 'Sale badge position', 'mosaic-contents-for-elementor' ),
-				'description' => esc_html__( 'Drag the focal point to position the sale badge within the product card.', 'mosaic-contents-for-elementor' ),
-				'type'        => 'mc4e_focal_point',
-				'default'     => array(
-					'x' => 10,
-					'y' => 10,
-				),
-			)
-		);
-
-		$this->end_controls_tab();
-
-		// Other.
-		$this->start_controls_tab(
-			'badges_other_tab',
-			array(
-				'label' => esc_html__( 'Other', 'mosaic-contents-for-elementor' ),
-			)
-		);
-
-		$this->add_control(
-			'mc4e_rating_size',
-			array(
-				'label'     => esc_html__( 'Rating stars size', 'mosaic-contents-for-elementor' ),
-				'type'      => Controls_Manager::SLIDER,
-				'default'   => array('size' => 100, 'unit' => ''),
-				'range'       => array(
-					'em' => array(
-						'min'  => 1,
-						'max'  => 200,
-						'step' => 1,
-					),
-				),
-				'selectors' => array(
-					'{{WRAPPER}} .product-elements .rating-stars' => 'transform: scale(calc({{size}} / 100));',
-				),
-			)
-		);
-		$this->end_controls_tab();
-
-		$this->end_controls_tabs();// Additional Tabs end.
 
 		$this->end_controls_section();
 	}
