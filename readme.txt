@@ -12,7 +12,7 @@ Creative content layouts for WordPress post types with responsive grid editing a
 
 == Description ==
 
-Mosaic Content Layouts for Elementor (MC4E) adds custom Elementor widgets for displaying WordPress content:
+Mosaic Content Layouts for Elementor (MC4E) adds custom Elementor widget for displaying WordPress content:
 
 * Content Layout - Display posts, pages, or custom post types in responsive grids
 
