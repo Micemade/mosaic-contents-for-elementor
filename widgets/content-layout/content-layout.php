@@ -529,6 +529,10 @@ class ContentLayout extends Widget_Base {
 			__( 'Element Order & Visibility', 'mosaic-contents-for-elementor' ),
 			array(
 				$this->default_elements_visibility(
+					__( 'Terms', 'mosaic-contents-for-elementor' ),
+					array( true, true, true, true, true )
+				),
+				$this->default_elements_visibility(
 					__( 'Title', 'mosaic-contents-for-elementor' ),
 					array( true, true, true, true, true )
 				),
@@ -542,10 +546,6 @@ class ContentLayout extends Widget_Base {
 				),
 				$this->default_elements_visibility(
 					__( 'Read More', 'mosaic-contents-for-elementor' ),
-					array( true, true, true, true, true )
-				),
-				$this->default_elements_visibility(
-					__( 'Terms', 'mosaic-contents-for-elementor' ),
 					array( true, true, true, true, true )
 				),
 				$this->default_elements_visibility(
