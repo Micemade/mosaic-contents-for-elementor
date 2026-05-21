@@ -22,7 +22,7 @@ npm run watch           # Watch frontend bundle (recommended)
 npm run watch:editor    # Watch editor bundle
 npm run watch:control   # Watch focal-point-control
 npm run watch:setups    # Watch saved-setups-control
-npm run watch:product-select # Watch product-select-control
+npm run watch:posttype-select # Watch PostTypeSelectControl
 npm run watch:all       # Watch all 5 bundles (resource intensive)
 ```
 
@@ -432,26 +432,29 @@ public function init_widgets( $widgets_manager ) {
 }
 ```
 
-## File Paths Quick Reference
+## Relevant File Paths Quick Reference
 
 ```
 src/
 ├── main-frontend.jsx              # Frontend entry
 ├── main-editor.jsx                # Editor entry
 ├── globalStyles.scss              # Global styles
+├── controls/
+│   ├── focal-point-control.jsx
+│   ├── FocalPointControlView.jsx
+│   ├── PostTypeSelectControl.jsx
+│   ├── PostTypeSelectView.jsx
+│   ├── saved-setups-control.jsx
+│   ├── focal-point-control.scss
+│   ├── PostTypeSelectControl.scss
+│   └── saved-setups-control.scss
 ├── core/
-│   ├── widget-registry.js
-│   ├── widget-manager.jsx
-│   ├── widget-initializer.js
-│   ├── frontend-hooks.js         # Minimal frontend
 │   ├── editor-hooks.js           # Full editor
-│   └── elementor-utils.js
-├── widgets/
-│   ├── settings-mappers.js       # createSettingsMapper() factory
-│   └── content-layout/
-│       ├── content-layout.jsx
-│       ├── content-layout.scss
-│       └── react-settings.json   # Settings source of truth
+│   ├── elementor-utils.js
+│   ├── frontend-hooks.js         # Minimal frontend
+│   ├── widget-initializer.js
+│   ├── widget-registry.js
+│   └── widget-manager.jsx
 ├── shared/
 │   ├── layouts.json
 │   ├── components/
@@ -460,35 +463,46 @@ src/
 │   │   ├── ZIndexControls.jsx
 │   │   └── utils/events.js
 │   ├── utils/
-│   │   ├── hooks.js              # useCssVariables(), useGridSettings()
 │   │   ├── addItem.js
 │   │   ├── alignmentUtils.js
 │   │   ├── dataLoading.js
-│   │   ├── layoutUtils.js
-│   │   ├── layoutEditing.js
 │   │   ├── elementOrdering.js
-│   │   ├── LRUCache.js
 │   │   ├── fetchHelpers.js
+│   │   ├── generalUtils.js
+│   │   ├── hooks.js              # useCssVariables(), useGridSettings()
+│   │   ├── layoutEditing.js
+│   │   ├── layoutUtils.js
+│   │   ├── LRUCache.js
 │   │   ├── transformationUtils.js
-│   │   ├── visibleLayout.js
-│   │   └── generalUtils.js
+│   │   └── visibleLayout.js
 │   └── assets/
 │       ├── _gridLayout.scss
 │       ├── _itemControls.scss
 │       ├── _contentElements.scss
 │       └── (shared partials)
-└── controls/
-    ├── focal-point-control.jsx
-    ├── FocalPointControlView.jsx
-    ├── focal-point-control.scss
-    ├── saved-setups-control.jsx
-    └── saved-setups-control.scss
+└── widgets/
+    ├── settings-mappers.js       # createSettingsMapper() factory
+    ├── content-layout/
+    │   ├── content-layout.jsx
+    │   ├── content-layout.scss
+    │   └── react-settings.json   # Settings source of truth for 'content-layout'
+    └── widgets-layout/
+        ├── widgets-layout.jsx
+        ├── widgets-layout.scss
+        └── react-settings.json   # Settings source of truth for 'widgets-layout'
 
 widgets/                          # PHP widget classes
-└── content-layout.php
+├── content-layout/
+│  ├── react-settings.json
+│  └── content-layout.php
+└── widgets-layout
+   ├── react-settings.json
+   └── widget-layout.php
 
 controls/                         # PHP custom controls
+├── elements-sorting.php
 ├── focal-point.php
+├── posttype-select.php
 └── saved-setups.php
 
 includes/

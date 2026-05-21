@@ -46,7 +46,7 @@ const DEBOUNCE_DELAY = 300;
 const MIN_SEARCH_LENGTH = 2;
 
 /**
- * ProductSelectView component.
+ * PostTypeSelectView component.
  *
  * Renders an async React Select for choosing a WooCommerce product.
  *
@@ -55,7 +55,7 @@ const MIN_SEARCH_LENGTH = 2;
  * @param {Function} props.onChange        Callback when selection changes. Receives product ID string.
  * @returns {React.Element} The rendered component.
  */
-const ProductSelectView = ({ initialValue, onChange }) => {
+const PostTypeSelectView = ({ initialValue, onChange }) => {
 
 	const [defaultOptions, setDefaultOptions] = useState([]);
 	const [selectedOption, setSelectedOption] = useState(null);
@@ -227,7 +227,7 @@ const ProductSelectView = ({ initialValue, onChange }) => {
 	}, []);
 
 	return (
-		<div className="mc4e-product-select-wrapper">
+		<div className="mc4e-posttype-select-wrapper">
 			<AsyncSelect
 				classNamePrefix="mc4e-ps"
 				closeMenuOnSelect={true}
@@ -270,4 +270,4 @@ const ProductSelectView = ({ initialValue, onChange }) => {
 	);
 };
 
-export default ProductSelectView;
+export default PostTypeSelectView;

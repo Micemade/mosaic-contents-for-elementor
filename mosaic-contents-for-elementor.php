@@ -124,9 +124,9 @@ final class MosaicContentsElementor {
 		require_once __DIR__ . '/controls/saved-setups.php';
 		$controls_manager->register( new \Micemade\MosaicContentsElementor\Controls\Saved_Setups() );
 
-		// Require and register the product select control.
-		require_once __DIR__ . '/controls/product-select.php';
-		$controls_manager->register( new \Micemade\MosaicContentsElementor\Controls\Product_Select() );
+		// Require and register the post type select control.
+		require_once __DIR__ . '/controls/posttype-select.php';
+		$controls_manager->register( new \Micemade\MosaicContentsElementor\Controls\Posttype_Select() );
 
 		// Require and register the element sorting control.
 		require_once __DIR__ . '/controls/element-sorting.php';

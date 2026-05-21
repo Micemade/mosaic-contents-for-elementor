@@ -7,27 +7,27 @@
  * Runs in the Elementor editor panel (NOT the preview iframe).
  */
 
-import './product-select-control.scss';
+import './PostTypeSelectControl.scss';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import ProductSelectView from './ProductSelectView';
+import PostTypeSelectView from './PostTypeSelectView';
 
 // Wait for Elementor to be ready.
 window.addEventListener('elementor/init', () => {
-	initProductSelectControl();
+	initPosttypeSelectControl();
 });
 
 // Also try the standard event listener.
 document.addEventListener('DOMContentLoaded', () => {
 	if (typeof elementor !== 'undefined') {
-		initProductSelectControl();
+		initPosttypeSelectControl();
 	}
 });
 
 /**
  * Initialize the product select control in Elementor.
  */
-function initProductSelectControl() {
+function initPosttypeSelectControl() {
 	if (typeof elementor === 'undefined' || !elementor.modules) {
 		return;
 	}
@@ -51,7 +51,7 @@ function initProductSelectControl() {
 		 * Initialize the React Select component.
 		 */
 		initProductSelect() {
-			const container = this.$el.find('.mc4e-product-select-container');
+			const container = this.$el.find('.mc4e-posttype-select-container');
 
 			if (!container.length) {
 				return;
@@ -65,9 +65,9 @@ function initProductSelectControl() {
 			this._reactRoot = createRoot(rootEl);
 
 			this._reactRoot.render(
-				<ProductSelectView
+				<PostTypeSelectView
 					initialValue={String(initialValue)}
-					onChange={(productId) => this.onProductChange(productId)}
+					onChange={(productId) => this.onPostTypeChange(productId)}
 				/>
 			);
 		},
@@ -77,9 +77,9 @@ function initProductSelectControl() {
 		 *
 		 * @param {string} productId Selected product ID or empty string.
 		 */
-		onProductChange(productId) {
+		onPostTypeChange(productId) {
 			// Update the hidden input.
-			this.$el.find('.mc4e-product-select-value').val(productId);
+			this.$el.find('.mc4e-posttype-select-value').val(productId);
 
 			// Save value to Elementor.
 			this.setValue(productId);
@@ -96,10 +96,10 @@ function initProductSelectControl() {
 			// Re-render with the current value if the React root exists.
 			if (this._reactRoot) {
 				this._reactRoot.render(
-					<ProductSelectView
+					<PostTypeSelectView
 						initialValue={String(value || '')}
 						onChange={(productId) =>
-							this.onProductChange(productId)
+							this.onPostTypeChange(productId)
 						}
 					/>
 				);
@@ -118,5 +118,5 @@ function initProductSelectControl() {
 	});
 
 	// Register the control view with Elementor.
-	elementor.addControlView('mc4e_product_select', ProductSelectControl);
+	elementor.addControlView('mc4e_posttype_select', ProductSelectControl);
 }

@@ -243,9 +243,9 @@ src/
     ├── focal-point-control.jsx      # Focal point picker React component
     ├── FocalPointControlView.jsx    # Elementor BaseData view extension
     ├── focal-point-control.scss
-    ├── product-select-control.jsx   # Product selector React component
-    ├── ProductSelectView.jsx        # Elementor BaseData view extension
-    ├── product-select-control.scss
+    ├── PostTypeSelectControl.jsx   # Product selector React component
+    ├── PostTypeSelectView.jsx        # Elementor BaseData view extension
+    ├── PostTypeSelectControl.scss
     ├── saved-setups-control.jsx     # Saved setups React component + control view
     └── saved-setups-control.scss
 
@@ -404,7 +404,7 @@ Custom controls follow a PHP + React pattern: a PHP class provides the Elementor
 | Control | PHP Class | Type Slug | Purpose |
 |---------|-----------|-----------|----------|
 | Focal Point | `Focal_Point` | `mc4e_focal_point` | Image focal-point picker |
-| Product Select | `Product_Select` | `mc4e_product_select` | Single-product selector with search |
+| Product Select | `Product_Select` | `mc4e_posttype_select` | Single-product selector with search |
 | Element Sorting | `Element_Sorting` | `mc4e_sorter_label` | Drag-to-reorder element visibility list |
 | Saved Setups | `Saved_Setups` | `mc4e_saved_setups` | Save/load/delete layout+style presets |
 
@@ -449,7 +449,7 @@ public function init_controls( $controls_manager ) {
     require_once __DIR__ . '/controls/focal-point.php';
     $controls_manager->register( new Focal_Point() );
 
-    require_once __DIR__ . '/controls/product-select.php';
+    require_once __DIR__ . '/controls/posttype-select.php';
     $controls_manager->register( new Product_Select() );
 
     require_once __DIR__ . '/controls/element-sorting.php';
@@ -625,7 +625,7 @@ The project uses Vite with a custom multi-entry configuration that builds five s
 | `src/main-editor.jsx` | `BUILD_ENTRY=main-editor` | `assets/admin/` | Editor preview |
 | `src/controls/focal-point-control.jsx` | `BUILD_ENTRY=focal-point-control` | `assets/admin/` | Focal point control |
 | `src/controls/saved-setups-control.jsx` | `BUILD_ENTRY=saved-setups-control` | `assets/admin/` | Saved setups control |
-| `src/controls/product-select-control.jsx` | `BUILD_ENTRY=product-select-control` | `assets/admin/` | Product select control |
+| `src/controls/PostTypeSelectControl.jsx` | `BUILD_ENTRY=PostTypeSelectControl` | `assets/admin/` | Product select control |
 
 ### Build Commands
 
@@ -641,7 +641,7 @@ npm run watch              # Watch frontend bundle only (recommended)
 npm run watch:editor       # Watch editor bundle only
 npm run watch:control      # Watch focal point control only
 npm run watch:setups       # Watch saved setups control only
-npm run watch:product-select # Watch product select control only
+npm run watch:posttype-select # Watch product select control only
 npm run watch:all          # Watch all bundles (resource intensive)
 ```
 
@@ -682,12 +682,12 @@ assets/
     ├── js/
     │   ├── main-editor.js           # ~175KB (gzipped ~52KB)
     │   ├── focal-point-control.js   # ~5KB
-    │   ├── product-select-control.js
+    │   ├── PostTypeSelectControl.js
     │   └── saved-setups-control.js  # ~7KB
     └── css/
         ├── main-editor.css
         ├── focal-point-control.css
-        ├── product-select-control.css
+        ├── PostTypeSelectControl.css
         └── saved-setups-control.css
 ```
 
@@ -736,7 +736,7 @@ assets/
    npm run watch:control
 
     # Terminal 4: Watch product select control
-    npm run watch:product-select
+    npm run watch:posttype-select
    ```
 
 ### File Watching

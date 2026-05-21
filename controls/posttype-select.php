@@ -26,7 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Renders an async React Select component in the Elementor panel
  * for searching and selecting WooCommerce products.
  */
-class Product_Select extends Base_Data_Control {
+class Posttype_Select extends Base_Data_Control {
 
 	/**
 	 * Get control type.
@@ -39,7 +39,7 @@ class Product_Select extends Base_Data_Control {
 	 * @return string Control type.
 	 */
 	public function get_type() {
-		return 'mc4e_product_select';
+		return 'mc4e_posttype_select';
 	}
 
 	/**
@@ -83,8 +83,8 @@ class Product_Select extends Base_Data_Control {
 	public function enqueue() {
 		// Enqueue the React-based control script.
 		wp_enqueue_script(
-			'mc4e-product-select-control',
-			plugins_url( 'assets/admin/js/product-select-control.js', dirname( __FILE__ ) ),
+			'mc4e-PostTypeSelectControl',
+			plugins_url( 'assets/admin/js/PostTypeSelectControl.js', dirname( __FILE__ ) ),
 			array( 'jquery', 'react', 'react-dom', 'wp-api-fetch', 'wp-i18n' ),
 			'1.0.0',
 			true
@@ -92,8 +92,8 @@ class Product_Select extends Base_Data_Control {
 
 		// Enqueue the control styles.
 		wp_enqueue_style(
-			'mc4e-product-select-control',
-			plugins_url( 'assets/admin/css/product-select-control.css', dirname( __FILE__ ) ),
+			'mc4e-PostTypeSelectControl',
+			plugins_url( 'assets/admin/css/PostTypeSelectControl.css', dirname( __FILE__ ) ),
 			array(),
 			'1.0.0'
 		);
@@ -103,7 +103,7 @@ class Product_Select extends Base_Data_Control {
 	 * Render control output in the editor.
 	 *
 	 * Uses Underscore JS template. The React component mounts into
-	 * the .mc4e-product-select-container element.
+	 * the .mc4e-posttype-select-container element.
 	 *
 	 * @since 1.0.0
 	 * @access public
@@ -114,27 +114,23 @@ class Product_Select extends Base_Data_Control {
 <div class="elementor-control-field">
 	<# if ( data.label ) { #>
 		<label for="<?php echo esc_attr( $control_uid ); ?>" class="elementor-control-title">{{{ data.label }}}</label>
-	<# } #>
+		<# } #>
 
-	<div class="elementor-control-input-wrapper elementor-control-unit-5">
-		<!-- Hidden input for Elementor data binding (stores selected product ID) -->
-		<input type="hidden"
-			id="<?php echo esc_attr( $control_uid ); ?>"
-			class="mc4e-product-select-value"
-			data-setting="value"
-			value="{{ data.controlValue }}" />
+			<div class="elementor-control-input-wrapper elementor-control-unit-5">
+				<!-- Hidden input for Elementor data binding (stores selected product ID) -->
+				<input type="hidden" id="<?php echo esc_attr( $control_uid ); ?>" class="mc4e-posttype-select-value"
+					data-setting="value" value="{{ data.controlValue }}" />
 
-		<!-- React mount container -->
-		<div class="mc4e-product-select-container"
-			data-control-uid="<?php echo esc_attr( $control_uid ); ?>"
-			data-initial-value="{{ data.controlValue }}">
-		</div>
-	</div>
+				<!-- React mount container -->
+				<div class="mc4e-posttype-select-container" data-control-uid="<?php echo esc_attr( $control_uid ); ?>"
+					data-initial-value="{{ data.controlValue }}">
+				</div>
+			</div>
 </div>
 
 <# if ( data.description ) { #>
 	<div class="elementor-control-field-description">{{{ data.description }}}</div>
-<# } #>
+	<# } #>
 		<?php
 	}
 }

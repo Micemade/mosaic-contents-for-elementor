@@ -1,6 +1,6 @@
 ---
-name: WordPress Elementor Integration
-description: This skill should be used when the user asks to "create WordPress theme", "generate Elementor widgets", "deploy to WordPress", "integrate WooCommerce", "upload media to WordPress", or WordPress API, or site deployment.
+name: elementor
+description: This skill should be used when the user asks to "integrate React compnent with ELementor", "generate Elementor widget or widgets", "integrate WooCommerce with Elementor".
 version: 1.0.0
 ---
 

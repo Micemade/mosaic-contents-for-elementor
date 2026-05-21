@@ -44,8 +44,8 @@ const entries = {
 		outDir: 'assets/admin',
 	},
 	// Product select control (editor panel only)
-	'product-select-control': {
-		input: path.resolve(__dirname, 'src/controls/product-select-control.jsx'),
+	'PostTypeSelectControl': {
+		input: path.resolve(__dirname, 'src/controls/PostTypeSelectControl.jsx'),
 		outDir: 'assets/admin',
 	},
 };

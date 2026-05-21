@@ -225,7 +225,7 @@ function GridLayout(props) {
 	};
 
 	const currentBreakpoint = getBreakpointFromWidth();
-
+/* 
 	// Prepare layoutsState for debugging
 	const debugLayoutsState = () => {
 		const cleaned = {};
@@ -249,7 +249,7 @@ function GridLayout(props) {
 		console.log(jsonString);
 	};
 	debugLayoutsState();
-
+ */
 
 	return (
 		<RGL
