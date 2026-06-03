@@ -3,7 +3,7 @@
  * Custom Elementor sorter label control.
  *
  * A read-only label control used inside a Repeater to enable drag-to-reorder
- * of product/category elements (title, price, rating, etc.).
+ * of elements (title, price, rating, etc.).
  * The label text comes from repeater default data and cannot be edited by the user.
  *
  * Based on the sorter control pattern from Micemade Elements.

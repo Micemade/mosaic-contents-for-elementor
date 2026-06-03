@@ -44,7 +44,7 @@ const FeaturedImage = ({ postId, postType = 'post', name, images, featuredImageS
 	const isAuto = featuredImageSize === 'automatic';
 
 	// Fallback for image alt attribute.
-	const altFallback = __('Product image', 'mosaic-contents-for-elementor');
+	const altFallback = __('Featured image', 'mosaic-contents-for-elementor');
 
 	// Get featured image using custom hook
 	// (only if not in 'automatic' mode, otherwise we get srcset and sizes from "images" prop)

@@ -1,5 +1,5 @@
 /**
- * Product Select Control Entry Point
+ * Post type Select Control Entry Point
  *
  * Registers a custom Elementor control that uses React Select's AsyncSelect
  * for searching and selecting WooCommerce products at scale.
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
- * Initialize the product select control in Elementor.
+ * Initialize the post type select control in Elementor.
  */
 function initPosttypeSelectControl() {
 	if (typeof elementor === 'undefined' || !elementor.modules) {
@@ -39,18 +39,18 @@ function initPosttypeSelectControl() {
 		return;
 	}
 
-	const ProductSelectControl = BaseDataControl.extend({
+	const PostTypeSelectControl = BaseDataControl.extend({
 		/**
 		 * Called when control is ready and rendered in the panel.
 		 */
 		onReady() {
-			this.initProductSelect();
+			this.initPostTypeSelect();
 		},
 
 		/**
 		 * Initialize the React Select component.
 		 */
-		initProductSelect() {
+		initPostTypeSelect() {
 			const container = this.$el.find('.mc4e-posttype-select-container');
 
 			if (!container.length) {
@@ -67,22 +67,22 @@ function initPosttypeSelectControl() {
 			this._reactRoot.render(
 				<PostTypeSelectView
 					initialValue={String(initialValue)}
-					onChange={(productId) => this.onPostTypeChange(productId)}
+					onChange={(postTypeId) => this.onPostTypeChange(postTypeId)}
 				/>
 			);
 		},
 
 		/**
-		 * Handle product selection change.
+		 * Handle post type selection change.
 		 *
-		 * @param {string} productId Selected product ID or empty string.
+		 * @param {string} postTypeId Selected post type ID or empty string.
 		 */
-		onPostTypeChange(productId) {
+		onPostTypeChange(postTypeId) {
 			// Update the hidden input.
-			this.$el.find('.mc4e-posttype-select-value').val(productId);
+			this.$el.find('.mc4e-posttype-select-value').val(postTypeId);
 
 			// Save value to Elementor.
-			this.setValue(productId);
+			this.setValue(postTypeId);
 		},
 
 		/**
@@ -98,8 +98,8 @@ function initPosttypeSelectControl() {
 				this._reactRoot.render(
 					<PostTypeSelectView
 						initialValue={String(value || '')}
-						onChange={(productId) =>
-							this.onPostTypeChange(productId)
+						onChange={(postTypeId) =>
+							this.onPostTypeChange(postTypeId)
 						}
 					/>
 				);
@@ -118,5 +118,5 @@ function initPosttypeSelectControl() {
 	});
 
 	// Register the control view with Elementor.
-	elementor.addControlView('mc4e_posttype_select', ProductSelectControl);
+	elementor.addControlView('mc4e_posttype_select', PostTypeSelectControl);
 }

@@ -18,7 +18,7 @@ services:
     image: wordpress:latest
     volumes:
       - wordpress_data:/var/www/html:rw
-      - ../mosaic-product-layouts-for-elementor:/var/www/html/wp-content/plugins/mosaic-product-layouts-for-elementor:ro
+      - ../mosaic-contents-for-elementor:/var/www/html/wp-content/plugins/mosaic-contents-for-elementor:ro
     ports:
       - '8000:80'
     restart: always

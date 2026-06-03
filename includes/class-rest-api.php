@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * REST API class for Mosaic Contents for Elementor.
  *
- * Registers custom REST endpoints for products that return lightweight data
+ * Registers custom REST endpoints for products or post types that return lightweight data
  * optimized for the Elementor editor async select control.
  *
  * @since 1.0.0
@@ -69,7 +69,7 @@ class RestAPI {
 				'args'                => $this->get_collection_params(),
 			)
 		);
-
+		// Post types endpoint.
 		register_rest_route(
 			self::NAMESPACE,
 			'/post-types',

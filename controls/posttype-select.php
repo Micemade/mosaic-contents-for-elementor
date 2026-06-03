@@ -1,11 +1,11 @@
 <?php
 /**
- * Product Select Custom Control
+ * Post Type Select Custom Control
  *
- * A custom Elementor control for selecting a WooCommerce product using
- * React Select's async capabilities. Designed to scale with large product catalogs.
+ * A custom Elementor control for selecting a post type using
+ * React Select's async capabilities. Designed to scale with large post catalogs.
  *
- * - Initial load: 50 most recent products
+ * - Initial load: 50 most recent posts
  * - Async search: Triggered when user types 2+ characters
  * - Debounced: 300ms debounce on search input
  *
@@ -21,10 +21,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Product Select Control class.
+ * Post Type Select Control class.
  *
  * Renders an async React Select component in the Elementor panel
- * for searching and selecting WooCommerce products.
+ * for searching and selecting post types.
  */
 class Posttype_Select extends Base_Data_Control {
 
@@ -45,7 +45,7 @@ class Posttype_Select extends Base_Data_Control {
 	/**
 	 * Get default control settings.
 	 *
-	 * Returns the default settings for the product select control.
+	 * Returns the default settings for the post type select control.
 	 *
 	 * @since 1.0.0
 	 * @access protected
@@ -61,7 +61,7 @@ class Posttype_Select extends Base_Data_Control {
 	/**
 	 * Get control default value.
 	 *
-	 * Returns the default value (empty string = no product selected).
+	 * Returns the default value (empty string = no post type selected).
 	 *
 	 * @since 1.0.0
 	 * @access public
@@ -117,7 +117,7 @@ class Posttype_Select extends Base_Data_Control {
 		<# } #>
 
 			<div class="elementor-control-input-wrapper elementor-control-unit-5">
-				<!-- Hidden input for Elementor data binding (stores selected product ID) -->
+				<!-- Hidden input for Elementor data binding (stores selected post type) -->
 				<input type="hidden" id="<?php echo esc_attr( $control_uid ); ?>" class="mc4e-posttype-select-value"
 					data-setting="value" value="{{ data.controlValue }}" />
 

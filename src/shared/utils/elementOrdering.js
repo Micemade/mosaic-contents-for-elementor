@@ -2,7 +2,7 @@
  * Element Ordering Utilities
  *
  * Shared helpers for sorting and applying breakpoint visibility
- * to product/category elements based on the repeater control data.
+ * to post type item elements based on the repeater control data.
  *
  * @module elementOrdering
  */

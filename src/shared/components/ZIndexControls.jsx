@@ -4,7 +4,7 @@
  * Shared component that renders "Bring Forward" / "Send Backward" buttons
  * for controlling the stacking order (z-index) of grid items.
  *
- * Used by content-layout, categories-layout, and single-product-layout widgets.
+ * Used by content-layout, categories-layout, and single-posttypeitem-layout widgets.
  *
  * @module ZIndexControls
  */
@@ -66,7 +66,7 @@ export function updateZIndex(
 			...(existingCustomLayout.zindex || layoutData.zindex || {}),
 			[itemId]: newZIndex,
 		},
-		// Preserve hidden items list if present (used by single-product-layout).
+		// Preserve hidden items list if present (used by single-posttypeitem-layout).
 		...((existingCustomLayout.hidden || layoutData.hidden) && {
 			hidden: existingCustomLayout.hidden || layoutData.hidden,
 		}),

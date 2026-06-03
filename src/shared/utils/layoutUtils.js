@@ -10,7 +10,7 @@ import Layouts from '../../../assets/presets/layouts.json';
  * Get layout from predefined layouts.
  *
  * Parses the layout JSON and converts PascalCase breakpoint keys to lowercase.
- * Layout item IDs (item-0, item-1, etc.) are preserved for product mapping.
+ * Layout item IDs (item-0, item-1, etc.) are preserved for items mapping.
  *
  * @param {string} layoutId - ID of the layout to use (e.g., 'layout-5')
  * @param {number} itemCount - Number of items in the layout (for fallback selection)

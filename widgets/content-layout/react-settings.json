@@ -63,11 +63,11 @@
 		"type": "string",
 		"default": ""
 	},
-	"mc4e_product_layout": {
+	"mc4e_item_layout": {
 		"type": "string",
 		"default": "vertical"
 	},
-	"mc4e_product_align": {
+	"mc4e_item_align": {
 		"type": "responsive",
 		"default": ""
 	},
@@ -76,7 +76,7 @@
 		"default": false
 	},
 
-	"mc4e_featured_image_size": {
+	"mc4e_image_resolution": {
 		"type": "string",
 		"default": "automatic"
 	},

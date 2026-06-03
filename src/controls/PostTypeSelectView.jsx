@@ -1,13 +1,13 @@
 /**
- * Product Select Control - React Component
+ * Post Type Select Control - React Component
  *
- * Async select component for searching and selecting WooCommerce products.
+ * Async select component for searching and selecting post types.
  * Uses React Select's AsyncSelect with a custom REST endpoint.
  *
- * - Initial load: 50 most recent products
+ * - Initial load: 50 most recent post types
  * - Async search: Fires after 2+ characters with 300ms debounce
  *
- * @package Micemade\MosaicProductLayoutsElementor\Controls
+ * @package Micemade\MosaicContentsForElementor\Controls
  */
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
@@ -18,14 +18,14 @@ const apiFetch = wp.apiFetch;
 const { __ } = wp.i18n;
 
 /**
- * REST API endpoint for products.
+ * REST API endpoint for post types.
  *
  * @type {string}
  */
-const PRODUCTS_ENDPOINT = '/mc4e/v1/products';
+const POST_TYPES_ENDPOINT = '/mc4e/v1/post-types';
 
 /**
- * Default number of products to load initially.
+ * Default number of post types to load initially.
  *
  * @type {number}
  */
@@ -48,11 +48,11 @@ const MIN_SEARCH_LENGTH = 2;
 /**
  * PostTypeSelectView component.
  *
- * Renders an async React Select for choosing a WooCommerce product.
+ * Renders an async React Select for choosing a post type.
  *
  * @param {Object}   props               Component props.
- * @param {string}   props.initialValue   Initial product ID (from Elementor control value).
- * @param {Function} props.onChange        Callback when selection changes. Receives product ID string.
+ * @param {string}   props.initialValue   Initial post type ID (from Elementor control value).
+ * @param {Function} props.onChange        Callback when selection changes. Receives post type ID string.
  * @returns {React.Element} The rendered component.
  */
 const PostTypeSelectView = ({ initialValue, onChange }) => {
@@ -63,37 +63,37 @@ const PostTypeSelectView = ({ initialValue, onChange }) => {
 	const debounceTimerRef = useRef(null);
 
 	/**
-	 * Fetch the initial set of products on mount.
+	 * Fetch the initial set of post types on mount.
 	 */
 	useEffect(() => {
-		const fetchInitialProducts = async () => {
+		const fetchInitialPostTypes = async () => {
 			try {
 				setIsLoading(true);
 				const response = await apiFetch({
-					path: `${PRODUCTS_ENDPOINT}?per_page=${PER_PAGE}`,
+					path: `${POST_TYPES_ENDPOINT}?per_page=${PER_PAGE}`,
 				});
 				setDefaultOptions(response);
 
 				// If we have an initial value, find it in the response or fetch it specifically.
 				if (initialValue) {
-					const productId = parseInt(initialValue, 10);
-					const found = response.find((opt) => opt.value === productId);
+					const postTypeId = parseInt(initialValue, 10);
+					const found = response.find((opt) => opt.value === postTypeId);
 					if (found) {
 						setSelectedOption(found);
-					} else if (productId > 0) {
-						// Product not in first 50 — fetch it by search.
+					} else if (postTypeId > 0) {
+						// Post type not in first 50 — fetch it by search.
 						try {
 							const searchResponse = await apiFetch({
-								path: `${PRODUCTS_ENDPOINT}?search=${productId}&per_page=1`,
+								path: `${POST_TYPES_ENDPOINT}?search=${postTypeId}&per_page=1`,
 							});
 							// Also try fetching by searching for the post title via wp/v2.
 							// Fallback: create a minimal option with just the ID as label.
 							const titleResponse = await apiFetch({
-								path: `/wp/v2/product/${productId}?_fields=id,title`,
+								path: `/wp/v2/post-type/${postTypeId}?_fields=id,title`,
 							});
 							if (titleResponse && titleResponse.title) {
 								setSelectedOption({
-									value: productId,
+									value: postTypeId,
 									label:
 										titleResponse.title.rendered ||
 										titleResponse.title,
@@ -101,17 +101,17 @@ const PostTypeSelectView = ({ initialValue, onChange }) => {
 								});
 							} else if (searchResponse.length > 0) {
 								const match = searchResponse.find(
-									(opt) => opt.value === productId
+									(opt) => opt.value === postTypeId
 								);
 								if (match) {
 									setSelectedOption(match);
 								}
 							}
 						} catch {
-							// If individual product fetch fails, set a basic option.
+							// If individual post type fetch fails, set a basic option.
 							setSelectedOption({
-								value: productId,
-								label: `Product #${productId}`,
+								value: postTypeId,
+								label: `Post Type #${postTypeId}`,
 								mediaId: 0,
 							});
 						}
@@ -125,7 +125,7 @@ const PostTypeSelectView = ({ initialValue, onChange }) => {
 			}
 		};
 
-		fetchInitialProducts();
+		fetchInitialPostTypes();
 
 		// Cleanup debounce timer on unmount.
 		return () => {
@@ -160,11 +160,11 @@ const PostTypeSelectView = ({ initialValue, onChange }) => {
 				debounceTimerRef.current = setTimeout(async () => {
 					try {
 						const response = await apiFetch({
-							path: `${PRODUCTS_ENDPOINT}?search=${encodeURIComponent(inputValue)}&per_page=${PER_PAGE}`,
+							path: `${POST_TYPES_ENDPOINT}?search=${encodeURIComponent(inputValue)}&per_page=${PER_PAGE}`,
 						});
 						resolve(response);
 					} catch (error) {
-						console.error('MC4E: Product search failed:', error);
+						console.error('MC4E: Post type search failed:', error);
 						resolve([]);
 					}
 				}, DEBOUNCE_DELAY);
@@ -181,7 +181,7 @@ const PostTypeSelectView = ({ initialValue, onChange }) => {
 	const handleChange = useCallback(
 		(option) => {
 			setSelectedOption(option);
-			// Pass the product ID (as string) to Elementor, or empty string if cleared.
+			// Pass the post type ID (as string) to Elementor, or empty string if cleared.
 			onChange(option ? String(option.value) : '');
 		},
 		[onChange]
@@ -198,7 +198,7 @@ const PostTypeSelectView = ({ initialValue, onChange }) => {
 		if (!inputValue || inputValue.length < MIN_SEARCH_LENGTH) {
 			return __('Type to search…', 'mosaic-contents-for-elementor');
 		}
-		return __('No products found', 'mosaic-contents-for-elementor');
+		return __('No post types found', 'mosaic-contents-for-elementor');
 	}, []);
 
 	/**
@@ -212,16 +212,16 @@ const PostTypeSelectView = ({ initialValue, onChange }) => {
 	);
 
 	/**
-	 * Custom format for option labels — shows product thumbnail + name.
+	 * Custom format for option labels — shows post type thumbnail + name.
 	 *
 	 * @param {Object} option Option data { value, label, mediaId }.
 	 * @returns {React.Element} Formatted label.
 	 */
 	const formatOptionLabel = useCallback((option) => {
 		return (
-			<div className="mc4e-product-option">
-				<span className="mc4e-product-option__label">{option.label}</span>
-				<span className="mc4e-product-option__id">#{option.value}</span>
+			<div className="mc4e-posttypeitem-option">
+				<span className="mc4e-posttypeitem-option__label">{option.label}</span>
+				<span className="mc4e-posttypeitem-option__id">#{option.value}</span>
 			</div>
 		);
 	}, []);

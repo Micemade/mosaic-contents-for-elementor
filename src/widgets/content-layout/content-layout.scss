@@ -1,7 +1,7 @@
 /**
  * Content Layout Widget Styles
  *
- * Styles for react-grid-layout based product grid.
+ * Styles for react-grid-layout based post type item grid.
  * Uses Elementor breakpoints dynamically injected via JavaScript.
  * See elementor-utils.js -> injectBreakpointStylesheet() for breakpoint generation.
  * 
@@ -22,7 +22,7 @@
 
 %contentLayout {
 
-// Product element layouts.
+// Post type item element layouts.
 	&:not(.default) > * {
 		flex: 0 0 50%;
 	}
@@ -42,14 +42,14 @@
 	&.horizontal-alt {
 		flex-direction: row;
 		align-items: stretch;
-		.product-featured-image {
+		.posttypeitem-featured-image {
 			position: relative;
 		}
 	}
 	&.vertical,
 	&.vertical-alt {
 		flex-direction: column;
-		.product-featured-image {
+		.posttypeitem-featured-image {
 			position: relative;
 		}
 	}
@@ -81,7 +81,7 @@
 			z-index: 10;
 		}
 	}
-	.product-featured-image {
+	.posttypeitem-featured-image {
 		position: absolute;
 		height: 100%;
 		width: 100%;
@@ -99,7 +99,7 @@
 			object-fit: cover;
 			object-position: 50% 50%;
 		}
-		.product-badge {
+		.posttypeitem-badge {
 			position: absolute;
 			top: 10px;
 			left: 10px;
@@ -107,7 +107,7 @@
 		}
 	}
 
-	.product-elements {
+	.item-elements {
 		display: flex;
 		align-items: center;
 		flex: 1 1 auto;
@@ -201,7 +201,7 @@
 
 		@include rating-stars;
 
-	}// end .product-elements
+	}// end .item-elements
 }// end %contentLayout
 
 /*
@@ -234,7 +234,7 @@
 			position: relative;
 			height: 100%;
 
-			.product-featured-image, .product-elements {
+			.posttypeitem-featured-image, .item-elements {
 				position: relative;
 				align-items: start;
 				flex-basis: 50%;
@@ -242,7 +242,7 @@
 				justify-content: center;
 				text-align: center;
 			}
-			.product-elements {
+			.item-elements {
 				padding: 1em;
 				align-items: center;
 				gap: 5px;

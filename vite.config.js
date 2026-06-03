@@ -43,7 +43,7 @@ const entries = {
 		input: path.resolve(__dirname, 'src/controls/saved-setups-control.jsx'),
 		outDir: 'assets/admin',
 	},
-	// Product select control (editor panel only)
+	// Post type select control (editor panel only)
 	'PostTypeSelectControl': {
 		input: path.resolve(__dirname, 'src/controls/PostTypeSelectControl.jsx'),
 		outDir: 'assets/admin',

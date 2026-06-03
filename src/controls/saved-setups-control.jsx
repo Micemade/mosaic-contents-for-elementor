@@ -36,16 +36,16 @@ const WIDGET_CONFIGS = {
 		// Style settings (React-mapped)
 		styleKeys: [
 			'mc4e_style_preset',
-			'mc4e_product_layout',
+			'mc4e_item_layout',
 			'mc4e_title_size',
 			'mc4e_excerpt_size',
 			'mc4e_readmore_size',
 			'mc4e_taxonomy_size',
 			'mc4e_excerpt_truncate',
 			'mc4e_excerpt_truncate_lines',
-			'mc4e_product_align',
-			'mc4e_product_vertical_align',
-			'mc4e_featured_image_size',
+			'mc4e_item_align',
+			'mc4e_item_vertical_align',
+			'mc4e_image_resolution',
 			'mc4e_featured_image_position',
 			'mc4e_image_fit'
 		],
@@ -55,8 +55,8 @@ const WIDGET_CONFIGS = {
 			'mc4e_excerpt_size',
 			'mc4e_readmore_size',
 			'mc4e_taxonomy_size',
-			'mc4e_product_align',
-			'mc4e_product_vertical_align',
+			'mc4e_item_align',
+			'mc4e_item_vertical_align',
 			'mc4e_elements_gap',
 			'mc4e_padding',
 			'mc4e_image_size',
@@ -74,7 +74,7 @@ const WIDGET_CONFIGS = {
 		// Group control prefixes
 		groupControlPrefixes: [
 			'mc4e_background_color',
-			'mc4e_product_border',
+			'mc4e_item_border',
 			'mc4e_box_shadow',
 		],
 	},
@@ -193,7 +193,7 @@ function captureSettingsFromModel(model) {
 	});
 
 	// Also capture responsive keys not already covered by baseKeys.
-	// For example, single-product-layout lists per-element text size/alignment
+	// For example, single-posttypeitem-layout lists per-element text size/alignment
 	// keys in responsiveKeys but not in styleKeys.
 	config.responsiveKeys.forEach(key => {
 		if (!baseKeys.includes(key)) {

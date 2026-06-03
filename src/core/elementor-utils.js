@@ -179,11 +179,11 @@ ${mq} {
 
 	/* Content Layout - ${name} */
 	.content-layout .flex-wrapper {
-		text-align: var(--mc4e-product-align-${name}, center);
+		text-align: var(--mc4e-posttypeitem-align-${name}, center);
 	}
 
-	.content-layout .item-wrapper .flex-wrapper .product-elements {
-		text-align: var(--mc4e-product-align-text-${name});
+	.content-layout .item-wrapper .flex-wrapper .item-elements {
+		text-align: var(--mc4e-posttypeitem-align-text-${name});
 	}
 
 	/* Categories Layout - ${name} */

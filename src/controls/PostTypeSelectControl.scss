@@ -1,7 +1,7 @@
 /**
- * Product Select Control Styles
+ * Post type Select Control Styles
  *
- * Styles for the async product select control in the Elementor editor panel.
+ * Styles for the async post type select control in the Elementor editor panel.
  */
 
 .mc4e-posttype-select-wrapper {
@@ -10,7 +10,7 @@
 }
 
 // ── Option label layout ───────────────────────────────────────────────────
-.mc4e-product-option {
+.mc4e-posttypeitem-option {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;

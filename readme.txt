@@ -22,7 +22,7 @@ Key capabilities:
 * Per-element visibility and ordering controls
 * Style presets for fast visual setup
 * Editor-friendly React-powered rendering and interactions
-* Support for WooCommerce products, posts, pages, and custom post types
+* Support for posts, pages, WooCommerce products, and custom post types
 
 == Installation ==
 
@@ -39,7 +39,7 @@ For more detailed instructions on how to use MC4E widgets consult the documentat
 
 = Does this plugin require WooCommerce? =
 
-No, but WooCommerce is recommended for product-specific layouts. The plugin works with any public post type.
+No, but WooCommerce is recommended for product specific layouts. The plugin works with any public post type.
 
 = Does this plugin require Elementor Pro? =
 

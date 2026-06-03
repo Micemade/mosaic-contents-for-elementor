@@ -4,7 +4,7 @@
  *
  * Provides settings loading, breakpoints, image sizes, range config,
  * sanitization, render(), and content_template() used identically
- * by ContentLayout, CategoriesLayout, and SingleProductLayout.
+ * by different widgets. Each widget class uses this trait to avoid code duplication.
  *
  * @package Micemade\MosaicContentsElementor
  */

@@ -370,7 +370,7 @@ class ContentLayout extends Widget_Base {
 				'type'        => Controls_Manager::SELECT,
 				'default'     => 'default',
 				'options'     => $this->get_layout_options( 'content-layout' ),
-				'description' => __( 'Choose a predefined layout for the product grid. Layouts 1-9 display 3 items, Layouts 10-14 display 4 items.', 'mosaic-contents-for-elementor' ),
+				'description' => __( 'Choose a predefined layout for the items grid. Layouts 1-9 display 3 items, Layouts 10-14 display 4 items.', 'mosaic-contents-for-elementor' ),
 			)
 		);
 
@@ -557,9 +557,9 @@ class ContentLayout extends Widget_Base {
 
 		// ── Style Section ────────────────────────────────────────────────
 		$this->start_controls_section(
-			'product_style_settings_section',
+			'card_style_settings_section',
 			[
-				'label' => esc_html__( 'Product Card Style', 'mosaic-contents-for-elementor' ),
+				'label' => esc_html__( 'Item Card Style', 'mosaic-contents-for-elementor' ),
 				'tab' => \Elementor\Controls_Manager::TAB_STYLE,
 			]
 		);
@@ -608,11 +608,11 @@ class ContentLayout extends Widget_Base {
 		 */
 
 		// ACTIVE, HOVER, INACTIVE.
-		$this->start_controls_tabs( 'product_styles' );
+		$this->start_controls_tabs( 'card_styles' );
 
-		// Product text controls tab.
+		// Text controls tab.
 		$this->start_controls_tab(
-			'product_text_sizes_tab',
+			'text_sizes_tab',
 			array(
 				'label' => esc_html__( 'Text', 'mosaic-contents-for-elementor' ),
 			)
@@ -638,7 +638,7 @@ class ContentLayout extends Widget_Base {
 				],
 				'range'     => self::get_range(),
 				'selectors' => array(
-					'#mc4e-{{ID}} .flex-wrapper .product-elements .name' => 'font-size:{{SIZE}}{{UNIT}};',
+					'#mc4e-{{ID}} .flex-wrapper .item-elements .name' => 'font-size:{{SIZE}}{{UNIT}};',
 				),
 			)
 		);
@@ -663,7 +663,7 @@ class ContentLayout extends Widget_Base {
 				],
 				'range'     => self::get_range(),
 				'selectors' => array(
-					'#mc4e-{{ID}} .flex-wrapper .product-elements .excerpt' => 'font-size:{{SIZE}}{{UNIT}};',
+					'#mc4e-{{ID}} .flex-wrapper .item-elements .excerpt' => 'font-size:{{SIZE}}{{UNIT}};',
 				),
 			)
 		);
@@ -688,7 +688,7 @@ class ContentLayout extends Widget_Base {
 				],
 				'range'     => self::get_range(),
 				'selectors' => array(
-					'#mc4e-{{ID}} .flex-wrapper .product-elements .read-more-link' => 'font-size:{{SIZE}}{{UNIT}} !important;',
+					'#mc4e-{{ID}} .flex-wrapper .item-elements .read-more-link' => 'font-size:{{SIZE}}{{UNIT}} !important;',
 				),
 			)
 		);
@@ -713,7 +713,7 @@ class ContentLayout extends Widget_Base {
 				],
 				'range'     => self::get_range(), 
 				'selectors' => array(
-					'#mc4e-{{ID}} .flex-wrapper .product-elements .taxonomy' => 'font-size:{{SIZE}}{{UNIT}};',
+					'#mc4e-{{ID}} .flex-wrapper .item-elements .taxonomy' => 'font-size:{{SIZE}}{{UNIT}};',
 				),
 			)
 		);
@@ -740,7 +740,7 @@ class ContentLayout extends Widget_Base {
 					'max'       => 20,
 					'default'   => 2,
 					'selectors' => array(
-						'{{WRAPPER}} .product-elements .excerpt.truncated' => '-webkit-line-clamp: {{VALUE}};',
+						'{{WRAPPER}} .item-elements .excerpt.truncated' => '-webkit-line-clamp: {{VALUE}};',
 					),
 					'condition' => array(
 						'mc4e_excerpt_truncate' => 'yes',
@@ -750,17 +750,17 @@ class ContentLayout extends Widget_Base {
 		$this->end_controls_tab();
 
 		
-		// Product layout tab.
+		// The layout tab.
 		$this->start_controls_tab(
-			'product_layout_tab',
+			'layout_tab',
 			array(
 				'label' => esc_html__( 'Layout', 'mosaic-contents-for-elementor' ),
 			)
 		);
 		$this->add_control(
-			'mc4e_product_layout',
+			'mc4e_item_layout',
 			array(
-				'label'       => __( 'Product Card Layout', 'mosaic-contents-for-elementor' ),
+				'label'       => __( 'Item Card Layout', 'mosaic-contents-for-elementor' ),
 				'type'        => Controls_Manager::SELECT,
 				'default'     => 'vertical',
 				'options'     => array(
@@ -770,7 +770,6 @@ class ContentLayout extends Widget_Base {
 					'vertical'         => __( 'Image top', 'mosaic-contents-for-elementor' ),
 					'vertical-alt'     => __( 'Image bottom', 'mosaic-contents-for-elementor' ),
 				),
-				// 'description' => __( 'Select predefined layout for product display.', 'mosaic-contents-for-elementor' ),
 			)
 		);
 
@@ -779,7 +778,7 @@ class ContentLayout extends Widget_Base {
 		);
 
 		$this->add_responsive_control(
-			'mc4e_product_align',
+			'mc4e_item_align',
 			array(
 				'label'        => esc_html__( 'Align', 'mosaic-contents-for-elementor' ),
 				'type'         => Controls_Manager::CHOOSE,
@@ -800,14 +799,14 @@ class ContentLayout extends Widget_Base {
 				),
 				'default'      => '',
 				'selectors'     => array(
-					'{{WRAPPER}} .item-wrapper .flex-wrapper .product-elements' => 'justify-content: {{VALUE}};',
-					'{{WRAPPER}} .item-wrapper .flex-wrapper .product-elements > *' => 'justify-content: {{VALUE}};',
+					'{{WRAPPER}} .item-wrapper .flex-wrapper .item-elements' => 'justify-content: {{VALUE}};',
+					'{{WRAPPER}} .item-wrapper .flex-wrapper .item-elements > *' => 'justify-content: {{VALUE}};',
 				),
 			)
 		);
 
 		$this->add_responsive_control(
-			'mc4e_product_vertical_align',
+			'mc4e_item_vertical_align',
 			array(
 				'label'     => esc_html__( 'Vertical align', 'mosaic-contents-for-elementor' ),
 				'type'      => Controls_Manager::CHOOSE,
@@ -848,7 +847,7 @@ class ContentLayout extends Widget_Base {
 				),
 				'range'     => self::get_range(),
 				'selectors' => array(
-					'{{WRAPPER}} .product-elements' => 'gap:{{SIZE}}{{UNIT}};',
+					'{{WRAPPER}} .item-elements' => 'gap:{{SIZE}}{{UNIT}};',
 				),
 			)
 		);
@@ -871,9 +870,9 @@ class ContentLayout extends Widget_Base {
 
 		$this->end_controls_tab();
 
-		// Product image controls tab.
+		// Featured image controls tab.
 		$this->start_controls_tab(
-			'product_image_tab',
+			'featured_image_tab',
 			array(
 				'label' => esc_html__( 'Image', 'mosaic-contents-for-elementor' ),
 			)
@@ -896,17 +895,17 @@ class ContentLayout extends Widget_Base {
 					),
 				),
 				'selectors' => array(
-					'{{WRAPPER}} .item-wrapper .product-image' => 'flex-basis: {{size}}%;',
+					'{{WRAPPER}} .item-wrapper .featured-image' => 'flex-basis: {{size}}%;',
 					'{{WRAPPER}} .item-wrapper .flex-wrapper' => 'flex-basis: calc(100% - {{size}}%);',
 				),
 				'condition'   => array(
-					'mc4e_product_layout!' => 'image-background',
+					'mc4e_item_layout!' => 'image-background',
 				)
 			)
 		);
 
 		$this->add_control(
-			'mc4e_featured_image_size',
+			'mc4e_image_resolution',
 			array(
 				'label'       => esc_html__( 'Image resolution', 'mosaic-contents-for-elementor' ),
 				'type'        => Controls_Manager::SELECT,
@@ -935,7 +934,7 @@ class ContentLayout extends Widget_Base {
 			'mc4e_featured_image_position',
 			array(
 				'label'       => esc_html__( 'Image position', 'mosaic-contents-for-elementor' ),
-				'description' => esc_html__( 'Drag the focal point to position the image within the product card.', 'mosaic-contents-for-elementor' ),
+				'description' => esc_html__( 'Drag the focal point to position the image within the item card.', 'mosaic-contents-for-elementor' ),
 				'type'        => 'mc4e_focal_point',
 				'default'     => array(
 					'x' => 50,
@@ -946,9 +945,9 @@ class ContentLayout extends Widget_Base {
 
 		$this->end_controls_tab();
 		
-		// Product colors tab.
+		// item colors tab.
 		$this->start_controls_tab(
-			'product_colors_tab',
+			'item_colors_tab',
 			array(
 				'label' => esc_html__( 'Colors', 'mosaic-contents-for-elementor' ),
 			)
@@ -961,7 +960,7 @@ class ContentLayout extends Widget_Base {
 				'type'      => Controls_Manager::COLOR,
 				'default'   => '#333333',
 				'selectors' => array(
-					'{{WRAPPER}} .product-elements' => 'color: {{VALUE}};',
+					'{{WRAPPER}} .item-elements' => 'color: {{VALUE}};',
 				),
 			)
 		);
@@ -973,7 +972,7 @@ class ContentLayout extends Widget_Base {
 				'type'      => Controls_Manager::COLOR,
 				'default'   => '#333333',
 				'selectors' => array(
-					'{{WRAPPER}} .product-elements .name a, {{WRAPPER}} .product-elements .taxonomy a' => 'color: {{VALUE}};',
+					'{{WRAPPER}} .item-elements .name a, {{WRAPPER}} .item-elements .taxonomy a' => 'color: {{VALUE}};',
 				),
 			)
 		);
@@ -992,9 +991,9 @@ class ContentLayout extends Widget_Base {
 
 		$this->end_controls_tab();
 
-		// Product colors tab.
+		// Item borders tab.
 		$this->start_controls_tab(
-			'product_border_tab',
+			'item_border_tab',
 			array(
 				'label' => esc_html__( 'Borders', 'mosaic-contents-for-elementor' ),
 			)
@@ -1002,8 +1001,8 @@ class ContentLayout extends Widget_Base {
 		$this->add_group_control(
 			Group_Control_Border::get_type(),
 			array(
-				'name'      => 'mc4e_product_border',
-				'label'     => __( 'Products border', 'mosaic-contents-for-elementor' ),
+				'name'      => 'mc4e_item_border',
+				'label'     => __( 'items border', 'mosaic-contents-for-elementor' ),
 				'selector'  => '{{WRAPPER}} .item-wrapper',
 			)
 		);

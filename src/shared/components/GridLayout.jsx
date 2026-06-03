@@ -2,7 +2,7 @@
  * GridLayout Component for Elementor React widgets.
  *
  * Wraps react-grid-layout's Responsive component with Elementor-compatible breakpoints.
- * Adapted from mosaic-product-layouts pattern for use in Elementor context.
+ * Adapted from mosaic-posttypeitem-layouts pattern for use in Elementor context.
  *
  * Key differences from Gutenberg version:
  * - Uses React imports instead of @wordpress/element
@@ -108,7 +108,7 @@ function GridLayout(props) {
 		return 'desktop';
 	};
 
-	// Width adjustment hack for initial render (from mosaic-product-layouts)
+	// Width adjustment hack for initial render (from mosaic-posttypeitem-layouts)
 	const [widthTemp, setWidthTemp] = useState(width);
 	useEffect(() => {
 		setWidthTemp((prev) => (prev ? prev - 1 : prev));
