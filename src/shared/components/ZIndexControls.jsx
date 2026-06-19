@@ -141,6 +141,7 @@ const ZIndexControls = ({
 
 	return (
 		<div className="mc4e-zindex-controls">
+
 			<button
 				type="button"
 				className="mc4e-zindex-btn mc4e-zindex-btn--up"

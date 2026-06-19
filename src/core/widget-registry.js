@@ -9,16 +9,22 @@ import { createSettingsMapper } from '../widgets/settings-mappers';
 
 // Import React components for each widget type
 import ContentLayoutWidget from '../widgets/content-layout/content-layout';
+import WidgetsLayoutWidget from '../widgets/widgets-layout/widgets-layout';
 
 // Settings definitions for each widget React component (imported from JSON files generated from PHP)
 import productsSettingsDef from '../../widgets/content-layout/react-settings.json';
+import widgetsLayoutSettingsDef from '../../widgets/widgets-layout/react-settings.json';
 
 // Registry mapping widget types to their configurations
 export const WIDGET_REGISTRY = {
 	'content-layout': {
 		component: ContentLayoutWidget,
-		settingsMapper: createSettingsMapper(productsSettingsDef)
-	}
+		settingsMapper: createSettingsMapper(productsSettingsDef),
+	},
+	'widgets-layout': {
+		component: WidgetsLayoutWidget,
+		settingsMapper: createSettingsMapper(widgetsLayoutSettingsDef),
+	},
 };
 
 // Get list of all registered widget types

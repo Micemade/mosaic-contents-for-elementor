@@ -16,6 +16,7 @@ import ZIndexControls from "./ZIndexControls";
 const ItemControls = ({
 	settingKey,
 	itemId,
+	hideItemId = false,
 	layoutData,
 	customLayoutData,
 	widgetId,
@@ -23,10 +24,37 @@ const ItemControls = ({
 	onRemove,
 	onManage,
 	manageTitle = 'Manage',
+	dragHandleClassName,
+	collapsible = false,
+	removeButtonClassName = 'mc4e-remove-item-btn',
 }) => (
 
-	<div className="mc4e-item-controls">
-		<span style={{ fontSize: "14px" }}>{itemId}</span>
+	<div className={`mc4e-item-controls${collapsible ? ' mc4e-item-controls--collapsible' : ''}`}>
+
+		{/* Always-visible toggle; hovering it expands the controls cluster. */}
+		{collapsible && (
+			<button
+				type="button"
+				className="mc4e-controls-toggle"
+				onMouseDownCapture={(e) => e.stopPropagation()}
+				title="Edit cell"
+			>
+				<i className="eicon-edit" aria-hidden="true" />
+			</button>
+		)}
+
+		{dragHandleClassName && (
+			<span
+				className={dragHandleClassName}
+				title="Drag to move cell"
+				aria-label="Drag to move cell"
+			>
+				<i className="eicon-drag-n-drop" aria-hidden="true" />
+			</span>
+		)}
+
+		{!hideItemId && <span style={{ fontSize: "14px" }}>{itemId}</span>}
+
 		<ZIndexControls
 			itemId={itemId}
 			layoutData={layoutData}
@@ -36,6 +64,7 @@ const ItemControls = ({
 			settingKey={settingKey}
 			updateFn={updateElementorSetting}
 		/>
+
 		{typeof onManage === 'function' && (
 			<button
 				type="button"
@@ -53,7 +82,7 @@ const ItemControls = ({
 		{layoutData.mobile.length > 1 && (
 			<button
 				type="button"
-				className="mc4e-remove-item-btn"
+				className={removeButtonClassName}
 				onMouseDownCapture={(e) => {
 					e.stopPropagation();
 					onRemove(itemId);

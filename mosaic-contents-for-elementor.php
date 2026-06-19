@@ -16,6 +16,7 @@
 namespace Micemade\MosaicContentsElementor;
 
 use Micemade\MosaicContentsElementor\Widgets\ContentLayout;
+use Micemade\MosaicContentsElementor\Widgets\WidgetsLayout;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -187,9 +188,11 @@ final class MosaicContentsElementor {
 		require_once __DIR__ . '/includes/trait-widget-helpers.php';
 		// Require widget classes.
 		require_once __DIR__ . '/widgets/content-layout/content-layout.php';
+		require_once __DIR__ . '/widgets/widgets-layout/widgets-layout.php';
 
 		// Register widgets with elementor.
 		$widgets_manager->register( new ContentLayout() );
+		$widgets_manager->register( new WidgetsLayout() );
 
 	}
 

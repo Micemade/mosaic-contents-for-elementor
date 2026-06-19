@@ -54,6 +54,15 @@ const WIDGET_KEYS = {
 		gridColumns: { desktop: 48, tablet: 24, mobile: 12 },
 		repeaterKeys: ['mc4e_element_ordering'],
 	},
+	'widgets-layout': {
+		layoutKey: 'mc4e_layout',
+		customLayoutKey: 'mc4e_custom_layout',
+		widgetItemsKey: 'mc4e_widget_items',
+		resetEvent: 'mosaic:resetLayout',
+		addItemEvent: 'mosaic:addItem',
+		gridColumns: { desktop: 48, tablet: 24, mobile: 12 },
+		repeaterKeys: [],
+	},
 };
 
 // Keep one active channel handler per event to avoid stacked callbacks
@@ -333,6 +342,11 @@ const patchRepeaterCollections = (settingsModel, repeaterKeys, widgetId, schedul
 /**
  * Register frontend hooks for editor preview.
  * Same as frontend-hooks but with 'edit' mode.
+ *
+ * The widgets-layout live-element handling (creating dropped widgets in a
+ * hidden holding container and re-parenting their DOM into grid cells) lives
+ * entirely in the React component (widgets-layout.jsx), which registers its
+ * own frontend/element_ready hooks inside this same preview iframe.
  *
  * @return void
  */

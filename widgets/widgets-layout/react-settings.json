@@ -1,0 +1,34 @@
+{
+	"mc4e_layout": {
+		"type": "string",
+		"default": "grid"
+	},
+	"mc4e_custom_layout": {
+		"type": "string",
+		"default": ""
+	},
+	"mc4e_items_margin": {
+		"type": "number",
+		"default": 15
+	},
+	"mc4e_row_height": {
+		"type": "number",
+		"default": 5
+	},
+	"mc4e_allow_overlap": {
+		"type": "boolean",
+		"default": false
+	},
+	"mc4e_compaction_type": {
+		"type": "string",
+		"default": "vertical"
+	},
+	"mc4e_helper_grid": {
+		"type": "string",
+		"default": "none"
+	},
+	"mc4e_widget_items": {
+		"type": "string",
+		"default": ""
+	}
+}
