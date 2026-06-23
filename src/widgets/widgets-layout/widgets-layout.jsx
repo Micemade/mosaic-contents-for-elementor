@@ -1,21 +1,23 @@
 /**
  * Widgets Layout — React component (live-element model).
  *
- * Each grid cell can host any number of real Elementor widgets. Dropped widgets
- * are created as real elements inside a hidden "holding" container (a sibling
- * container of this widget) and their DOM is then re-parented into the matching
- * cell slot. Because the widgets stay real Elementor elements:
+ * Each grid cell can host any number of real Elementor widgets. Every cell owns
+ * a dedicated hidden container (a sibling of this widget, created on demand and
+ * deleted when the cell is emptied); dropped widgets are created inside their
+ * cell's container and their DOM is re-parented into the matching cell slot.
+ * Because the widgets stay real Elementor elements:
  *   - clicking one opens its native Elementor settings panel, and
  *   - edits persist through Elementor's own save pipeline.
  *
  * The widget setting `mc4e_widget_items` only stores the cell assignment and
- * order: [{ i: 'item-0', widgets: [{ id, type }, …] }, …].
+ * order: [{ i: 'item-0', widgets: [{ id, type }, …] }, …]. The widget's MODEL
+ * location (which cell container holds it) is kept in sync with this assignment.
  *
  * Three DnD flows, all separate from RGL's (mouse-based) grid drag:
  *   - Panel-widget drop: Elementor's native DnD is suppressed and we create the
- *     dragged widget ourselves inside the holding container (createWidgetInCell).
+ *     dragged widget ourselves inside the cell's container (createWidgetInCell).
  *   - Click-to-add (+ icon): opens the panel; the next widget Elementor adds is
- *     adopted into the holding container and recorded (adoptElement).
+ *     adopted into the cell's container and recorded (adoptElement).
  *   - Inner-widget DnD: a per-widget handle reorders widgets within a cell and
  *     moves them between cells (tagged with the `mc4e/inner-widget` type).
  *
@@ -27,6 +29,7 @@ import React, {
 	useMemo,
 	useCallback,
 	useEffect,
+	useLayoutEffect,
 	memo,
 	useRef,
 } from 'react';
@@ -284,7 +287,7 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 	}, [layoutId, customLayoutData]);
 
 	// Widget items (cell assignment + order; the widgets themselves are real
-	// Elementor elements living in the holding container).
+	// Elementor elements living in their cell's container).
 	const widgetItems = useMemo(
 		() => parseWidgetItems(widgetData?.mc4e_widget_items),
 		[widgetData?.mc4e_widget_items]
@@ -302,28 +305,52 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 	const widgetItemsRef = useRef(widgetItems);
 	widgetItemsRef.current = widgetItems;
 
-	// ── holding-container + DOM re-parenting ─────────────────────────────────
-
-	const holdingMarkerId = `mc4e-wlh-${widgetId}`;
+	// ── per-cell containers + DOM re-parenting ───────────────────────────────
 
 	const getDoc = useCallback(
 		() => rootRef.current?.ownerDocument || document,
 		[]
 	);
 
-	/** Locate (or lazily create) the hidden holding container; returns its Container. */
-	const ensureHoldingContainer = useCallback(() => {
-		const { el, $e } = getEditor();
-		if (!el || !$e || !widgetId) return null;
+	// Per-cell hidden containers: each cell hosts its own widgets in a dedicated
+	// container (a sibling of this widget). cellContainersRef caches cellId→id.
+	const cellContainersRef = useRef({});
+	// Suppress the delete-prune listener while WE relocate an element's model
+	// (a cross-cell move fires the source container's 'remove' which is not a
+	// real deletion).
+	const suppressPruneRef = useRef(false);
 
-		const existing = getDoc().getElementById(holdingMarkerId);
-		if (existing?.dataset?.id) {
-			const c = el.getContainer?.(existing.dataset.id);
+	const cellMarker = useCallback(
+		(cellId) => `mc4e-wlc-${widgetId}-${cellId}`,
+		[widgetId]
+	);
+
+	/** Find an existing cell container's Container, or null. */
+	const getCellContainer = useCallback((cellId) => {
+		const { el } = getEditor();
+		if (!el) return null;
+
+		const cachedId = cellContainersRef.current[cellId];
+		if (cachedId) {
+			const c = el.getContainer?.(cachedId);
 			if (c) return c;
 		}
 
-		const ourContainer    = el.getContainer?.(widgetId);
-		const parentContainer = ourContainer?.parent;
+		const node = getDoc().getElementById(cellMarker(cellId));
+		const id = node?.dataset?.id;
+		if (!id) return null;
+		cellContainersRef.current[cellId] = id;
+		return el.getContainer?.(id) || null;
+	}, [cellMarker, getDoc]);
+
+	/** Find or lazily create a cell's hidden container; returns its Container. */
+	const ensureCellContainer = useCallback((cellId) => {
+		const existing = getCellContainer(cellId);
+		if (existing) return existing;
+
+		const { el, $e } = getEditor();
+		if (!el || !$e || !widgetId) return null;
+		const parentContainer = el.getContainer?.(widgetId)?.parent;
 		if (!parentContainer) return null;
 
 		let result;
@@ -332,32 +359,55 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 				container: parentContainer,
 				model: {
 					elType: 'container',
-					settings: { _element_id: holdingMarkerId, content_width: 'full' },
+					settings: {
+						_element_id: cellMarker(cellId),
+						content_width: 'full',
+						// Custom Navigator label (Elementor reads `_title`).
+						_title: 'Widget Layout Cell',
+					},
 				},
 				options: { edit: false },
 			});
 		} catch {
 			return null;
 		}
-		return Array.isArray(result) ? result[0] : result;
-	}, [widgetId, holdingMarkerId, getDoc]);
+		const created = Array.isArray(result) ? result[0] : result;
+		const newId = created?.id || created?.model?.id;
+		if (newId) cellContainersRef.current[cellId] = newId;
+		return created || null;
+	}, [widgetId, cellMarker, getCellContainer]);
 
-	/** Inner node of the holding container where parked elements are stashed. */
-	const getHoldingInner = useCallback(() => {
-		const holdingEl = getDoc().getElementById(holdingMarkerId);
-		if (!holdingEl) return null;
-		return holdingEl.querySelector(':scope > .e-con-inner') || holdingEl;
-	}, [holdingMarkerId, getDoc]);
+	/** Delete a cell's container once the cell has been emptied. */
+	const deleteCellContainer = useCallback((cellId) => {
+		const container = getCellContainer(cellId);
+		delete cellContainersRef.current[cellId];
+		if (!container) return;
+		const { $e } = getEditor();
+		if ($e) {
+			try { $e.run('document/elements/delete', { container }); } catch { /* already gone */ }
+		}
+	}, [getCellContainer]);
 
-	/** Move every cell-mounted real element back into the holding container. */
-	const parkAllElements = useCallback(() => {
-		const inner = getHoldingInner();
-		const root  = rootRef.current;
-		if (!inner || !root) return;
-		root.querySelectorAll('.wl-widget-mount > .elementor-element').forEach((node) => {
-			inner.appendChild(node);
+	/** Delete ALL of this widget's cell containers (when the widget is removed). */
+	const deleteAllCellContainers = useCallback(() => {
+		const { el, $e } = getEditor();
+		if (!el || !$e) return;
+
+		const ids = new Set(Object.values(cellContainersRef.current));
+		try {
+			getDoc().querySelectorAll(`[id^="mc4e-wlc-${widgetId}-"]`).forEach((node) => {
+				if (node.dataset?.id) ids.add(node.dataset.id);
+			});
+		} catch { /* ignore selector issues */ }
+
+		cellContainersRef.current = {};
+		ids.forEach((id) => {
+			const c = el.getContainer?.(id);
+			if (c) {
+				try { $e.run('document/elements/delete', { container: c }); } catch { /* already gone */ }
+			}
 		});
-	}, [getHoldingInner]);
+	}, [widgetId, getDoc]);
 
 	/**
 	 * Mount the single canonical DOM node for `id` into its cell slot.
@@ -398,11 +448,6 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 
 	// ── persistence ──────────────────────────────────────────────────────────
 	const updateWidgetItemsSetting = useCallback((items) => {
-		// Stash live elements in the holding container first so the upcoming
-		// React re-render can freely tear down / rebuild cell slots without
-		// destroying real element DOM. reparentAll re-homes them afterwards.
-		parkAllElements();
-
 		const newJson = JSON.stringify(items);
 		const { el, $e } = getEditor();
 		const container = el?.getContainer?.(widgetId);
@@ -427,7 +472,7 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 				newJson
 			);
 		}
-	}, [widgetId, parkAllElements]);
+	}, [widgetId]);
 
 	/** Append a widget id/type to a cell (reads the latest stored items). */
 	const appendWidgetToCell = useCallback((cellId, id, type) => {
@@ -465,13 +510,13 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 		const newModel   = { elType };
 		if (widgetType) newModel.widgetType = widgetType;
 
-		const holding = ensureHoldingContainer();
-		if (!holding) return false;
+		const cellContainer = ensureCellContainer(cellId);
+		if (!cellContainer) return false;
 
 		let result;
 		try {
 			result = $e.run('document/elements/create', {
-				container: holding,
+				container: cellContainer,
 				model: newModel,
 				options: { edit: false },
 			});
@@ -485,7 +530,7 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 
 		appendWidgetToCell(cellId, newId, widgetType || elType);
 		return true;
-	}, [isEditMode, widgetId, ensureHoldingContainer, appendWidgetToCell]);
+	}, [isEditMode, widgetId, ensureCellContainer, appendWidgetToCell]);
 
 	// ── add widget (click-to-add adoption) ───────────────────────────────────
 	const adoptElement = useCallback((cellId, node) => {
@@ -494,18 +539,18 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 		if (!id) return;
 
 		const { el, $e } = getEditor();
-		const holding    = ensureHoldingContainer();
-		const elContainer = el?.getContainer?.(id);
+		const cellContainer = ensureCellContainer(cellId);
+		const elContainer   = el?.getContainer?.(id);
 
-		if ($e && holding && elContainer) {
+		if ($e && cellContainer && elContainer) {
 			try {
-				$e.run('document/elements/move', { container: elContainer, target: holding });
+				$e.run('document/elements/move', { container: elContainer, target: cellContainer });
 			} catch {
 				// fall through — element stays where it is but is still recorded
 			}
 		}
 		appendWidgetToCell(cellId, id, type);
-	}, [ensureHoldingContainer, appendWidgetToCell]);
+	}, [ensureCellContainer, appendWidgetToCell]);
 
 	// ── inner-widget DnD (reorder within / move between cells) ───────────────
 	const dragSourceRef = useRef(null);
@@ -599,8 +644,30 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 			return;
 		}
 
+		// Cross-cell move: relocate the element's MODEL into the target cell's
+		// container so the per-cell containers stay in sync with cell assignment.
+		if (sourceCellId !== targetCellId) {
+			const { el, $e } = getEditor();
+			const targetContainer = ensureCellContainer(targetCellId);
+			const elContainer     = el?.getContainer?.(movedId);
+			if ($e && targetContainer && elContainer) {
+				suppressPruneRef.current = true;
+				try {
+					$e.run('document/elements/move', { container: elContainer, target: targetContainer });
+				} catch {
+					// keep going — storage is still updated below
+				}
+				setTimeout(() => { suppressPruneRef.current = false; }, 0);
+			}
+		}
+
 		updateWidgetItemsSetting(newItems);
-	}, [widgetItems, isEditMode, updateWidgetItemsSetting]);
+
+		// If the source cell is now empty, remove its (empty) container.
+		if (sourceCellId !== targetCellId && (finalCell?.widgets?.length ?? 0) === 0) {
+			deleteCellContainer(sourceCellId);
+		}
+	}, [widgetItems, isEditMode, updateWidgetItemsSetting, ensureCellContainer, deleteCellContainer]);
 
 	/** Whether the pointer is past the vertical midpoint of the drop target. */
 	const isAfterMidpoint = (e) => {
@@ -698,6 +765,9 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 
 	// ── widget remove ─────────────────────────────────────────────────────────
 	const handleRemoveWidget = useCallback((cellId, wId) => {
+		// We prune storage ourselves here, so silence the collection listener.
+		suppressPruneRef.current = true;
+
 		// Delete the real Elementor element, then drop it from cell storage.
 		const { el, $e } = getEditor();
 		const container  = el?.getContainer?.(wId);
@@ -715,7 +785,15 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 				: c
 		));
 		updateWidgetItemsSetting(newItems);
-	}, [widgetItems, updateWidgetItemsSetting]);
+
+		// Emptied the cell → remove its now-empty container.
+		const cell = newItems.find((c) => c.i === cellId);
+		if ((cell?.widgets?.length ?? 0) === 0) {
+			deleteCellContainer(cellId);
+		}
+
+		setTimeout(() => { suppressPruneRef.current = false; }, 0);
+	}, [widgetItems, updateWidgetItemsSetting, deleteCellContainer]);
 
 	// ── widget edit (open native Elementor settings panel) ─────────────────────
 	// A plain DOM .click() does NOT select the element once its DOM has been
@@ -747,9 +825,9 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 	// ── re-parent effects ──────────────────────────────────────────────────────
 
 	// After any render that changes cells/order/layout, re-home the real
-	// elements into their slots (with a couple of retries to cover the case
-	// where Elementor renders the element a tick later).
-	useEffect(() => {
+	// elements into their slots. useLayoutEffect runs before paint so a moved
+	// element never blinks out. Timeouts cover elements Elementor renders late.
+	useLayoutEffect(() => {
 		reparentAll();
 		const t1 = setTimeout(reparentAll, 100);
 		const t2 = setTimeout(reparentAll, 400);
@@ -833,23 +911,19 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 		};
 	}, [isEditMode]);
 
-	// Prune a widget from storage when its real element is deleted — whether via
-	// our remove button or Elementor's own "Delete" control. Listening on the
-	// holding container's child collection covers both paths, so the cell's
-	// empty-view is restored once its last widget is gone.
+	// Prune a widget from storage when its real element is deleted via Elementor's
+	// own "Delete" control. We bind a 'remove' listener to every cell container's
+	// child collection so the cell's empty-view is restored and the container is
+	// cleaned up once its last widget is gone. (Our own remove button and moves
+	// set suppressPruneRef so they don't double-handle here.)
 	useEffect(() => {
 		if (!isEditMode) return undefined;
 
 		const { el } = getEditor();
-		const holdingEl = getDoc().getElementById(holdingMarkerId);
-		const holdingId = holdingEl?.dataset?.id;
-		if (!holdingId) return undefined;
+		const bound = [];
 
-		const container  = el?.getContainer?.(holdingId);
-		const collection = container?.model?.get?.('elements');
-		if (!collection?.on) return undefined;
-
-		const onChildRemove = (childModel) => {
+		const onChildRemove = (cellId) => (childModel) => {
+			if (suppressPruneRef.current) return;
 			const removedId = childModel?.id || childModel?.get?.('id');
 			if (!removedId) return;
 
@@ -861,12 +935,52 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 					return true;
 				}),
 			}));
-			if (changed) updateWidgetItemsSetting(newItems);
+			if (!changed) return;
+
+			updateWidgetItemsSetting(newItems);
+			const cell = newItems.find((c) => c.i === cellId);
+			if ((cell?.widgets?.length ?? 0) === 0) {
+				deleteCellContainer(cellId);
+			}
 		};
 
-		collection.on('remove', onChildRemove);
-		return () => collection.off('remove', onChildRemove);
-	}, [isEditMode, holdingMarkerId, getDoc, updateWidgetItemsSetting, widgetItems]);
+		widgetItemsRef.current.forEach((cell) => {
+			const container  = getCellContainer(cell.i);
+			const collection = container?.model?.get?.('elements');
+			if (!collection?.on) return;
+			const handler = onChildRemove(cell.i);
+			collection.on('remove', handler);
+			bound.push([collection, handler]);
+		});
+
+		return () => bound.forEach(([collection, handler]) => collection.off('remove', handler));
+	}, [isEditMode, getCellContainer, deleteCellContainer, updateWidgetItemsSetting, widgetItems]);
+
+	// When the Widgets Layout widget itself is deleted, remove its orphaned cell
+	// containers. Guarded by an existence check so MOVING the widget (which also
+	// fires 'remove' on its model) does not wipe the cells.
+	useEffect(() => {
+		if (!isEditMode || !widgetId) return undefined;
+
+		const { el } = getEditor();
+		const model = el?.getContainer?.(widgetId)?.model;
+		if (!model?.on) return undefined;
+
+		const onGone = () => {
+			setTimeout(() => {
+				if (!getEditor().el?.getContainer?.(widgetId)) {
+					deleteAllCellContainers();
+				}
+			}, 0);
+		};
+
+		model.on('destroy', onGone);
+		model.on('remove', onGone);
+		return () => {
+			model.off('destroy', onGone);
+			model.off('remove', onGone);
+		};
+	}, [isEditMode, widgetId, deleteAllCellContainers]);
 
 	// Select this widget in the Elementor editor (called by GridLayout on drag start)
 	const selectWidget = () => {
