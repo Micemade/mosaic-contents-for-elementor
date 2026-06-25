@@ -561,6 +561,11 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 	// ── inner-widget DnD (reorder within / move between cells) ───────────────
 	const dragSourceRef = useRef(null);
 
+	// Holds the data-id of a NESTED element (a child inside a Container cell
+	// widget) while it's dragged, so on drop we promote just that element into
+	// the target cell instead of moving the whole Container.
+	const promoteDragRef = useRef(null);
+
 	// True only while a real Elementor *panel* element is being dragged. Used to
 	// gate widget creation so an inner move never spawns a stale new widget.
 	const panelDragActiveRef = useRef(false);
@@ -596,7 +601,10 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 	 * for a genuine new panel-element drag.
 	 */
 	const resolveDragSource = useCallback(() => {
-		if (dragSourceRef.current) return dragSourceRef.current;
+		// Top-level cell widget dragged (handle or body) → move between/within cells.
+		if (dragSourceRef.current) return { kind: 'cell', ...dragSourceRef.current };
+		// Nested Container child dragged → promote it into the target cell.
+		if (promoteDragRef.current) return { kind: 'promote', widgetId: promoteDragRef.current };
 
 		const doc = getDoc();
 		const draggingEl =
@@ -608,8 +616,36 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 		const cell = widgetItemsRef.current.find((c) =>
 			(c.widgets || []).some((w) => w.id === id)
 		);
-		return cell ? { cellId: cell.i, widgetId: id } : null;
+		return cell ? { kind: 'cell', cellId: cell.i, widgetId: id } : null;
 	}, [getDoc]);
+
+	/**
+	 * Promote a nested element (e.g. a child of a Container cell) into a target
+	 * cell as a top-level widget: move its model into the target cell's container
+	 * and record it. reparent then displays it; its old Container is left intact.
+	 */
+	const promoteWidget = useCallback((targetCellId, id) => {
+		promoteDragRef.current = null;
+		if (!isEditMode || !id) return;
+
+		const { el, $e } = getEditor();
+		const targetContainer = ensureCellContainer(targetCellId);
+		const elContainer     = el?.getContainer?.(id);
+		if (!$e || !targetContainer || !elContainer) return;
+
+		const type = elContainer.model?.get?.('widgetType') || 'widget';
+
+		suppressSyncRef.current = true;
+		try {
+			$e.run('document/elements/move', { container: elContainer, target: targetContainer });
+		} catch {
+			suppressSyncRef.current = false;
+			return;
+		}
+		setTimeout(() => { suppressSyncRef.current = false; }, 0);
+
+		appendWidgetToCell(targetCellId, id, type);
+	}, [isEditMode, ensureCellContainer, appendWidgetToCell]);
 
 	const moveWidget = useCallback((source, targetCellId, targetWidgetId, insertAfter = false) => {
 		dragSourceRef.current = null;
@@ -701,15 +737,19 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 		const after = isAfterMidpoint(e);
 		e.currentTarget.classList.remove('wl-widget-drag-over', 'wl-widget-drag-over-after');
 
-		// Existing widget (handle or body drag) → move (before/after the target);
-		// otherwise it's a new panel widget → create.
+		// Top-level widget → move (before/after target); nested Container child →
+		// promote into this cell; otherwise → create.
 		const source = resolveDragSource();
-		if (source) {
+		if (source?.kind === 'cell') {
 			moveWidget(source, cellId, wId, after);
 			return;
 		}
+		if (source?.kind === 'promote') {
+			promoteWidget(cellId, source.widgetId);
+			return;
+		}
 		createWidgetInCell(cellId);
-	}, [isEditMode, resolveDragSource, moveWidget, createWidgetInCell]);
+	}, [isEditMode, resolveDragSource, moveWidget, promoteWidget, createWidgetInCell]);
 
 	// ── cell-level drag targets ──────────────────────────────────────────────
 	const handleCellDragOver = useCallback((e) => {
@@ -729,15 +769,19 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 		e.stopPropagation();
 		e.currentTarget.classList.remove('wl-drag-over');
 
-		// Existing widget (handle or body drag) → append to this cell; otherwise
-		// it's a new panel widget → create.
+		// Top-level widget → append to this cell; nested Container child → promote
+		// into this cell; otherwise → create.
 		const source = resolveDragSource();
-		if (source) {
+		if (source?.kind === 'cell') {
 			moveWidget(source, cellId, null);
 			return;
 		}
+		if (source?.kind === 'promote') {
+			promoteWidget(cellId, source.widgetId);
+			return;
+		}
 		createWidgetInCell(cellId);
-	}, [isEditMode, resolveDragSource, moveWidget, createWidgetInCell]);
+	}, [isEditMode, resolveDragSource, moveWidget, promoteWidget, createWidgetInCell]);
 
 	// Capture ANY drag that begins inside a widget slot (handle OR widget body)
 	// so a body drag is treated as an inner move, not a new-widget create.
@@ -746,12 +790,25 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 		if (!isEditMode || dragSourceRef.current) return;
 		const slot = e.target?.closest?.('.wl-widget-slot[data-slot-id]');
 		if (!slot) return;
-		const id = slot.getAttribute('data-slot-id');
+		const slotId = slot.getAttribute('data-slot-id');
+
+		// Identify the element actually being dragged. If it's a child element
+		// living INSIDE the slot's widget (a nested Container child), promote it
+		// on drop instead of moving the whole Container.
+		const draggedEl = e.target?.closest?.('.elementor-element[data-id]');
+		const draggedId = draggedEl?.getAttribute('data-id');
+		if (draggedEl && slot.contains(draggedEl) && draggedId && draggedId !== slotId) {
+			promoteDragRef.current = draggedId;
+			panelDragActiveRef.current = false;
+			return;
+		}
+
+		// The slot's own top-level widget (or our drag handle) → cell-level move.
 		const cell = widgetItemsRef.current.find((c) =>
-			(c.widgets || []).some((w) => w.id === id)
+			(c.widgets || []).some((w) => w.id === slotId)
 		);
 		if (cell) {
-			dragSourceRef.current = { cellId: cell.i, widgetId: id };
+			dragSourceRef.current = { cellId: cell.i, widgetId: slotId };
 			panelDragActiveRef.current = false;
 		}
 	}, [isEditMode]);
@@ -903,8 +960,12 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 		const onDragEnd = () => {
 			panelDragActiveRef.current = false;
 			dragSourceRef.current = null;
+			promoteDragRef.current = null;
 		};
-		const onPointerUp = () => { dragSourceRef.current = null; };
+		const onPointerUp = () => {
+			dragSourceRef.current = null;
+			promoteDragRef.current = null;
+		};
 
 		channel?.on?.('element:selected', onPanelSelected);
 		window.addEventListener('dragend', onDragEnd);
