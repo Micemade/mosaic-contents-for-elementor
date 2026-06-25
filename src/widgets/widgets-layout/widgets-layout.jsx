@@ -315,10 +315,11 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 	// Per-cell hidden containers: each cell hosts its own widgets in a dedicated
 	// container (a sibling of this widget). cellContainersRef caches cellId→id.
 	const cellContainersRef = useRef({});
-	// Suppress the delete-prune listener while WE relocate an element's model
-	// (a cross-cell move fires the source container's 'remove' which is not a
-	// real deletion).
-	const suppressPruneRef = useRef(false);
+	// Suppress the cell-container add/remove listeners while WE mutate a cell's
+	// container (create / adopt / move / remove), since those fire add/remove
+	// events that we already account for in storage ourselves. External changes
+	// (Elementor duplicate / paste / delete) run with this off and ARE synced.
+	const suppressSyncRef = useRef(false);
 
 	const cellMarker = useCallback(
 		(cellId) => `mc4e-wlc-${widgetId}-${cellId}`,
@@ -513,6 +514,7 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 		const cellContainer = ensureCellContainer(cellId);
 		if (!cellContainer) return false;
 
+		suppressSyncRef.current = true;
 		let result;
 		try {
 			result = $e.run('document/elements/create', {
@@ -521,11 +523,13 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 				options: { edit: false },
 			});
 		} catch {
+			suppressSyncRef.current = false;
 			return false;
 		}
 
 		const created = Array.isArray(result) ? result[0] : result;
 		const newId   = created?.id || created?.model?.id;
+		setTimeout(() => { suppressSyncRef.current = false; }, 0);
 		if (!newId) return false;
 
 		appendWidgetToCell(cellId, newId, widgetType || elType);
@@ -543,11 +547,13 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 		const elContainer   = el?.getContainer?.(id);
 
 		if ($e && cellContainer && elContainer) {
+			suppressSyncRef.current = true;
 			try {
 				$e.run('document/elements/move', { container: elContainer, target: cellContainer });
 			} catch {
 				// fall through — element stays where it is but is still recorded
 			}
+			setTimeout(() => { suppressSyncRef.current = false; }, 0);
 		}
 		appendWidgetToCell(cellId, id, type);
 	}, [ensureCellContainer, appendWidgetToCell]);
@@ -651,13 +657,13 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 			const targetContainer = ensureCellContainer(targetCellId);
 			const elContainer     = el?.getContainer?.(movedId);
 			if ($e && targetContainer && elContainer) {
-				suppressPruneRef.current = true;
+				suppressSyncRef.current = true;
 				try {
 					$e.run('document/elements/move', { container: elContainer, target: targetContainer });
 				} catch {
 					// keep going — storage is still updated below
 				}
-				setTimeout(() => { suppressPruneRef.current = false; }, 0);
+				setTimeout(() => { suppressSyncRef.current = false; }, 0);
 			}
 		}
 
@@ -766,7 +772,7 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 	// ── widget remove ─────────────────────────────────────────────────────────
 	const handleRemoveWidget = useCallback((cellId, wId) => {
 		// We prune storage ourselves here, so silence the collection listener.
-		suppressPruneRef.current = true;
+		suppressSyncRef.current = true;
 
 		// Delete the real Elementor element, then drop it from cell storage.
 		const { el, $e } = getEditor();
@@ -792,7 +798,7 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 			deleteCellContainer(cellId);
 		}
 
-		setTimeout(() => { suppressPruneRef.current = false; }, 0);
+		setTimeout(() => { suppressSyncRef.current = false; }, 0);
 	}, [widgetItems, updateWidgetItemsSetting, deleteCellContainer]);
 
 	// ── widget edit (open native Elementor settings panel) ─────────────────────
@@ -911,19 +917,19 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 		};
 	}, [isEditMode]);
 
-	// Prune a widget from storage when its real element is deleted via Elementor's
-	// own "Delete" control. We bind a 'remove' listener to every cell container's
-	// child collection so the cell's empty-view is restored and the container is
-	// cleaned up once its last widget is gone. (Our own remove button and moves
-	// set suppressPruneRef so they don't double-handle here.)
+	// Keep cell storage in sync with each cell container's children when Elementor
+	// changes them outside our flows. We bind 'add'/'remove' to every cell
+	// container's child collection so:
+	//   - a duplicated/pasted element gets tracked (and rendered into the cell), and
+	//   - a natively deleted element restores the empty-view / cleans up the container.
+	// (Our own create/adopt/move/remove set suppressSyncRef so they don't double-handle.)
 	useEffect(() => {
 		if (!isEditMode) return undefined;
 
-		const { el } = getEditor();
 		const bound = [];
 
 		const onChildRemove = (cellId) => (childModel) => {
-			if (suppressPruneRef.current) return;
+			if (suppressSyncRef.current) return;
 			const removedId = childModel?.id || childModel?.get?.('id');
 			if (!removedId) return;
 
@@ -944,17 +950,37 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 			}
 		};
 
+		const onChildAdd = (cellId) => (childModel) => {
+			if (suppressSyncRef.current) return;
+			const addedId = childModel?.id || childModel?.get?.('id');
+			if (!addedId) return;
+
+			// Skip if already tracked anywhere (avoids double-counting).
+			const tracked = widgetItemsRef.current.some((c) =>
+				(c.widgets || []).some((w) => w.id === addedId)
+			);
+			if (tracked) return;
+
+			const type = childModel?.get?.('widgetType') || 'widget';
+			appendWidgetToCell(cellId, addedId, type);
+		};
+
 		widgetItemsRef.current.forEach((cell) => {
 			const container  = getCellContainer(cell.i);
 			const collection = container?.model?.get?.('elements');
 			if (!collection?.on) return;
-			const handler = onChildRemove(cell.i);
-			collection.on('remove', handler);
-			bound.push([collection, handler]);
+			const removeHandler = onChildRemove(cell.i);
+			const addHandler    = onChildAdd(cell.i);
+			collection.on('remove', removeHandler);
+			collection.on('add', addHandler);
+			bound.push([collection, removeHandler, addHandler]);
 		});
 
-		return () => bound.forEach(([collection, handler]) => collection.off('remove', handler));
-	}, [isEditMode, getCellContainer, deleteCellContainer, updateWidgetItemsSetting, widgetItems]);
+		return () => bound.forEach(([collection, removeHandler, addHandler]) => {
+			collection.off('remove', removeHandler);
+			collection.off('add', addHandler);
+		});
+	}, [isEditMode, getCellContainer, deleteCellContainer, updateWidgetItemsSetting, appendWidgetToCell, widgetItems]);
 
 	// When the Widgets Layout widget itself is deleted, remove its orphaned cell
 	// containers. Guarded by an existence check so MOVING the widget (which also
