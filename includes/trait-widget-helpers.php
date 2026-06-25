@@ -385,10 +385,10 @@ trait WidgetHelpers {
 	 * settings for React to hydrate.
 	 */
 	protected function render() {
-		$query_settings = $this->get_widget_settings();
-		$json_data      = wp_json_encode( $query_settings );
-		$widget_id      = $this->get_id();
-		$widget_name    = $this->get_name();
+		$widget_settings = $this->get_widget_settings();
+		$json_data       = wp_json_encode( $widget_settings );
+		$widget_id       = $this->get_id();
+		$widget_name     = $this->get_name();
 		?>
 <div id="mc4e-<?php echo esc_attr( $widget_id ); ?>" class="<?php echo esc_attr( $widget_name ); ?>-wrapper"
 	data-widget-id="<?php echo esc_attr( $widget_id ); ?>">

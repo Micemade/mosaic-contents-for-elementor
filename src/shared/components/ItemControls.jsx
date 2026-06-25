@@ -24,7 +24,6 @@ const ItemControls = ({
 	onRemove,
 	onManage,
 	manageTitle = 'Manage',
-	dragHandleClassName,
 	collapsible = false,
 	removeButtonClassName = 'mc4e-remove-item-btn',
 }) => (
@@ -43,15 +42,6 @@ const ItemControls = ({
 			</button>
 		)}
 
-		{dragHandleClassName && (
-			<span
-				className={dragHandleClassName}
-				title="Drag to move cell"
-				aria-label="Drag to move cell"
-			>
-				<i className="eicon-drag-n-drop" aria-hidden="true" />
-			</span>
-		)}
 
 		{!hideItemId && <span style={{ fontSize: "14px" }}>{itemId}</span>}
 

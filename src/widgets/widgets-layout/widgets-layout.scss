@@ -49,6 +49,9 @@
 
 	.elementor-first-add {
 		width: 100%;
+		.elementor-icon {
+			transform: none;
+		}
 	}
 
 	// Drag-over highlight (panel widget dragged over this cell)
@@ -75,26 +78,32 @@
 	}
 }
 
-// ── Cell drag handle (RGL draggableHandle) — sits inside .mc4e-item-controls ──
+// ── Cell drag handle (RGL draggableHandle) --
 
 .wl-cell-drag-handle {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%) scale(0.8);
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 22px;
-	height: 22px;
+	width: 32px;
+	height: 32px;
 	border: none;
 	border-radius: 3px;
 	background: #000;
 	color: #fff;
-	font-size: 12px;
+	opacity: 0;
+	visibility: hidden;
 	line-height: 1;
 	cursor: grab;
 	box-shadow: 0 0 1px #fff;
-	transition: background 0.15s ease;
+	transition: opacity 0.25s ease, background 0.15s ease, color 0.15s ease;
+	z-index: 100;
 
 	i {
-		font-size: 12px;
+		font-size: 18px;
 		pointer-events: none;
 	}
 

@@ -228,6 +228,14 @@ class WidgetsLayout extends Widget_Base {
 				'selectors'  => array(
 					'{{WRAPPER}} .wl-item-inner' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
 				),
+				'default'    => array(
+					'top'      => '15',
+					'right'    => '15',
+					'bottom'   => '15',
+					'left'     => '15',
+					'unit'     => 'px',
+					'isLinked' => true,
+				),
 			)
 		);
 
@@ -262,25 +270,5 @@ class WidgetsLayout extends Widget_Base {
 		$this->end_controls_section();
 	}
 
-	/**
-	 * Render widget on the frontend.
-	 *
-	 * Outputs the standard React wrapper. Cell HTML is embedded in the
-	 * mc4e_widget_items setting (JSON string) and rendered by React.
-	 */
-	protected function render() {
-		$widget_settings = $this->get_widget_settings();
-		$widget_id       = $this->get_id();
-		$widget_name     = $this->get_name();
-		$json_data       = wp_json_encode( $widget_settings );
-		?>
-<div id="mc4e-<?php echo esc_attr( $widget_id ); ?>"
-	class="<?php echo esc_attr( $widget_name ); ?>-wrapper"
-	data-widget-id="<?php echo esc_attr( $widget_id ); ?>">
-	<input type="hidden" class="elementor-settings-data" value="<?php echo esc_attr( $json_data ); ?>" />
-	<div class="<?php echo esc_attr( $widget_name ); ?>-react-root"></div>
-</div>
-		<?php
-	}
 
 }

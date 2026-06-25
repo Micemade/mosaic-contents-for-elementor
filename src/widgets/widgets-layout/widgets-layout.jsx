@@ -1072,22 +1072,33 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 					const widgets = widgetItemsMap.get(layoutItem.i) || [];
 
 					return (
-						<div key={layoutItem.i} className="wl-item">
+						<div
+							key={layoutItem.i}
+							className={`wl-item ${!widgets.length ? 'no-widgets' : 'has-widgets'}`}
+						>
 							{isEditMode && (
-								/* Grid-level item controls (drag handle, z-index, remove cell) */
-								<ItemControls
-									settingKey="mc4e_custom_layout"
-									itemId={layoutItem.i}
-									hideItemId={true}
-									layoutData={layoutData}
-									customLayoutData={customLayoutData}
-									widgetId={widgetId}
-									widgetType="widgets-layout"
-									onRemove={handleRemoveItem}
-									dragHandleClassName="wl-cell-drag-handle"
-									collapsible
-									removeButtonClassName="mc4e-cell-edit"
-								/>
+								<>
+									{/* Grid-level item controls (drag handle, z-index, remove cell) */}
+									<ItemControls
+										settingKey="mc4e_custom_layout"
+										itemId={layoutItem.i}
+										hideItemId={true}
+										layoutData={layoutData}
+										customLayoutData={customLayoutData}
+										widgetId={widgetId}
+										widgetType="widgets-layout"
+										onRemove={handleRemoveItem}
+										collapsible
+										removeButtonClassName="mc4e-cell-edit"
+									/>
+									<span
+										className="wl-cell-drag-handle"
+										title="Drag to move cell"
+										aria-label="Drag to move cell"
+									>
+										<i className="eicon-drag-n-drop" aria-hidden="true" />
+									</span>
+								</>
 							)}
 
 							<Cell
