@@ -1157,11 +1157,13 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 			>
 				{layoutData.mobile.map((layoutItem) => {
 					const widgets = widgetItemsMap.get(layoutItem.i) || [];
+					const zIndex  = layoutData.zindex?.[layoutItem.i] || 0;
 
 					return (
 						<div
 							key={layoutItem.i}
 							className={`wl-item ${!widgets.length ? 'no-widgets' : 'has-widgets'}`}
+							style={{ zIndex }}
 						>
 							{isEditMode && (
 								<>
