@@ -18,8 +18,9 @@
  *     dragged widget ourselves inside the cell's container (createWidgetInCell).
  *   - Click-to-add (+ icon): opens the panel; the next widget Elementor adds is
  *     adopted into the cell's container and recorded (adoptElement).
- *   - Inner-widget DnD: a per-widget handle reorders widgets within a cell and
- *     moves them between cells (tagged with the `mc4e/inner-widget` type).
+ *   - Inner-widget DnD: dragging a widget's body reorders it within a cell or
+ *     moves it to another cell; the drag source is detected in the dragstart
+ *     capture handler (handleRootDragStartCapture).
  *
  * Grid cells are dragged only via a dedicated handle (`.wl-cell-drag-handle`,
  * rendered inside ItemControls) wired to react-grid-layout's draggableHandle.
@@ -123,13 +124,8 @@ const openWidgetPanel = (widgetId, cellId) => {
  */
 const WidgetSlot = memo(({
 	isEditMode,
-	cellId,
 	widgetId: slotWidgetId,
-	onRemove,
 	onEdit,
-	onPointerDown,
-	onDragStart,
-	onDragEnd,
 	onDragOver,
 	onDragLeave,
 	onDrop,
@@ -157,30 +153,6 @@ const WidgetSlot = memo(({
 			onDragLeave={onDragLeave}
 			onDrop={onDrop}
 		>
-			{/* Controls must not bubble a click up to the widget-select handler */}
-			<div className="wl-widget-controls" onClick={(e) => e.stopPropagation()}>
-				{/* Drag handle — HTML5 drag, never triggers the RGL cell drag */}
-				<span
-					className="wl-widget-handle"
-					draggable="true"
-					onPointerDown={onPointerDown}
-					onDragStart={onDragStart}
-					onDragEnd={onDragEnd}
-					title="Drag to reorder or move widget"
-				>
-					<i className="eicon-ellipsis-v" aria-hidden="true" />
-				</span>
-
-				<button
-					type="button"
-					className="wl-widget-remove-btn"
-					onClick={() => onRemove(cellId, slotWidgetId)}
-					title="Remove widget"
-				>
-					<i className="eicon-trash" aria-hidden="true" />
-				</button>
-			</div>
-
 			{/* Real Elementor element gets appended here (see reparentAll) */}
 			<div className="wl-widget-mount" />
 		</div>
@@ -196,13 +168,9 @@ const Cell = memo(({
 	onCellDragOver,
 	onCellDragLeave,
 	onCellDrop,
-	onWidgetPointerDown,
-	onWidgetDragStart,
-	onWidgetDragEnd,
 	onWidgetDragOver,
 	onWidgetDragLeave,
 	onWidgetDrop,
-	onRemoveWidget,
 	onEditWidget,
 }) => {
 	const hasWidgets = widgets.length > 0;
@@ -212,7 +180,7 @@ const Cell = memo(({
 			<div className="wl-item-inner wl-item-filled">
 				<div className="wl-cell-content">
 					{widgets.map((w) => (
-						<WidgetSlot key={w.id} isEditMode={false} cellId={cellId} widgetId={w.id} />
+						<WidgetSlot key={w.id} isEditMode={false} widgetId={w.id} />
 					))}
 				</div>
 			</div>
@@ -233,13 +201,8 @@ const Cell = memo(({
 						<WidgetSlot
 							key={w.id}
 							isEditMode
-							cellId={cellId}
 							widgetId={w.id}
-							onRemove={onRemoveWidget}
 							onEdit={onEditWidget}
-							onPointerDown={() => onWidgetPointerDown(cellId, w.id)}
-							onDragStart={(e) => onWidgetDragStart(cellId, w.id, e)}
-							onDragEnd={onWidgetDragEnd}
 							onDragOver={onWidgetDragOver}
 							onDragLeave={onWidgetDragLeave}
 							onDrop={(e) => onWidgetDrop(cellId, w.id, e)}
@@ -575,30 +538,13 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 
 	// Arm the inner-drag source as early as possible (pointerdown beats the
 	// sometimes-flaky dragstart), so the drop is reliably classified as a move.
-	const handleWidgetPointerDown = useCallback((cellId, wId) => {
-		dragSourceRef.current = { cellId, widgetId: wId };
-		// An inner drag is never a panel drag — make sure the create gate is shut.
-		panelDragActiveRef.current = false;
-	}, []);
-
-	const handleWidgetDragStart = useCallback((cellId, wId, e) => {
-		dragSourceRef.current = { cellId, widgetId: wId };
-		e.dataTransfer.setData('mc4e/inner-widget', wId);
-		e.dataTransfer.effectAllowed = 'move';
-		e.stopPropagation();
-	}, []);
-
-	const handleWidgetDragEnd = useCallback(() => {
-		dragSourceRef.current = null;
-	}, []);
-
 	/**
 	 * Resolve the source of an inner drag.
 	 *
-	 * Returns `{ cellId, widgetId }` when an existing tracked widget is being
-	 * dragged — either via our handle (dragSourceRef) or by its body, in which
-	 * case Elementor flags the dragged element in the preview DOM. Returns null
-	 * for a genuine new panel-element drag.
+	 * Returns a tagged source when an existing widget is being dragged by its
+	 * body (the source is recorded by handleRootDragStartCapture, with a
+	 * fallback to Elementor's drag marker in the preview DOM). Returns null for a
+	 * genuine new panel-element drag.
 	 */
 	const resolveDragSource = useCallback(() => {
 		// Top-level cell widget dragged (handle or body) → move between/within cells.
@@ -825,38 +771,6 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 		e.preventDefault();
 		e.stopPropagation();
 	}, [isEditMode]);
-
-	// ── widget remove ─────────────────────────────────────────────────────────
-	const handleRemoveWidget = useCallback((cellId, wId) => {
-		// We prune storage ourselves here, so silence the collection listener.
-		suppressSyncRef.current = true;
-
-		// Delete the real Elementor element, then drop it from cell storage.
-		const { el, $e } = getEditor();
-		const container  = el?.getContainer?.(wId);
-		if ($e && container) {
-			try {
-				$e.run('document/elements/delete', { container });
-			} catch {
-				// ignore — element may already be gone
-			}
-		}
-
-		const newItems = widgetItems.map((c) => (
-			c.i === cellId
-				? { ...c, widgets: (c.widgets || []).filter((w) => w.id !== wId) }
-				: c
-		));
-		updateWidgetItemsSetting(newItems);
-
-		// Emptied the cell → remove its now-empty container.
-		const cell = newItems.find((c) => c.i === cellId);
-		if ((cell?.widgets?.length ?? 0) === 0) {
-			deleteCellContainer(cellId);
-		}
-
-		setTimeout(() => { suppressSyncRef.current = false; }, 0);
-	}, [widgetItems, updateWidgetItemsSetting, deleteCellContainer]);
 
 	// ── widget edit (open native Elementor settings panel) ─────────────────────
 	// A plain DOM .click() does NOT select the element once its DOM has been
@@ -1198,13 +1112,9 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 								onCellDragOver={handleCellDragOver}
 								onCellDragLeave={handleCellDragLeave}
 								onCellDrop={(e) => handleCellDrop(layoutItem.i, e)}
-								onWidgetPointerDown={handleWidgetPointerDown}
-								onWidgetDragStart={handleWidgetDragStart}
-								onWidgetDragEnd={handleWidgetDragEnd}
 								onWidgetDragOver={handleWidgetDragOver}
 								onWidgetDragLeave={handleWidgetDragLeave}
 								onWidgetDrop={handleWidgetDrop}
-								onRemoveWidget={handleRemoveWidget}
 								onEditWidget={editWidget}
 							/>
 						</div>
