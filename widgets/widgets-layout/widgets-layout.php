@@ -4,6 +4,7 @@ namespace Micemade\MosaicContentsElementor\Widgets;
 
 use Elementor\Widget_Base;
 use Elementor\Controls_Manager;
+use Elementor\Repeater;
 use Elementor\Group_Control_Background;
 use Elementor\Group_Control_Border;
 use Elementor\Group_Control_Box_Shadow;
@@ -264,6 +265,127 @@ class WidgetsLayout extends Widget_Base {
 			array(
 				'name'     => 'mc4e_cell_box_shadow',
 				'selector' => '{{WRAPPER}} .wl-item-inner',
+			)
+		);
+
+		$this->end_controls_section();
+
+		// ── Per-Cell Style Section ────────────────────────────────────────
+		// A repeater with one (auto-managed) item per GridLayout cell. The React
+		// component adds `elementor-repeater-item-{_id}` to the matching cell's
+		// .wl-item-inner, so {{CURRENT_ITEM}} targets that cell. Any field left
+		// empty falls back to the global Cell Style above (CSS specificity).
+		$this->start_controls_section(
+			'per_cell_style_section',
+			array(
+				'label' => esc_html__( 'Per-Cell Style', 'mosaic-contents-for-elementor' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			)
+		);
+
+		$this->add_control(
+			'mc4e_per_cell_notice',
+			array(
+				'type'        => Controls_Manager::NOTICE,
+				'notice_type' => 'info',
+				'dismissible' => false,
+				'content'     => esc_html__( 'One item per grid cell is managed automatically. Empty fields fall back to the Cell Style settings.', 'mosaic-contents-for-elementor' ),
+			)
+		);
+
+		$cell_repeater = new Repeater();
+
+		// Stores the GridLayout cell id (e.g. "item-0"); managed by React.
+		$cell_repeater->add_control(
+			'cell_id',
+			array(
+				'label'   => __( 'Cell', 'mosaic-contents-for-elementor' ),
+				'type'    => Controls_Manager::HIDDEN,
+				'default' => '',
+			)
+		);
+
+		$cell_repeater->add_group_control(
+			Group_Control_Background::get_type(),
+			array(
+				'name'     => 'cell_background',
+				'label'    => esc_html__( 'Background', 'mosaic-contents-for-elementor' ),
+				'types'    => array( 'classic', 'gradient' ),
+				'selector' => '{{WRAPPER}} {{CURRENT_ITEM}}.wl-item-inner',
+			)
+		);
+
+		$cell_repeater->add_responsive_control(
+			'cell_padding',
+			array(
+				'label'      => __( 'Padding', 'mosaic-contents-for-elementor' ),
+				'type'       => Controls_Manager::DIMENSIONS,
+				'size_units' => array( 'px', '%', 'em', 'rem' ),
+				'selectors'  => array(
+					'{{WRAPPER}} {{CURRENT_ITEM}}.wl-item-inner' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+				),
+			)
+		);
+
+		$cell_repeater->add_control(
+			'cell_text_color',
+			array(
+				'label'     => __( 'Text Color', 'mosaic-contents-for-elementor' ),
+				'type'      => Controls_Manager::COLOR,
+				'selectors' => array(
+					'{{WRAPPER}} {{CURRENT_ITEM}}.wl-item-inner' => 'color: {{VALUE}};',
+				),
+			)
+		);
+
+		$cell_repeater->add_control(
+			'cell_links_color',
+			array(
+				'label'     => __( 'Links Color', 'mosaic-contents-for-elementor' ),
+				'type'      => Controls_Manager::COLOR,
+				'selectors' => array(
+					'{{WRAPPER}} {{CURRENT_ITEM}}.wl-item-inner a' => 'color: {{VALUE}};',
+				),
+			)
+		);
+
+		$cell_repeater->add_group_control(
+			Group_Control_Border::get_type(),
+			array(
+				'name'     => 'cell_border',
+				'selector' => '{{WRAPPER}} {{CURRENT_ITEM}}.wl-item-inner',
+			)
+		);
+
+		$cell_repeater->add_control(
+			'cell_border_radius',
+			array(
+				'label'      => __( 'Border Radius', 'mosaic-contents-for-elementor' ),
+				'type'       => Controls_Manager::DIMENSIONS,
+				'size_units' => array( 'px', '%' ),
+				'selectors'  => array(
+					'{{WRAPPER}} {{CURRENT_ITEM}}.wl-item-inner' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+				),
+			)
+		);
+
+		$cell_repeater->add_group_control(
+			Group_Control_Box_Shadow::get_type(),
+			array(
+				'name'     => 'cell_box_shadow',
+				'selector' => '{{WRAPPER}} {{CURRENT_ITEM}}.wl-item-inner',
+			)
+		);
+
+		$this->add_control(
+			'mc4e_cell_styles',
+			array(
+				'label'        => __( 'Cells', 'mosaic-contents-for-elementor' ),
+				'type'         => Controls_Manager::REPEATER,
+				'fields'       => $cell_repeater->get_controls(),
+				'title_field'  => 'Cell {{{ cell_id }}}',
+				'prevent_empty' => false,
+				'default'      => array(),
 			)
 		);
 

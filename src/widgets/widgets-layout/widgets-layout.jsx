@@ -165,6 +165,7 @@ const Cell = memo(({
 	cellId,
 	widgetId,
 	widgets,
+	repeaterClass = '',
 	onCellDragOver,
 	onCellDragLeave,
 	onCellDrop,
@@ -177,7 +178,7 @@ const Cell = memo(({
 
 	if (!isEditMode) {
 		return (
-			<div className="wl-item-inner wl-item-filled">
+			<div className={`wl-item-inner wl-item-filled ${repeaterClass}`.trim()}>
 				<div className="wl-cell-content">
 					{widgets.map((w) => (
 						<WidgetSlot key={w.id} isEditMode={false} widgetId={w.id} />
@@ -189,7 +190,7 @@ const Cell = memo(({
 
 	return (
 		<div
-			className={`wl-item-inner ${hasWidgets ? 'wl-item-filled' : 'wl-item-empty'}`}
+			className={`wl-item-inner ${hasWidgets ? 'wl-item-filled' : 'wl-item-empty'} ${repeaterClass}`.trim()}
 			onDragOver={onCellDragOver}
 			onDragLeave={onCellDragLeave}
 			onDrop={onCellDrop}
@@ -264,9 +265,30 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 		return map;
 	}, [widgetItems]);
 
-	const rootRef        = useRef(null);
-	const widgetItemsRef = useRef(widgetItems);
+	// Per-cell style repeater items (each carries a `cell_id` and Elementor `_id`).
+	const cellStyleItems = useMemo(() => {
+		const raw = widgetData?.mc4e_cell_styles;
+		return Array.isArray(raw) ? raw : [];
+	}, [widgetData?.mc4e_cell_styles]);
+
+	// cellId → `elementor-repeater-item-{_id}` class, so Elementor's per-item CSS
+	// (generated from {{CURRENT_ITEM}}) lands on the matching cell.
+	const cellStyleClassMap = useMemo(() => {
+		const map = new Map();
+		cellStyleItems.forEach((item) => {
+			if (item?.cell_id && item?._id) {
+				map.set(item.cell_id, `elementor-repeater-item-${item._id}`);
+			}
+		});
+		return map;
+	}, [cellStyleItems]);
+
+	const rootRef          = useRef(null);
+	const widgetItemsRef   = useRef(widgetItems);
 	widgetItemsRef.current = widgetItems;
+	const cellStyleItemsRef = useRef(cellStyleItems);
+	cellStyleItemsRef.current = cellStyleItems;
+	const reconcilingStylesRef = useRef(false);
 
 	// ── per-cell containers + DOM re-parenting ───────────────────────────────
 
@@ -814,6 +836,52 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 		};
 	}, [reparentAll, widgetItems, layoutData, deviceType]);
 
+	// Keep the per-cell style repeater (mc4e_cell_styles) in sync with the cells:
+	// exactly one item per GridLayout cell id. Runs as cells change (predefined
+	// layout switch, add/remove). Convergent — only acts on the diff — and guarded
+	// against re-entrancy.
+	useEffect(() => {
+		if (!isEditMode || !widgetId || reconcilingStylesRef.current) return;
+
+		const { el, $e } = getEditor();
+		const container = el?.getContainer?.(widgetId);
+		if (!container || !$e) return;
+
+		const cellIds     = (layoutData?.mobile || []).map((it) => it.i).filter(Boolean);
+		const items       = cellStyleItemsRef.current;
+		const itemCellIds = items.map((it) => it.cell_id);
+
+		const missing  = cellIds.filter((cid) => !itemCellIds.includes(cid));
+		const extraIdx = [];
+		items.forEach((it, idx) => {
+			if (!cellIds.includes(it.cell_id)) extraIdx.push(idx);
+		});
+
+		if (!missing.length && !extraIdx.length) return;
+
+		reconcilingStylesRef.current = true;
+		try {
+			// Remove stale items high→low so indices stay valid.
+			extraIdx.sort((a, b) => b - a).forEach((idx) => {
+				try {
+					$e.run('document/repeater/remove', { container, name: 'mc4e_cell_styles', index: idx });
+				} catch { /* ignore */ }
+			});
+			// Add one item per new cell.
+			missing.forEach((cid) => {
+				try {
+					$e.run('document/repeater/insert', {
+						container,
+						name: 'mc4e_cell_styles',
+						model: { cell_id: cid },
+					});
+				} catch { /* ignore */ }
+			});
+		} finally {
+			setTimeout(() => { reconcilingStylesRef.current = false; }, 0);
+		}
+	}, [isEditMode, widgetId, layoutData, cellStyleItems]);
+
 	// React to Elementor (re-)rendering widgets in the preview/page: when a
 	// tracked element becomes ready it must be moved (back) into its slot, and
 	// in edit mode a pending click-to-add element is adopted.
@@ -1070,8 +1138,9 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 				draggableHandle=".wl-cell-drag-handle"
 			>
 				{layoutData.mobile.map((layoutItem) => {
-					const widgets = widgetItemsMap.get(layoutItem.i) || [];
-					const zIndex  = layoutData.zindex?.[layoutItem.i] || 0;
+					const widgets       = widgetItemsMap.get(layoutItem.i) || [];
+					const zIndex        = layoutData.zindex?.[layoutItem.i] || 0;
+					const repeaterClass = cellStyleClassMap.get(layoutItem.i) || '';
 
 					return (
 						<div
@@ -1109,6 +1178,7 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 								cellId={layoutItem.i}
 								widgetId={widgetId}
 								widgets={widgets}
+								repeaterClass={repeaterClass}
 								onCellDragOver={handleCellDragOver}
 								onCellDragLeave={handleCellDragLeave}
 								onCellDrop={(e) => handleCellDrop(layoutItem.i, e)}

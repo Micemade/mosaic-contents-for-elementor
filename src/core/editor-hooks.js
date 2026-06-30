@@ -61,7 +61,7 @@ const WIDGET_KEYS = {
 		resetEvent: 'mosaic:resetLayout',
 		addItemEvent: 'mosaic:addItem',
 		gridColumns: { desktop: 48, tablet: 24, mobile: 12 },
-		repeaterKeys: [],
+		repeaterKeys: [ 'mc4e_cell_styles' ],
 	},
 };
 
