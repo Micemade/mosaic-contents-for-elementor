@@ -27,6 +27,7 @@ const ItemControls = ({
 	collapsible = false,
 	removeButtonClassName = 'mc4e-remove-item-btn',
 	dragHandleClassName = '',
+	onEditCell,
 }) => (
 
 	<div className={`mc4e-item-controls${collapsible ? ' mc4e-item-controls--collapsible' : ''}`}>
@@ -48,6 +49,7 @@ const ItemControls = ({
 				type="button"
 				className="mc4e-controls-toggle"
 				onMouseDownCapture={(e) => e.stopPropagation()}
+				onClick={(e) => { e.stopPropagation(); onEditCell?.(itemId); }}
 				title="Edit cell"
 			>
 				<i className="eicon-edit" aria-hidden="true" />

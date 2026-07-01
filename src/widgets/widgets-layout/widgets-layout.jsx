@@ -820,6 +820,98 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 		}
 	}, [isEditMode]);
 
+	// ── edit a cell's per-cell style (open its repeater item in the panel) ─────
+	// Selects the widget, reveals the Style tab / Per-Cell Style section and opens
+	// the repeater row matching this cell (identified by its Elementor `_id`).
+	const editCellStyles = useCallback((cellId) => {
+		if (!isEditMode || !widgetId) return;
+
+		const { el, $e } = getEditor();
+		const container = el?.getContainer?.(widgetId);
+		if (!el || !container) return;
+
+		// Only re-select if this widget's panel isn't already open (selecting
+		// re-renders the panel, which is what made this feel slow).
+		const alreadyOpen = el.getPanelView?.()?.getCurrentPageView?.()?.model?.id === widgetId;
+		if (!alreadyOpen) {
+			try { $e?.run?.('document/elements/select', { container }); } catch { /* noop */ }
+		}
+
+		const item   = cellStyleItemsRef.current.find((it) => it.cell_id === cellId);
+		const itemId = item?._id;
+		const parentDoc = window.parent?.document;
+
+		// Recursively collect the panel's control views (mirrors editor-hooks).
+		const collectViews = (view, acc = []) => {
+			if (!view || acc.includes(view)) return acc;
+			acc.push(view);
+			if (view.children?._views) {
+				Object.values(view.children._views).forEach((c) => collectViews(c, acc));
+			}
+			if (Array.isArray(view._childViews)) {
+				view._childViews.forEach((c) => collectViews(c, acc));
+			}
+			return acc;
+		};
+
+		// Switch the panel to the Style tab by clicking its nav item — this also
+		// updates the tab highlight (page.activateTab did not).
+		const ensureStyleTab = () => {
+			const tab = parentDoc?.querySelector?.(
+				'#elementor-panel .elementor-panel-navigation-tab[data-tab="style"]'
+			);
+			if (!tab) return false;
+			if (!tab.classList.contains('elementor-active')) tab.click();
+			return true;
+		};
+
+		const openRow = () => {
+			try {
+				const page = el.getPanelView?.()?.getCurrentPageView?.();
+				if (!page || page.model?.id !== widgetId) return false;
+
+				const styleReady = ensureStyleTab();
+				try { page.activateSection?.('per_cell_style_section'); } catch { /* noop */ }
+
+				const repeaterView = collectViews(page).find(
+					(v) => v?.model?.get?.('name') === 'mc4e_cell_styles'
+				);
+				if (!repeaterView) return false;
+
+				let targetRow = null;
+				repeaterView.children?.each?.((rowView) => {
+					const m = rowView?.model;
+					if (m && (m.get?.('_id') === itemId || m.id === itemId)) targetRow = rowView;
+				});
+				if (!targetRow) return false;
+
+				if (typeof repeaterView.editRow === 'function') {
+					repeaterView.editRow(targetRow);
+				} else {
+					// DOM fallback: click the row's edit tool / title.
+					targetRow.el
+						?.querySelector?.('.elementor-repeater-tool-edit, .elementor-repeater-row-item-title')
+						?.click?.();
+				}
+				// Only consider it done once the Style tab is actually active.
+				return styleReady;
+			} catch {
+				return false;
+			}
+		};
+
+		// Poll quickly (the panel renders async after select) and stop as soon as
+		// it opens — far snappier than fixed long timeouts.
+		if (!openRow()) {
+			let attempts = 0;
+			const tick = () => {
+				if (openRow() || ++attempts >= 25) return;
+				setTimeout(tick, 30);
+			};
+			setTimeout(tick, 20);
+		}
+	}, [isEditMode, widgetId]);
+
 	// ── re-parent effects ──────────────────────────────────────────────────────
 
 	// After any render that changes cells/order/layout, re-home the real
@@ -1161,6 +1253,7 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 										onRemove={handleRemoveItem}
 										collapsible
 										dragHandleClassName="wl-cell-drag-handle"
+										onEditCell={editCellStyles}
 									/>
 
 								</>
