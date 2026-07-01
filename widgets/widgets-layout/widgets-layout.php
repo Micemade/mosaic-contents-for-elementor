@@ -47,7 +47,9 @@ class WidgetsLayout extends Widget_Base {
 	 */
 	public function register_controls() {
 
-		// ── Layout Section ────────────────────────────────────────────────
+		// ──────────────────────────────────────────────────────────────
+		// ── Layout Section ────────────────────────────────────────────
+		// ──────────────────────────────────────────────────────────────
 		$this->start_controls_section(
 			'layout_section',
 			array(
@@ -201,80 +203,14 @@ class WidgetsLayout extends Widget_Base {
 
 		$this->end_controls_section();
 
-		// ── Cell Style Section ────────────────────────────────────────────
-		$this->start_controls_section(
-			'cell_style_section',
-			array(
-				'label' => esc_html__( 'Cell Style', 'mosaic-contents-for-elementor' ),
-				'tab'   => Controls_Manager::TAB_STYLE,
-			)
-		);
-
-		$this->add_group_control(
-			Group_Control_Background::get_type(),
-			array(
-				'name'     => 'mc4e_cell_background',
-				'label'    => esc_html__( 'Background', 'mosaic-contents-for-elementor' ),
-				'types'    => array( 'classic', 'gradient' ),
-				'selector' => '{{WRAPPER}} .wl-item-inner',
-			)
-		);
-
-		$this->add_responsive_control(
-			'mc4e_cell_padding',
-			array(
-				'label'      => __( 'Padding', 'mosaic-contents-for-elementor' ),
-				'type'       => Controls_Manager::DIMENSIONS,
-				'size_units' => array( 'px', '%', 'em', 'rem' ),
-				'selectors'  => array(
-					'{{WRAPPER}} .wl-item-inner' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
-				),
-				'default'    => array(
-					'top'      => '15',
-					'right'    => '15',
-					'bottom'   => '15',
-					'left'     => '15',
-					'unit'     => 'px',
-					'isLinked' => true,
-				),
-			)
-		);
-
-		$this->add_control(
-			'mc4e_cell_border_radius',
-			array(
-				'label'      => __( 'Border Radius', 'mosaic-contents-for-elementor' ),
-				'type'       => Controls_Manager::DIMENSIONS,
-				'size_units' => array( 'px', '%' ),
-				'selectors'  => array(
-					'{{WRAPPER}} .wl-item-inner' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
-				),
-			)
-		);
-
-		$this->add_group_control(
-			Group_Control_Border::get_type(),
-			array(
-				'name'     => 'mc4e_cell_border',
-				'selector' => '{{WRAPPER}} .wl-item-inner',
-			)
-		);
-
-		$this->add_group_control(
-			Group_Control_Box_Shadow::get_type(),
-			array(
-				'name'     => 'mc4e_cell_box_shadow',
-				'selector' => '{{WRAPPER}} .wl-item-inner',
-			)
-		);
-
-		$this->end_controls_section();
-
+		// ──────────────────────────────────────────────────────
 		// ── Per-Cell Style Section ────────────────────────────────────────
 		// A repeater with one (auto-managed) item per GridLayout cell. The React
 		// component adds `elementor-repeater-item-{_id}` to the matching cell's
 		// .wl-item-inner, so {{CURRENT_ITEM}} targets that cell. Any field left
 		// empty falls back to the global Cell Style above (CSS specificity).
+		// ──────────────────────────────────────────────────────
+
 		$this->start_controls_section(
 			'per_cell_style_section',
 			array(
@@ -311,7 +247,19 @@ class WidgetsLayout extends Widget_Base {
 				'name'     => 'cell_background',
 				'label'    => esc_html__( 'Background', 'mosaic-contents-for-elementor' ),
 				'types'    => array( 'classic', 'gradient' ),
-				'selector' => '{{WRAPPER}} {{CURRENT_ITEM}}.wl-item-inner',
+				'selector' => '{{WRAPPER}} {{CURRENT_ITEM}}.wl-item .wl-item-inner',
+			)
+		);
+
+		// Overlay color layered over the cell content (via .wl-item-inner::before).
+		$cell_repeater->add_control(
+			'cell_overlay_color',
+			array(
+				'label'     => __( 'Overlay Color', 'mosaic-contents-for-elementor' ),
+				'type'      => Controls_Manager::COLOR,
+				'selectors' => array(
+					'{{WRAPPER}} {{CURRENT_ITEM}}.wl-item .wl-item-inner::before' => 'background-color: {{VALUE}};',
+				),
 			)
 		);
 
@@ -322,7 +270,7 @@ class WidgetsLayout extends Widget_Base {
 				'type'       => Controls_Manager::DIMENSIONS,
 				'size_units' => array( 'px', '%', 'em', 'rem' ),
 				'selectors'  => array(
-					'{{WRAPPER}} {{CURRENT_ITEM}}.wl-item-inner' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+					'{{WRAPPER}} {{CURRENT_ITEM}} .wl-item-inner' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
 				),
 			)
 		);
@@ -333,7 +281,7 @@ class WidgetsLayout extends Widget_Base {
 				'label'     => __( 'Text Color', 'mosaic-contents-for-elementor' ),
 				'type'      => Controls_Manager::COLOR,
 				'selectors' => array(
-					'{{WRAPPER}} {{CURRENT_ITEM}}.wl-item-inner' => 'color: {{VALUE}};',
+					'{{WRAPPER}} {{CURRENT_ITEM}} .wl-item-inner' => 'color: {{VALUE}};',
 				),
 			)
 		);
@@ -344,7 +292,7 @@ class WidgetsLayout extends Widget_Base {
 				'label'     => __( 'Links Color', 'mosaic-contents-for-elementor' ),
 				'type'      => Controls_Manager::COLOR,
 				'selectors' => array(
-					'{{WRAPPER}} {{CURRENT_ITEM}}.wl-item-inner a' => 'color: {{VALUE}};',
+					'{{WRAPPER}} {{CURRENT_ITEM}} .wl-item-inner a' => 'color: {{VALUE}};',
 				),
 			)
 		);
@@ -353,7 +301,7 @@ class WidgetsLayout extends Widget_Base {
 			Group_Control_Border::get_type(),
 			array(
 				'name'     => 'cell_border',
-				'selector' => '{{WRAPPER}} {{CURRENT_ITEM}}.wl-item-inner',
+				'selector' => '{{WRAPPER}} {{CURRENT_ITEM}} .wl-item-inner',
 			)
 		);
 
@@ -364,7 +312,7 @@ class WidgetsLayout extends Widget_Base {
 				'type'       => Controls_Manager::DIMENSIONS,
 				'size_units' => array( 'px', '%' ),
 				'selectors'  => array(
-					'{{WRAPPER}} {{CURRENT_ITEM}}.wl-item-inner' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+					'{{WRAPPER}} {{CURRENT_ITEM}}.wl-item .wl-item-inner' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
 				),
 			)
 		);
@@ -373,10 +321,72 @@ class WidgetsLayout extends Widget_Base {
 			Group_Control_Box_Shadow::get_type(),
 			array(
 				'name'     => 'cell_box_shadow',
-				'selector' => '{{WRAPPER}} {{CURRENT_ITEM}}.wl-item-inner',
+				'selector' => '{{WRAPPER}} {{CURRENT_ITEM}}.wl-item .wl-item-inner',
 			)
 		);
 
+		// Flex alignment of the cell content (applied to .wl-cell-content, a
+		// column flexbox): horizontal = align-items (cross axis), vertical =
+		// justify-content (main axis).
+		$cell_repeater->add_responsive_control(
+			'cell_flex_align',
+			array(
+				'label'     => __( 'Horizontal Alignment', 'mosaic-contents-for-elementor' ),
+				'type'      => Controls_Manager::CHOOSE,
+				'options'   => array(
+					'flex-start' => array(
+						'title' => __( 'Start', 'mosaic-contents-for-elementor' ),
+						'icon'  => 'eicon-align-start-h',
+					),
+					'center'     => array(
+						'title' => __( 'Center', 'mosaic-contents-for-elementor' ),
+						'icon'  => 'eicon-align-center-h',
+					),
+					'flex-end'   => array(
+						'title' => __( 'End', 'mosaic-contents-for-elementor' ),
+						'icon'  => 'eicon-align-end-h',
+					),
+					'stretch'    => array(
+						'title' => __( 'Stretch', 'mosaic-contents-for-elementor' ),
+						'icon'  => 'eicon-align-stretch-h',
+					),
+				),
+				'selectors' => array(
+					'{{WRAPPER}} {{CURRENT_ITEM}}.wl-item .wl-cell-content' => 'align-items: {{VALUE}};',
+				),
+			)
+		);
+
+		$cell_repeater->add_responsive_control(
+			'cell_flex_justify',
+			array(
+				'label'     => __( 'Vertical Alignment', 'mosaic-contents-for-elementor' ),
+				'type'      => Controls_Manager::CHOOSE,
+				'options'   => array(
+					'flex-start'    => array(
+						'title' => __( 'Start', 'mosaic-contents-for-elementor' ),
+						'icon'  => 'eicon-align-start-v',
+					),
+					'center'        => array(
+						'title' => __( 'Center', 'mosaic-contents-for-elementor' ),
+						'icon'  => 'eicon-align-center-v',
+					),
+					'flex-end'      => array(
+						'title' => __( 'End', 'mosaic-contents-for-elementor' ),
+						'icon'  => 'eicon-align-end-v',
+					),
+					'space-between' => array(
+						'title' => __( 'Space Between', 'mosaic-contents-for-elementor' ),
+						'icon'  => 'eicon-justify-space-between-v',
+					),
+				),
+				'selectors' => array(
+					'{{WRAPPER}} {{CURRENT_ITEM}}.wl-item .wl-cell-content' => 'justify-content: {{VALUE}};',
+				),
+			)
+		);
+
+		// ── RENDER the repeater and controls ───────────────────────────────────────────────
 		$this->add_control(
 			'mc4e_cell_styles',
 			array(
@@ -386,6 +396,171 @@ class WidgetsLayout extends Widget_Base {
 				'title_field'  => 'Cell {{{ cell_id }}}',
 				'prevent_empty' => false,
 				'default'      => array(),
+			)
+		);
+
+		$this->end_controls_section();
+
+		// ──────────────────────────────────────────────────────
+		// ── Cells Style Section (all styles) ──────────────────
+		// ──────────────────────────────────────────────────────
+
+		$this->start_controls_section(
+			'cell_style_section',
+			array(
+				'label' => esc_html__( 'Cell Style (all cells)', 'mosaic-contents-for-elementor' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			)
+		);
+
+		$this->add_group_control(
+			Group_Control_Background::get_type(),
+			array(
+				'name'     => 'mc4e_cell_background',
+				'label'    => esc_html__( 'Background', 'mosaic-contents-for-elementor' ),
+				'types'    => array( 'classic', 'gradient' ),
+				'selector' => '{{WRAPPER}} .wl-item .wl-item-inner',
+			)
+		);
+
+		// Overlay color layered over the cell content (via .wl-item-inner::before) ──────────────
+		$this->add_control(
+			'mc4e_cell_overlay_color',
+			array(
+				'label'     => __( 'Overlay Color', 'mosaic-contents-for-elementor' ),
+				'type'      => Controls_Manager::COLOR,
+				'selectors' => array(
+					'{{WRAPPER}} .wl-item .wl-item-inner::before' => 'background-color: {{VALUE}};',
+				),
+			)
+		);
+
+		$this->add_control(
+			'mc4e_cell_text_color',
+			array(
+				'label'     => __( 'Text Color', 'mosaic-contents-for-elementor' ),
+				'type'      => Controls_Manager::COLOR,
+				'selectors' => array(
+					'{{WRAPPER}} .wl-item-inner' => 'color: {{VALUE}};',
+				),
+			)
+		);
+
+		$this->add_control(
+			'mc4e_cell_links_color',
+			array(
+				'label'     => __( 'Links Color', 'mosaic-contents-for-elementor' ),
+				'type'      => Controls_Manager::COLOR,
+				'selectors' => array(
+					'{{WRAPPER}} .wl-item-inner a' => 'color: {{VALUE}};',
+				),
+			)
+		);
+
+		$this->add_responsive_control(
+			'mc4e_cell_padding',
+			array(
+				'label'      => __( 'Padding', 'mosaic-contents-for-elementor' ),
+				'type'       => Controls_Manager::DIMENSIONS,
+				'size_units' => array( 'px', '%', 'em', 'rem' ),
+				'selectors'  => array(
+					'{{WRAPPER}} .wl-item .wl-item-inner' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+				),
+				'default'    => array(
+					'top'      => '15',
+					'right'    => '15',
+					'bottom'   => '15',
+					'left'     => '15',
+					'unit'     => 'px',
+					'isLinked' => true,
+				),
+			)
+		);
+
+		// ── Flex alignment of the cells content ────────────────────────────────────────────
+		$this->add_responsive_control(
+			'cell_flex_align',
+			array(
+				'label'     => __( 'Horizontal Alignment', 'mosaic-contents-for-elementor' ),
+				'type'      => Controls_Manager::CHOOSE,
+				'options'   => array(
+					'flex-start' => array(
+						'title' => __( 'Start', 'mosaic-contents-for-elementor' ),
+						'icon'  => 'eicon-align-start-h',
+					),
+					'center'     => array(
+						'title' => __( 'Center', 'mosaic-contents-for-elementor' ),
+						'icon'  => 'eicon-align-center-h',
+					),
+					'flex-end'   => array(
+						'title' => __( 'End', 'mosaic-contents-for-elementor' ),
+						'icon'  => 'eicon-align-end-h',
+					),
+					'stretch'    => array(
+						'title' => __( 'Stretch', 'mosaic-contents-for-elementor' ),
+						'icon'  => 'eicon-align-stretch-h',
+					),
+				),
+				'selectors' => array(
+					'{{WRAPPER}} .wl-item .wl-cell-content' => 'align-items: {{VALUE}};',
+				),
+			)
+		);
+
+		$this->add_responsive_control(
+			'cell_flex_justify',
+			array(
+				'label'     => __( 'Vertical Alignment', 'mosaic-contents-for-elementor' ),
+				'type'      => Controls_Manager::CHOOSE,
+				'options'   => array(
+					'flex-start'    => array(
+						'title' => __( 'Start', 'mosaic-contents-for-elementor' ),
+						'icon'  => 'eicon-align-start-v',
+					),
+					'center'        => array(
+						'title' => __( 'Center', 'mosaic-contents-for-elementor' ),
+						'icon'  => 'eicon-align-center-v',
+					),
+					'flex-end'      => array(
+						'title' => __( 'End', 'mosaic-contents-for-elementor' ),
+						'icon'  => 'eicon-align-end-v',
+					),
+					'space-between' => array(
+						'title' => __( 'Space Between', 'mosaic-contents-for-elementor' ),
+						'icon'  => 'eicon-justify-space-between-v',
+					),
+				),
+				'selectors' => array(
+					'{{WRAPPER}} .wl-item .wl-cell-content' => 'justify-content: {{VALUE}};',
+				),
+			)
+		);
+
+		$this->add_control(
+			'mc4e_cell_border_radius',
+			array(
+				'label'      => __( 'Border Radius', 'mosaic-contents-for-elementor' ),
+				'type'       => Controls_Manager::DIMENSIONS,
+				'size_units' => array( 'px', '%' ),
+				'selectors'  => array(
+					'{{WRAPPER}} .wl-item .wl-item-inner' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+				),
+			)
+		);
+
+		$this->add_group_control(
+			Group_Control_Border::get_type(),
+			array(
+				'name'     => 'mc4e_cell_border',
+				'selector' => '{{WRAPPER}} .wl-item',
+			)
+		);
+
+		$this->add_group_control(
+			Group_Control_Box_Shadow::get_type(),
+			array(
+				'name'     => 'mc4e_cell_box_shadow',
+				'selector' => '{{WRAPPER}} .wl-item .wl-item-inner',
 			)
 		);
 

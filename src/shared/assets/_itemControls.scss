@@ -10,7 +10,9 @@
 .mc4e-item-controls {
 	position: absolute;
 	top: 30px;
-	right: 1px;
+	left: 50%;
+	right: auto;
+	transform: translate(-50%);
 	display: flex;
 	align-items: center;
 	gap: 4px;
@@ -18,11 +20,10 @@
 	opacity: 0;
 	visibility: hidden;
 	transition: opacity .2s ease,visibility .2s ease;
-	background: #fff;
-	padding: 4px;
-	border-top-left-radius: 3px;
-	border-bottom-left-radius: 3px;
-	box-shadow: 0 0 1px #000;
+	background: rgba(0, 255, 249, 0.7);
+	padding: 6px;
+	border-radius: 2px;
+	box-shadow: 0 0 1px 4px rgba(255, 255, 255, 0.9);
 
 	// Z-Index controls group ────────────────────────────────────────────────
 	.mc4e-zindex-controls {
@@ -61,7 +62,7 @@
 			}
 
 			&:hover:not(:disabled) {
-				background: rgba(113, 216, 247, 0.85);
+				background: rgba(255, 255, 255, 0.85);
 				color: #000;
 
 				i {
@@ -123,7 +124,7 @@
 		}
 
 		&:hover {
-			background: rgba(113, 216, 247, 0.85);
+			background: #fff;
 			color: #000;
 			box-shadow: 0 0 1px rgba(0, 0, 0, 0.7);
 		}
@@ -237,11 +238,6 @@
 	// ── Collapsible mode: only the toggle shows; the rest reveal on hover ───────
 	&.mc4e-item-controls--collapsible {
 		
-		top: 30px;
-		left: 50%;
-		right: auto;
-		transform: translateX(-50%);
-
 		.mc4e-zindex-controls {
 			gap:0;
 		}

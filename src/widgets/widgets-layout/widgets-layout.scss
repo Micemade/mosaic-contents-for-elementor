@@ -27,6 +27,7 @@
 		width: 100%;
 		box-sizing: border-box;
 		overflow: hidden;
+		z-index: 10;
 
 		// --  Empty cell — Elementor-compatible markup
 		&.wl-item-empty {
@@ -66,7 +67,18 @@
 			}
 		}
 
-	}
+		// Per-cell overlay tint (colour set by the cell_overlay_color repeater field).
+		// Transparent by default; sits above the content but lets clicks through.
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			z-index: 1;
+			pointer-events: none;
+			background-color: transparent;
+		}
+
+	}// end .wl-item-inner
 
 }
 
@@ -102,7 +114,7 @@
 	}
 
 	&:hover {
-		background: rgba(113, 216, 247, 0.85);
+		background:#fff;
 		color: #000;
 	}
 
@@ -121,11 +133,13 @@
 
 // -- Cell content: ordered list of widget slots ───────────────────────────────
 .wl-cell-content {
+	position: relative; // anchor for the overlay pseudo-element
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
+	gap: 4px;
 	height: 100%;
 	width: 100%;
+	z-index: 5;
 }
 
 // -- Individual widget slot inside a cell ─────────────────────────────────────

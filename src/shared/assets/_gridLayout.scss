@@ -67,7 +67,6 @@
 		}
 
 		&.react-draggable:hover {
-			filter: contrast(1.1);
 			cursor: grab;
 
 			&.react-draggable-dragging {
@@ -81,7 +80,7 @@
 			.react-resizable-handle {
 				opacity: 1;
 			}
-			
+
 		}
 
 		// &.no-widgets:hover {

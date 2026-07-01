@@ -165,7 +165,6 @@ const Cell = memo(({
 	cellId,
 	widgetId,
 	widgets,
-	repeaterClass = '',
 	onCellDragOver,
 	onCellDragLeave,
 	onCellDrop,
@@ -178,7 +177,7 @@ const Cell = memo(({
 
 	if (!isEditMode) {
 		return (
-			<div className={`wl-item-inner wl-item-filled ${repeaterClass}`.trim()}>
+			<div className={`wl-item-inner wl-item-filled`}>
 				<div className="wl-cell-content">
 					{widgets.map((w) => (
 						<WidgetSlot key={w.id} isEditMode={false} widgetId={w.id} />
@@ -190,7 +189,7 @@ const Cell = memo(({
 
 	return (
 		<div
-			className={`wl-item-inner ${hasWidgets ? 'wl-item-filled' : 'wl-item-empty'} ${repeaterClass}`.trim()}
+			className={`wl-item-inner ${hasWidgets ? 'wl-item-filled' : 'wl-item-empty'}`}
 			onDragOver={onCellDragOver}
 			onDragLeave={onCellDragLeave}
 			onDrop={onCellDrop}
@@ -1145,7 +1144,7 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 					return (
 						<div
 							key={layoutItem.i}
-							className={`wl-item ${!widgets.length ? 'no-widgets' : 'has-widgets'}`}
+							className={`wl-item ${!widgets.length ? 'no-widgets' : 'has-widgets'}  ${repeaterClass}`.trim()}
 							style={{ zIndex }}
 						>
 							{isEditMode && (
@@ -1161,7 +1160,6 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 										widgetType="widgets-layout"
 										onRemove={handleRemoveItem}
 										collapsible
-										removeButtonClassName="mc4e-cell-edit"
 										dragHandleClassName="wl-cell-drag-handle"
 									/>
 
@@ -1173,7 +1171,6 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 								cellId={layoutItem.i}
 								widgetId={widgetId}
 								widgets={widgets}
-								repeaterClass={repeaterClass}
 								onCellDragOver={handleCellDragOver}
 								onCellDragLeave={handleCellDragLeave}
 								onCellDrop={(e) => handleCellDrop(layoutItem.i, e)}

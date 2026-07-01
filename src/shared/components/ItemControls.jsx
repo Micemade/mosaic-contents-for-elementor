@@ -42,7 +42,7 @@ const ItemControls = ({
 			</span>
 		)}
 
-		{/* Always-visible toggle; hovering it expands the controls cluster. */}
+		{/* EDIT PER CELL STYLE SETTINGS */}
 		{collapsible && (
 			<button
 				type="button"
