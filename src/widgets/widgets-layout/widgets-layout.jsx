@@ -1162,14 +1162,9 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 										onRemove={handleRemoveItem}
 										collapsible
 										removeButtonClassName="mc4e-cell-edit"
+										dragHandleClassName="wl-cell-drag-handle"
 									/>
-									<span
-										className="wl-cell-drag-handle"
-										title="Drag to move cell"
-										aria-label="Drag to move cell"
-									>
-										<i className="eicon-drag-n-drop" aria-hidden="true" />
-									</span>
+
 								</>
 							)}
 

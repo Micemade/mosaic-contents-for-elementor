@@ -1,5 +1,6 @@
-// Widgets Layout widget styles
 
+
+// Widgets Layout widget styles
 .elementor-widget-widgets-layout {
 	position: relative;
 	width: 100%;
@@ -8,97 +9,90 @@
 	}
 }
 
-// Grid cell wrapper 
 
+// Grid cell wrapper 
 .wl-item {
 	position: relative;
 	height: 100%;
-	overflow: hidden;
 	&:hover {
-		outline: 2px dashed rgba(0, 255, 249, 0.5);
-		outline-offset: -2px;
+		outline: 2px dashed rgba(0, 255, 249, 0.75);
 		cursor: default !important;
 		background: rgba(0, 255, 249, 0.15);
 	}
 
-}
-
-// Cell inner: shared between empty and filled 
-
-.wl-item-inner {
-	position: relative;
-	height: 100%;
-	width: 100%;
-	box-sizing: border-box;
-	overflow: hidden;
-}
-
-// --  Empty cell — Elementor-compatible markup
-
-.wl-item-empty {
-	display: flex;
-	min-height: 60px;
-
-	// Render with Elementor's own empty-view styles; we only make it fill the
-	// cell so the native dashed drop-zone occupies the whole grid item.
-	.elementor-empty-view {
+	// Cell inner: shared between empty and filled 
+	.wl-item-inner {
+		position: relative;
+		height: 100%;
 		width: 100%;
-		min-height: 60px;
-		cursor: pointer;
-	}
+		box-sizing: border-box;
+		overflow: hidden;
 
-	.elementor-first-add {
-		width: 100%;
-		.elementor-icon {
-			transform: none;
+		// --  Empty cell — Elementor-compatible markup
+		&.wl-item-empty {
+			display: flex;
+			min-height: 60px;
+
+			// Render with Elementor's own empty-view styles; we only make it fill the
+			// cell so the native dashed drop-zone occupies the whole grid item.
+			.elementor-empty-view {
+				width: 100%;
+				min-height: 60px;
+				cursor: pointer;
+			}
+
+			.elementor-first-add {
+				width: 100%;
+				.elementor-icon {
+					transform: none;
+				}
+			}
+
+			// Drag-over highlight (panel widget dragged over this cell)
+			&.wl-drag-over .elementor-first-add {
+				border-color: #5b03af;
+				background: rgba(91, 3, 175, 0.08);
+			}
 		}
+
+		// ── Filled cell ───────────────────────────────────────────────────────────────
+		.wl-item-filled {
+			position: relative;
+
+			// Drag-over highlight for inner-widget reorder
+			&.wl-drag-over {
+				outline: 2px dashed #5b03af;
+				outline-offset: -2px;
+			}
+		}
+
 	}
 
-	// Drag-over highlight (panel widget dragged over this cell)
-	&.wl-drag-over .elementor-first-add {
-		border-color: #5b03af;
-		background: rgba(91, 3, 175, 0.08);
-	}
 }
+
+
+
 
 // Elementor placeholder shown during native widget DnD over the empty-view
 .elementor-sortable-placeholder.elementor-html5dnd-current-element {
 	display: block !important;
 }
 
-// ── Filled cell ───────────────────────────────────────────────────────────────
-
-.wl-item-filled {
-	position: relative;
-
-	// Drag-over highlight for inner-widget reorder
-	&.wl-drag-over {
-		outline: 2px dashed #5b03af;
-		outline-offset: -2px;
-	}
-}
 
 // ── Cell drag handle (RGL draggableHandle) --
 
 .wl-cell-drag-handle {
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%) scale(0.8);
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 32px;
-	height: 32px;
+	width: 22px;
+	height: 22px;
 	border: none;
 	border-radius: 3px;
 	background: #000;
 	color: #fff;
-	opacity: 0;
-	visibility: hidden;
 	line-height: 1;
 	cursor: grab;
-	box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.8);
 	transition: opacity 0.25s ease, background 0.15s ease, color 0.15s ease;
 	z-index: 100;
 
@@ -126,7 +120,6 @@
 }
 
 // -- Cell content: ordered list of widget slots ───────────────────────────────
-
 .wl-cell-content {
 	display: flex;
 	flex-direction: column;

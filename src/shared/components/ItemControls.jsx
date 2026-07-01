@@ -26,9 +26,21 @@ const ItemControls = ({
 	manageTitle = 'Manage',
 	collapsible = false,
 	removeButtonClassName = 'mc4e-remove-item-btn',
+	dragHandleClassName = '',
 }) => (
 
 	<div className={`mc4e-item-controls${collapsible ? ' mc4e-item-controls--collapsible' : ''}`}>
+
+		{dragHandleClassName && (
+			<span
+				className={dragHandleClassName}
+				title="Drag to move cell"
+				aria-label="Drag to move cell"
+			>
+				{/* {eicon-drag-n-drop} */}
+				<i className="eicon-cursor-move" aria-hidden="true" />
+			</span>
+		)}
 
 		{/* Always-visible toggle; hovering it expands the controls cluster. */}
 		{collapsible && (

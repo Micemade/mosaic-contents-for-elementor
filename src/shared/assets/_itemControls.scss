@@ -237,9 +237,10 @@
 	// ── Collapsible mode: only the toggle shows; the rest reveal on hover ───────
 	&.mc4e-item-controls--collapsible {
 		
-		top: auto;
-		bottom: 20px;
-		gap: 0;
+		top: 30px;
+		left: 50%;
+		right: auto;
+		transform: translateX(-50%);
 
 		.mc4e-zindex-controls {
 			gap:0;
@@ -249,45 +250,46 @@
 			transition: opacity 0.3s ease, width 0.3s ease, padding 0.3s ease;
 		}
 
-		.mc4e-zindex-btn,
-		.mc4e-zindex-value,
-		.mc4e-cell-edit,
-		.mc4e-manage-item-btn {
-			max-width: 0;
-			padding: 0;
-			opacity: 0;
-			overflow: hidden;
-			transition: max-width 0.2s ease, opacity 0.2s ease, padding 0.2s ease;
-		}
+		// .mc4e-zindex-btn,
+		// .mc4e-zindex-value,
+		// .mc4e-cell-edit,
+		// .mc4e-manage-item-btn {
+		// 	max-width: 0;
+		// 	padding: 0;
+		// 	opacity: 0;
+		// 	overflow: hidden;
+		// 	transition: max-width 0.2s ease, opacity 0.2s ease, padding 0.2s ease;
+		// }
 
-		&:hover {
+		// Show the controls when hovering the item controls wrapper.
+		// &:hover {
 			
-			gap: 2px;
+		// 	gap: 2px;
 
-			.mc4e-zindex-btn,
-			.mc4e-cell-edit,
-			.mc4e-manage-item-btn {
-				width: 22px;
-				max-width: 22px;
-				opacity: 1;
-			}
+		// 	.mc4e-zindex-btn,
+		// 	.mc4e-cell-edit,
+		// 	.mc4e-manage-item-btn {
+		// 		width: 22px;
+		// 		max-width: 22px;
+		// 		opacity: 1;
+		// 	}
 
-			.mc4e-zindex-value {
-				max-width: 40px;
-				padding: 0 2px;
-				opacity: 1;
-			}
+		// 	.mc4e-zindex-value {
+		// 		max-width: 40px;
+		// 		padding: 0 2px;
+		// 		opacity: 1;
+		// 	}
 
-			.mc4e-zindex-controls {
-				gap:2px;
-			}
+		// 	.mc4e-zindex-controls {
+		// 		gap:2px;
+		// 	}
 
-			.mc4e-controls-toggle {
-				opacity: 0;
-				width: 0;
-				padding: 0;
-			}
-		}
+		// 	.mc4e-controls-toggle {
+		// 		opacity: 0;
+		// 		width: 0;
+		// 		padding: 0;
+		// 	}
+		// }
 	}
 
 }

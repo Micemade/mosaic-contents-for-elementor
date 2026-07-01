@@ -70,12 +70,6 @@
 			filter: contrast(1.1);
 			cursor: grab;
 
-			.wl-cell-drag-handle {
-				opacity: 1;
-				visibility: visible;
-				transform: translate(-50%, -50%) scale(1);
-			}
-
 			&.react-draggable-dragging {
 				cursor: grabbing;
 				
@@ -90,14 +84,14 @@
 			
 		}
 
-		&.no-widgets:hover {
-			.wl-cell-drag-handle {
-				transform: translate(-100%, -50%) scale(1);
-			}
-			.elementor-first-add .elementor-icon {
-				transform: translateX(20px);
-			}
-		}
+		// &.no-widgets:hover {
+		// 	.wl-cell-drag-handle {
+		// 		transform: translate(-100%, -50%) scale(1);
+		// 	}
+		// 	.elementor-first-add .elementor-icon {
+		// 		transform: translateX(20px);
+		// 	}
+		// }
 
 		> .react-resizable-handle {
 			position: absolute;
