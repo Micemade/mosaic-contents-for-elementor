@@ -1,14 +1,24 @@
-# Single Widget Architecture
+# Architecture
 
 ## Overview
 
-The codebase implements a streamlined architecture for a single Elementor widget called "content-layout". This widget displays general-purpose WordPress content using React rendering with the WordPress REST API.
+The codebase powers **two** Elementor widgets, both built on the same free-form, React-rendered grid engine:
 
-The architecture uses **two separate build outputs** plus **two custom control bundles**:
-- **Frontend Bundle** (`main-frontend.jsx`) - Lightweight, display-only for published pages
-- **Editor Bundle** (`main-editor.jsx`) - Full-featured with drag/resize, add/remove items, and live settings sync for Elementor editor
-- **Focal Point Control** (`focal-point-control.jsx`) - Custom image focal-point picker for the editor panel
-- **Saved Setups Control** (`saved-setups-control.jsx`) - Save/load/delete layout+style presets via the editor panel
+- **Content Layout** (`content-layout`) — queries posts / custom post types (via the WordPress REST API) and
+  renders them as cards in a free-form grid.
+- **Widgets Layout** (`widgets-layout`) — turns each grid cell into a drop zone for any native Elementor widget;
+  dropped widgets are kept as real, editable Elementor elements and re-parented into the cells.
+
+Both register under the **`mosaic-contents`** category and share the core registry, manager, hooks, grid, and
+settings-bridge infrastructure below.
+
+The build produces **two entry bundles** plus **three custom control bundles**:
+- **Frontend Bundle** (`main-frontend.jsx`) — lightweight, display-only for published pages.
+- **Editor Bundle** (`main-editor.jsx`) — full-featured with drag/resize, add/remove, live settings sync, and the
+  Widgets Layout live-element machinery, for the Elementor editor preview.
+- **Focal Point Control** (`focal-point-control.jsx`) — image focal-point picker for the panel.
+- **Saved Setups Control** (`saved-setups-control.jsx`) — save/load/delete layout+style setups.
+- **Post Type Select Control** (`PostTypeSelectControl.jsx`) — searchable post-type/query select.
 
 ## Dual-Bundle Strategy
 
@@ -114,12 +124,16 @@ The global `editor/widget/renderOnChange` filter returns `false` for registered 
 - `mosaic:applySetup` — Batch-applies all settings from a saved setup (layout, styles, CSS)
 
 ### 5. Settings Mappers (`src/widgets/settings-mappers.js`)
-Extract and format widget settings from Elementor models for the content-layout widget.
+A single generic factory turns an Elementor model into the plain `widgetData` object each React component
+consumes, driven by that widget's `react-settings.json` (type hints: `string` / `number` / `boolean` /
+`responsive` / `array`).
 
-The mapper function:
 ```javascript
-export const mapContentLayoutSettings = (model) => { /* ... */ }
+export const createSettingsMapper = (settingsDefinition) => (model) => { /* … */ };
 ```
+
+The registry builds one mapper per widget:
+`createSettingsMapper(contentLayoutSettings)`, `createSettingsMapper(widgetsLayoutSettings)`.
 
 ### 6. Elementor Utils (`src/core/elementor-utils.js`)
 Helper functions for React components to interact with Elementor.
@@ -191,6 +205,41 @@ User clicks content item
   → User can read, comment, share
 ```
 
+## Widgets Layout Architecture (`src/widgets/widgets-layout/widgets-layout.jsx`)
+
+Content Layout renders data. Widgets Layout instead hosts **real Elementor widgets** in each grid cell, which
+requires extra machinery on top of the shared grid.
+
+### Live elements + per-cell containers
+- Each cell owns a **hidden container** created on demand as a *sibling* of the widget
+  (`_element_id="mc4e-wlc-{widgetId}-{cellId}"`, hidden via CSS). Dropped widgets are created inside their cell's
+  container, so they stay real, editable Elementor elements that save through Elementor's own pipeline.
+- React **re-parents** each element's DOM into its cell slot (`.wl-widget-mount`) using the element's Elementor
+  *view* node as the canonical node (`mountWidget`), on both editor and frontend. Re-parenting runs in a
+  `useLayoutEffect` (before paint) and on `frontend/element_ready/widget`.
+- The `mc4e_widget_items` setting stores only cell assignment + order (`[{ i, widgets: [{ id, type }] }]`); the
+  element's model location (which cell container holds it) is kept in sync with it.
+
+### Drag-and-drop flows (separate from RGL's mouse-based grid drag)
+- **Panel-widget drop**: Elementor's native DnD is suppressed over the widget; we create the dragged widget
+  ourselves in the target cell's container (`createWidgetInCell`).
+- **Click-to-add (+ icon)**: opens the elements panel and *adopts* the next widget Elementor adds into the cell.
+- **Inner-widget DnD**: dragging a widget's body reorders it within / moves it between cells; a nested Container
+  child is instead **promoted** into the target cell (`handleRootDragStartCapture` → `resolveDragSource`).
+
+### Cleanup & sync
+- Per-cell container child `add`/`remove` listeners keep storage in sync with native duplicate/paste/delete, and
+  delete a cell's container when it is emptied. A `suppressSyncRef` guards our own mutations from re-triggering.
+- Deleting the widget removes its orphaned cell containers (guarded so *moving* the widget doesn't).
+
+### Per-cell styling
+- Global **Cell Style** controls (`{{WRAPPER}} .wl-item-inner`) act as the fallback.
+- A **`mc4e_cell_styles` repeater** provides per-cell overrides (background, padding, text/links/overlay color,
+  horizontal & vertical alignment, border, radius, shadow). React adds `elementor-repeater-item-{_id}` to the
+  matching cell so `{{CURRENT_ITEM}}` CSS targets it; empty fields fall back via specificity.
+- The repeater is auto-synced 1:1 with cells (a reconcile effect inserts/removes items), and the repeater's own
+  add/remove/duplicate buttons drive cell operations (add/remove cells; duplicate copies styles + widgets).
+
 ## File Structure
 
 ```
@@ -207,10 +256,12 @@ src/
 │   └── elementor-utils.js           # Shared utilities: breakpoints, CSS injection, panel helpers
 ├── widgets/
 │   ├── settings-mappers.js          # createSettingsMapper() factory
-│   └── content-layout/
-│       ├── content-layout.jsx       # Content widget component
-│       ├── content-layout.scss      # Widget-specific styles
-│       └── react-settings.json      # Settings schema (source of truth)
+│   ├── content-layout/
+│   │   ├── content-layout.jsx       # Content Layout component
+│   │   └── content-layout.scss      # Widget-specific styles
+│   └── widgets-layout/
+│       ├── widgets-layout.jsx       # Widgets Layout component (live elements, per-cell containers, DnD)
+│       └── widgets-layout.scss
 ├── shared/
 │   ├── layouts.json                 # Predefined grid layouts
 │   ├── components/
@@ -236,29 +287,33 @@ src/
 │   │   └── generalUtils.js         # General helper functions
 │   └── assets/
 │       ├── _gridLayout.scss        # Shared grid styles
-│       ├── _itemControls.scss      # Shared item-control styles
-│       ├── _productElements.scss   # Shared product element styles
-│       └── (shared partials imported in widget styles)
+│       ├── _itemControls.scss      # Shared item-control styles (z-index, cell controls)
+│       └── _contentElements.scss   # Shared content element styles
 └── controls/
     ├── focal-point-control.jsx      # Focal point picker React component
     ├── FocalPointControlView.jsx    # Elementor BaseData view extension
     ├── focal-point-control.scss
-    ├── PostTypeSelectControl.jsx   # Product selector React component
-    ├── PostTypeSelectView.jsx        # Elementor BaseData view extension
+    ├── PostTypeSelectControl.jsx    # Post-type/query select React component
+    ├── PostTypeSelectView.jsx       # Elementor BaseData view extension
     ├── PostTypeSelectControl.scss
     ├── saved-setups-control.jsx     # Saved setups React component + control view
     └── saved-setups-control.scss
 
-widgets/                              # PHP widget classes (all use WidgetHelpers trait)
-└── content-layout.php
+widgets/                              # PHP widget classes + settings JSON (all use WidgetHelpers trait)
+├── content-layout/
+│   ├── content-layout.php
+│   └── react-settings.json          # Settings schema (source of truth for the React mapper)
+└── widgets-layout/
+    ├── widgets-layout.php
+    └── react-settings.json
 
 controls/                             # PHP custom control classes
-├── focal-point.php
-└── saved-setups.php
+├── focal-point.php                   # Focal_Point
+├── saved-setups.php                  # Saved_Setups
+├── posttype-select.php               # Posttype_Select
+└── element-sorting.php               # Element_Sorting
 
-includes/
-├── trait-widget-helpers.php         # Shared render(), content_template(), get_widget_settings()
-└── class-rest-api.php               # REST API handler
+includes/                             # PHP helpers (WidgetHelpers trait, REST endpoints, …)
 
 assets/                               # Built output (generated by Vite)
 ├── js/
@@ -324,7 +379,7 @@ The architecture supports easy extension while maintaining the dual-bundle optim
 
 ## Global Variables
 
-### `window.MosaicLayoutsReact` (Widget Manager Singleton)
+### `window.MosaicContentsReact` (Widget Manager Singleton)
 - `.instances` - All mounted widget instances
   - Key: `${widgetType}_${widgetId}`
   - Value: `{ root, rootElement, widgetType, currentSettings, updateSettings() }`
@@ -404,7 +459,7 @@ Custom controls follow a PHP + React pattern: a PHP class provides the Elementor
 | Control | PHP Class | Type Slug | Purpose |
 |---------|-----------|-----------|----------|
 | Focal Point | `Focal_Point` | `mc4e_focal_point` | Image focal-point picker |
-| Product Select | `Product_Select` | `mc4e_posttype_select` | Single-product selector with search |
+| Post Type Select | `Posttype_Select` | `mc4e_posttype_select` | Post-type/query selector with search |
 | Element Sorting | `Element_Sorting` | `mc4e_sorter_label` | Drag-to-reorder element visibility list |
 | Saved Setups | `Saved_Setups` | `mc4e_saved_setups` | Save/load/delete layout+style presets |
 
@@ -450,7 +505,7 @@ public function init_controls( $controls_manager ) {
     $controls_manager->register( new Focal_Point() );
 
     require_once __DIR__ . '/controls/posttype-select.php';
-    $controls_manager->register( new Product_Select() );
+    $controls_manager->register( new Posttype_Select() );
 
     require_once __DIR__ . '/controls/element-sorting.php';
     $controls_manager->register( new Element_Sorting() );
@@ -763,7 +818,7 @@ watch: {
 **Frontend Issues:**
 1. Check browser console for errors
 2. Verify `main-frontend.js` loads correctly
-3. Check `window.MosaicLayoutsReact` is defined
+3. Check `window.MosaicContentsReact` is defined
 4. Verify WordPress REST API responses
 
 **Editor Issues:**

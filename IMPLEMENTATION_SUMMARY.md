@@ -2,7 +2,8 @@
 
 ## ✅ Completed
 
-The content-layout widget is fully implemented and the architecture is production-ready.
+Both widgets — **Content Layout** (posts / CPTs) and **Widgets Layout** (any Elementor widget per cell) — are
+implemented on the shared React grid architecture, and the codebase is production-ready.
 
 ## 📁 Source File Structure
 
@@ -58,11 +59,17 @@ src/
     ├── saved-setups-control.jsx     # Save/load/delete presets React component
     └── saved-setups-control.scss
 
-widgets/                         # PHP widget classes (all use WidgetHelpers trait)
-└── content-layout.php
+widgets/                         # PHP widget classes + settings JSON (all use WidgetHelpers trait)
+├── content-layout/
+│   ├── content-layout.php
+│   └── react-settings.json
+└── widgets-layout/
+    ├── widgets-layout.php
+    └── react-settings.json
 
 controls/                        # PHP custom control classes
 ├── focal-point.php
+├── posttype-select.php
 ├── element-sorting.php
 └── saved-setups.php
 

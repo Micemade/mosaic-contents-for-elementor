@@ -39,10 +39,10 @@
                 │
             ┌───▼────────────────────────────────────────┐
             │   Custom Controls (Panel)                  │
-            ├─────────────────┬──────────────────────────┤
-            │  Focal Point    │  Saved Setups            │
-            │  (image picker) │  (presets manager)       │
-            └─────────────────┴──────────────────────────┘
+            ├──────────────┬──────────────┬──────────────┤
+            │ Focal Point  │ Saved Setups │ Post-Type    │
+            │ Element Sort │ (presets)    │ Select       │
+            └──────────────┴──────────────┴──────────────┘
 ```
 
 ---
@@ -126,7 +126,7 @@
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
 │                          Widget Registry                             │
-│   { 'content-layout': { component, settingsMapper } }                │
+│   { 'content-layout': {…}, 'widgets-layout': {…} }                   │
 └────────────────────────────┬─────────────────────────────────────────┘
                              │ Maps widget types
                              │
@@ -455,15 +455,15 @@ src/
 │  ├─ frontend-hooks.js  ◄─────────────┤ • Hooks (split)
 │  ├─ editor-hooks.js    ◄─────────────┤
 │  └─ elementor-utils.js               │
-│                                       │
-├─ widgets/ ◄───────────────────────────┤ Widget Components
+│                                      │
+├─ widgets/ ◄──────────────────────────┤ Widget Components
 │  ├─ settings-mappers.js              │ createSettingsMapper() factory
 │  └─ content-layout/                  │
 │     ├─ content-layout.jsx            │
 │     ├─ content-layout.scss           │
 │     └─ react-settings.json ◄─────────┤ Settings source of truth
-│                                       │
-├─ shared/ ◄────────────────────────────┤ Shared Resources
+│                                      │
+├─ shared/ ◄───────────────────────────┤ Shared Resources
 │  ├─ layouts.json                     │
 │  ├─ components/                      │
 │  │  ├─ GridLayout.jsx                │
@@ -487,8 +487,8 @@ src/
 │     ├─ _gridLayout.scss              │
 │     ├─ _itemControls.scss            │
 │     └─ _contentElements.scss         │
-│                                       │
-└─ controls/ ◄──────────────────────────┤ Custom Controls
+│                                      │
+└─ controls/ ◄─────────────────────────┤ Custom Controls
    ├─ focal-point-control.jsx          │
    ├─ FocalPointControlView.jsx        │
    ├─ focal-point-control.scss         │
@@ -499,15 +499,18 @@ src/
 PHP Files (Root Level)                  │
 │                                       │
 ├─ widgets/ ◄───────────────────────────┤ PHP Widgets
-│  └─ content-layout.php               │
+│  ├─ content-layout/content-layout.php │
+│  └─ widgets-layout/widgets-layout.php │
 │                                       │
 ├─ controls/ ◄──────────────────────────┤ PHP Controls
-│  ├─ focal-point.php                  │
-│  └─ saved-setups.php                 │
+│  ├─ focal-point.php                   │
+│  ├─ posttype-select.php               │
+│  ├─ element-sorting.php               │
+│  └─ saved-setups.php                  │
 │                                       │
 ├─ includes/                            │
-│  ├─ trait-widget-helpers.php         │ Shared render(), content_template()
-│  └─ class-rest-api.php               │
+│  ├─ trait-widget-helpers.php          │ Shared render(), content_template()
+│  └─ class-rest-api.php                │
 │                                       │
 └─ mosaic-contents-for-elementor.php ◄──┘ Main Plugin File
 
@@ -898,7 +901,7 @@ DOM disconnected      | Recreate React root
 
 ```
 window
-├─ MosaicLayoutsReact ◄─────────────── Widget Manager Singleton
+├─ MosaicContentsReact ◄─────────────── Widget Manager Singleton
 │  ├─ instances {}                     Instance registry
 │  ├─ modelGetters {}                  Editor model accessors
 │  ├─ models {}                        Elementor models

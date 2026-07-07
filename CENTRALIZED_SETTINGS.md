@@ -2,7 +2,7 @@
 
 ## Overview
 
-The widget's settings are defined in a **single `react-settings.json` file** that acts as the source of truth for all widgets where settings are consumed by:
+Each widget defines its settings in its own **`react-settings.json` file** (`widgets/<widget>/react-settings.json`), the source of truth for that widget. Those settings are consumed by:
 
 1. **PHP `render()`** — Frontend HTML, serializes settings into a hidden input for React hydration
 2. **PHP `content_template()`** — Elementor editor Backbone template, generates the JS settings object inline

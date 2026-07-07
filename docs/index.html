@@ -4,8 +4,8 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Mosaic Product Layouts for Elementor Documentation</title>
-	<meta name="description" content="Installation, setup, and usage guide for Mosaic Product Layouts for Elementor.">
+	<title>Mosaic Contents for Elementor Documentation</title>
+	<meta name="description" content="Installation, setup, and usage guide for Mosaic Contents for Elementor — free-form grid layouts for posts, custom post types, and any Elementor widget.">
 	<link rel="stylesheet" href="assets/docs-ui.css">
 </head>
 <body>
@@ -14,12 +14,13 @@
 		<header class="hero" id="top">
 			<div class="hero__content">
 				<p class="eyebrow">Micemade Documentation</p>
-				<h1>Mosaic Product Layouts for Elementor</h1>
-				<p class="hero__lede">A practical guide to installing the plugin, configuring the widgets, and building
-					reusable WooCommerce layouts inside Elementor.</p>
+				<h1>Mosaic Contents for Elementor</h1>
+				<p class="hero__lede">A practical guide to installing the plugin and building free-form,
+					grid-based content layouts inside Elementor — for posts, custom post types, and any
+					Elementor widget.</p>
 				<div class="hero__actions" aria-label="Documentation quick links">
 					<a class="button button--primary"
-						href="https://github.com/Micemade/mosaic-posttypeitem-layouts-for-elementor">Open Repository</a>
+						href="https://github.com/Micemade/mosaic-contents-for-elementor">Open Repository</a>
 					<a class="button button--secondary" href="#installation">Start Installation</a>
 				</div>
 			</div>
@@ -29,20 +30,20 @@
 					<strong>0.1.0</strong>
 				</div>
 				<div class="stat-card">
-					<span class="stat-card__label">Created</span>
-					<strong>16 Apr 2026</strong>
+					<span class="stat-card__label">Widgets</span>
+					<strong>Content Layout &amp; Widgets Layout</strong>
 				</div>
 				<div class="stat-card">
 					<span class="stat-card__label">Requires</span>
-					<strong>Elementor + WooCommerce</strong>
+					<strong>Elementor</strong>
 				</div>
 				<div class="stat-card">
 					<span class="stat-card__label">Support</span>
-					<strong><a href="https://github.com/Micemade/mosaic-posttypeitem-layouts-for-elementor">GitHub</a></strong>
+					<strong><a href="https://github.com/Micemade/mosaic-contents-for-elementor">GitHub</a></strong>
 				</div>
 				</div>
 				</header>
-				
+
 				<div class="docs-layout">
 					<aside class="sidebar" aria-labelledby="toc-title">
 						<div class="sidebar__inner">
@@ -65,23 +66,25 @@
 								<nav class="toc" aria-label="Table of contents">
 									<ol>
 										<li><a href="#overview">Overview</a></li>
+										<li><a href="#grid-system">The Free-Form Grid System</a></li>
 										<li><a href="#requirements">Requirements</a></li>
 										<li><a href="#package-contents">Package Contents</a></li>
 										<li><a href="#installation">Installation</a></li>
 										<li><a href="#getting-started">Getting Started</a></li>
-										<li><a href="#products-widget">Products Layout Widget</a></li>
-										<li><a href="#categories-widget">Categories Layout Widget</a></li>
-										<li><a href="#single-posttypeitem-widget">Single Product Layout Widget</a></li>
-										<li><a href="#layout-editing">Layout Editing and Responsive Workflow</a></li>
+										<li><a href="#content-layout-widget">Content Layout Widget</a></li>
+										<li><a href="#widgets-layout-widget">Widgets Layout Widget</a></li>
+										<li><a href="#per-cell-styling">Per-Cell Styling</a></li>
 										<li><a href="#presets">Saved Setups and Style Presets</a></li>
+										<li><a href="#layout-editing">Layout Editing and Responsive Workflow</a></li>
 										<li><a href="#troubleshooting">Troubleshooting</a></li>
 										<li><a href="#credits">Credits and Support</a></li>
 										</ol>
 								</nav>
 								<div class="sidebar-card">
 									<p class="sidebar-card__title">Quick Start</p>
-									<p>Install the plugin, activate Elementor and WooCommerce, then add one of the Mosaic Product Layouts widgets to any
-										page.</p>
+									<p>Install the plugin, activate Elementor, then add the <strong>Content Layout</strong> or
+										<strong>Widgets Layout</strong> widget to any page from the <strong>Mosaic Contents</strong>
+										category.</p>
 								</div>
 								</div>
 								</div>
@@ -95,31 +98,61 @@
 					</div>
 					<div class="card-grid card-grid--intro">
 						<article class="card card--feature" id="overview">
-							<p>Mosaic Contents for Elementor adds three WooCommerce-focused Elementor widgets under the
-								<strong>Mosaic Product Layouts</strong> category:
+							<p>Mosaic Contents for Elementor adds two Elementor widgets under the
+								<strong>Mosaic Contents</strong> category:
 							</p>
 							<ul class="feature-list">
-								<li><strong>Products Layout</strong> for creative product card grids.</li>
-								<li><strong>Categories Layout</strong> for product category cards with custom arrangements.</li>
-								<li><strong>Single Product Layout</strong> for one selected product with movable content blocks.
-								</li>
+								<li><strong>Content Layout</strong> — display posts or any custom post type in free-form,
+									grid-based layouts.</li>
+								<li><strong>Widgets Layout</strong> — fill each layout cell with any available Elementor
+									widget to compose free-form layouts.</li>
 							</ul>
-							<p>The widgets are built for merchants and designers who want more control than a standard WooCommerce grid. You can
-								start from presets, drag and resize items in the editor, save your own setups, and apply style presets to speed up
-								design work.</p>
+							<p>Both widgets are built around the same idea: instead of being constrained by "classic" HTML
+								layout models (flexbox, CSS grid, columns), you place and size items <em>freely</em> on an
+								underlying grid that handles snapping and organization for you.</p>
 							</article>
 							<article class="card card--success">
 								<h3>Main strengths</h3>
 								<ul>
+								<li>Free-form placement on an underlying, snap-friendly grid.</li>
 								<li>Drag-and-resize editing directly inside Elementor.</li>
 								<li>Separate desktop, tablet, and mobile layout control.</li>
-								<li>Style presets for faster visual setup.</li>
-								<li>Saved setups for reusing full layout and style combinations.</li>
-								<li>Direct WooCommerce data integration for products and categories.</li>
+								<li>Content Layout: works with any post type and its taxonomies.</li>
+								<li>Widgets Layout: cells host any Elementor widget, including nested Containers.</li>
+								<li>Saved setups, style presets, and per-cell styling.</li>
 								</ul>
 						</article>
 					</div>
 				</section>
+
+				<section class="section" id="grid-system" aria-labelledby="grid-system-title">
+					<div class="section__header">
+						<p class="section__kicker">Concept</p>
+						<h2 id="grid-system-title">The Free-Form Grid System</h2>
+					</div>
+					<article class="card">
+						<p>The core of both widgets is a <strong>grid layout</strong> engine. Rather than arranging content
+							in rigid rows and columns, you drag and resize items anywhere on a fine underlying grid. The
+							grid provides snapping points, so items stay aligned and organized without you writing any CSS
+							or fighting flexbox/grid rules.</p>
+						<h3>Shared layout concepts</h3>
+						<ul>
+							<li><strong>Predefined Layouts</strong> — start from a ready-made arrangement of cells.</li>
+							<li><strong>Custom Layout</strong> — your drag-and-resize changes are stored automatically.</li>
+							<li><strong>Reset Layout</strong> — discard custom edits and return to the predefined layout.</li>
+							<li><strong>Add Cell / Add Item</strong> — add another grid cell to the layout.</li>
+							<li><strong>Grid Gap</strong> and <strong>Grid Row Height</strong> — control spacing and row density.</li>
+							<li><strong>Allow Overlap</strong> and <strong>Compaction Type</strong> — define how items behave when
+								moved (overlapping vs. auto-packing).</li>
+							<li><strong>Grid Visualization</strong> — show the underlying grid as a placement aid while editing.</li>
+							<li><strong>Z-index controls</strong> — bring cells forward or send them backward when they overlap.</li>
+						</ul>
+						<div class="callout callout--warning" role="note">
+							<p><strong>Important:</strong> Layout changes made by dragging or resizing are saved with the page only
+								after you click <strong>Update</strong> or <strong>Publish</strong> in Elementor.</p>
+						</div>
+					</article>
+					</section>
 
 				<section class="section" id="requirements" aria-labelledby="requirements-title">
 					<div class="section__header">
@@ -132,13 +165,10 @@
 							<li>WordPress 6.0 or newer</li>
 							<li>PHP 7.0 or newer</li>
 							<li>Elementor installed and activated</li>
-							<li>WooCommerce installed and activated</li>
 						</ul>
-						<p>Elementor Pro is not required for the widget functionality documented here.</p>
-						<div class="callout callout--warning" role="note">
-							<p><strong>Important:</strong> These widgets rely on WooCommerce data. If WooCommerce is inactive, product and
-								category content cannot load correctly.</p>
-						</div>
+						<p>Elementor Pro is not required for the functionality documented here. WooCommerce is not required
+							either — the Content Layout widget works with any registered post type, so it can display
+							WooCommerce products if that post type is selected, but it does not depend on WooCommerce.</p>
 					</article>
 					</section>
 
@@ -149,13 +179,14 @@
 					</div>
 					<article class="card">
 						<p>Your downloadable package should include the plugin files and this documentation folder.</p>
-						<pre><code>mosaic-posttypeitem-layouts-for-elementor/
+						<pre><code>mosaic-contents-for-elementor/
 |-- assets/
 |-- controls/
 |-- includes/
 |-- widgets/
+|-- src/
 |-- index.php
-|-- mosaic-posttypeitem-layouts-for-elementor.php
+|-- mosaic-contents-for-elementor.php
 |-- readme.txt
 |-- docs/
     |-- index.html
@@ -185,21 +216,21 @@
 							<h3>Install through FTP or SFTP</h3>
 							<ol>
 								<li>Extract the plugin ZIP on your computer.</li>
-								<li>Upload the <strong>mosaic-posttypeitem-layouts-for-elementor</strong> folder to
+								<li>Upload the <strong>mosaic-contents-for-elementor</strong> folder to
 									<strong>/wp-content/plugins/</strong>.
 								</li>
 								<li>Open <strong>Plugins</strong> in WordPress admin.</li>
-								<li>Activate <strong>Mosaic Product Layouts for Elementor</strong>.</li>
+								<li>Activate <strong>Mosaic Contents for Elementor</strong>.</li>
 								</ol>
 						</article>
 						</div>
 						<article class="card card--accent">
 							<h3>After activation</h3>
 							<ol>
-								<li>Confirm that Elementor and WooCommerce are active.</li>
+								<li>Confirm that Elementor is active.</li>
 								<li>Edit a page with Elementor.</li>
-							<li>Search for the <strong>Mosaic Product Layouts</strong> widget category.</li>
-							<li>Drag one of the plugin widgets into your page.</li>
+							<li>Search for the <strong>Mosaic Contents</strong> widget category.</li>
+							<li>Drag the <strong>Content Layout</strong> or <strong>Widgets Layout</strong> widget into your page.</li>
 							</ol>
 					</article>
 					</section>
@@ -213,210 +244,160 @@
 						<p>The fastest way to start is:</p>
 						<ol>
 							<li>Open a page in Elementor.</li>
-							<li>Add one of the Mosaic Product Layouts widgets.</li>
+							<li>Add the <strong>Content Layout</strong> or <strong>Widgets Layout</strong> widget.</li>
 							<li>Pick a predefined layout first.</li>
-							<li>Adjust the widget query or product source.</li>
-							<li>Customize spacing, alignment, visibility, and styles.</li>
-							<li>Drag and resize items in the preview area if you want a custom layout.</li>
+							<li>For Content Layout, choose the post type and query; for Widgets Layout, drop widgets into cells.</li>
+							<li>Customize spacing, alignment, and styles.</li>
+							<li>Drag and resize cells in the preview area to build a custom, free-form layout.</li>
 							<li>Click <strong>Update</strong> or <strong>Publish</strong> to save the current page state.</li>
 						</ol>
-						<div class="callout callout--warning" role="note">
-							<p><strong>Important:</strong> Layout changes made by dragging or resizing are saved with the page only after you
-								click <strong>Update</strong> or <strong>Publish</strong> in Elementor.</p>
-						</div>
-						<p>All three widgets follow the same general control pattern:</p>
+						<p>Both widgets follow the same general control pattern:</p>
 						<ul>
-							<li><strong>Content tab</strong> for choosing data, product, or saved setups.</li>
-							<li><strong>Layout tab</strong> for grid behavior, layout presets, custom layout storage, and helper tools.</li>
-							<li><strong>Style tab</strong> for typography, image display, alignment, color, borders, and presets.</li>
+							<li><strong>Content / Query tab</strong> — for Content Layout, choose the data source and query.</li>
+							<li><strong>Layout tab</strong> — grid behavior, layout presets, custom layout storage, and helper tools.</li>
+							<li><strong>Style tab</strong> — typography, alignment, colors, borders, and per-cell styling.</li>
 						</ul>
 					</article>
 					</section>
 
-				<section class="section" id="products-widget" aria-labelledby="products-widget-title">
+				<section class="section" id="content-layout-widget" aria-labelledby="content-layout-widget-title">
 					<div class="section__header">
 						<p class="section__kicker">Widget Guide</p>
-						<h2 id="products-widget-title">Products Layout Widget</h2>
-					</div>
-					<div class="card-grid">
-						<article class="card">
-							<h3>Main content options</h3>
-							<ul>
-								<li><strong>Order By</strong>: date, title, price, popularity, or rating.</li>
-								<li><strong>Order</strong>: ascending or descending.</li>
-								<li><strong>Categories</strong>: limit the query to selected product categories.</li>
-								<li><strong>On Sale Only</strong>: show only sale products.</li>
-								<li><strong>Featured Only</strong>: show only featured products.</li>
-								<li><strong>Enable Pagination</strong>: split products across multiple pages.</li>
-							</ul>
-						</article>
-						<article class="card">
-							<h3>Layout options</h3>
-							<ul>
-								<li><strong>Predefined Layouts</strong>: start from a ready-made card arrangement.</li>
-								<li><strong>Custom Layout</strong>: automatically stores your drag-and-resize changes.</li>
-								<li><strong>Reset Layout</strong>: return to the selected predefined layout.</li>
-								<li><strong>Add Item</strong>: add an additional grid slot to the layout.</li>
-								<li><strong>Grid Gap</strong> and <strong>Grid Row Height</strong>: control spacing and row density.</li>
-								<li><strong>Allow Overlap</strong> and <strong>Compaction Type</strong>: define how items behave when moved.</li>
-								<li><strong>Grid Visualization</strong>: display the underlying grid as a placement aid.</li>
-								</ul>
-						</article>
-						<article class="card">
-							<h3>Styling options</h3>
-							<ul>
-								<li>Text tab for title, price, button, and taxonomy text sizes.</li>
-								<li>Layout tab for product card orientation and internal alignment.</li>
-								<li>Image tab for image size, fit, and focal point positioning.</li>
-								<li>Colors tab for text, links, and backgrounds.</li>
-								<li>Borders tab for borders, radius, and shadow.</li>
-								<li>Badges and other controls for sale badge styling and rating sizing.</li>
-							</ul>
-						</article>
-						</div>
-						<article class="card">
-							<h3>Element visibility and order</h3>
-							<p>You can reorder and show or hide product card elements such as Title, Price, Rating, Add to Cart, Categories, and
-								Brands using the <strong>Element Order &amp; Visibility</strong> section.</p>
-							<h3>Typical workflow</h3>
-							<ol>
-								<li>Add the widget to the page.</li>
-								<li>Choose the products you want to display using the query controls.</li>
-								<li>Select a predefined layout.</li>
-								<li>Adjust card styling or apply a style preset.</li>
-								<li>Optionally drag and resize grid items for a custom layout.</li>
-								<li>Save the result as a setup if you want to reuse it later.</li>
-							</ol>
-					</article>
-					</section>
-
-				<section class="section" id="categories-widget" aria-labelledby="categories-widget-title">
-					<div class="section__header">
-						<p class="section__kicker">Widget Guide</p>
-						<h2 id="categories-widget-title">Categories Layout Widget</h2>
+						<h2 id="content-layout-widget-title">Content Layout Widget</h2>
 					</div>
 					<article class="card">
-						<p>The <strong>Categories Layout</strong> widget displays WooCommerce product categories in a custom card grid.
-						</p>
-						<div class="card-grid card-grid--compact">
-							<div>
-								<h3>Main content options</h3>
+						<p>The <strong>Content Layout</strong> widget queries posts or any custom post type and arranges the
+							resulting items as cards in a free-form grid.</p>
+						<div class="card-grid">
+							<article class="card">
+								<h3>Query settings</h3>
 								<ul>
-									<li><strong>Categories Per Page</strong>: control how many categories are displayed.</li>
-									<li><strong>Order By</strong>: name, ID, slug, or product count.</li>
-									<li><strong>Order</strong>: ascending or descending.</li>
-									<li><strong>Hide Empty Categories</strong>: exclude categories with no products.</li>
-									<li><strong>Parent Category</strong>: limit output to subcategories of a selected parent.</li>
-									<li><strong>Include Categories</strong>: directly choose which categories to show.</li>
+									<li><strong>Post Type</strong>: choose any registered post type (posts, pages, or a CPT).</li>
+									<li><strong>Taxonomy</strong> and <strong>Terms</strong>: filter by the taxonomies of the selected
+										post type.</li>
+									<li><strong>Order By</strong> and <strong>Order</strong>: sort the query results.</li>
+									<li><strong>Sticky Only</strong>: limit output to sticky posts.</li>
+									<li><strong>Enable Pagination</strong>: split results across multiple pages.</li>
+									<li><strong>Post Meta Display</strong>: add custom meta fields (with labels, prefixes, suffixes, and
+										conditions) to each card.</li>
 								</ul>
-							</div>
-							<div>
-								<h3>Styling and layout</h3>
-								<p>The Categories widget uses the same layout controls as the Products widget: predefined layouts, reset, add item,
-									grid gap, row height, overlap control, compaction behavior, helper grid, and custom drag-and-resize editing.</p>
-								<p>You can reorder and toggle the visibility of category <strong>Title</strong>, <strong>Count</strong>, and
-									<strong>Description</strong>.
-								</p>
-								<ul>
-									<li>Style presets for rapid card styling.</li>
-									<li>Text controls for title, product count, and description.</li>
-									<li>Layout controls for card alignment and spacing.</li>
-									<li>Image controls for category images.</li>
-									<li>Color and border controls for the card appearance.</li>
-								</ul>
-							</div>
-							</div>
-							<h3>Typical workflow</h3>
-							<ol>
-								<li>Add the widget to the page.</li>
-								<li>Choose whether to show all categories, a parent branch, or a hand-picked set.</li>
-								<li>Select a predefined layout and adjust the grid.</li>
-								<li>Reorder visible elements if necessary.</li>
-								<li>Apply a style preset or customize card styling manually.</li>
-								<li>Save or publish the page.</li>
-							</ol>
-					</article>
-					</section>
-
-				<section class="section" id="single-posttypeitem-widget" aria-labelledby="single-posttypeitem-widget-title">
-					<div class="section__header">
-						<p class="section__kicker">Widget Guide</p>
-						<h2 id="single-posttypeitem-widget-title">Single Product Layout Widget</h2>
-					</div>
-					<article class="card">
-						<p>The <strong>Single Product Layout</strong> widget is built for displaying one WooCommerce product with
-							individually placed elements in a draggable grid.</p>
-						<div class="card-grid card-grid--compact">
-							<div>
-								<h3>Main content options</h3>
-								<ul>
-									<li><strong>Product</strong>: choose the WooCommerce product to display. The custom selector supports
-										search.</li>
-									<li><strong>Saved Setups</strong>: save, load, or delete reusable layout and style combinations.</li>
-									</ul>
+							</article>
+							<article class="card">
 								<h3>Layout options</h3>
 								<ul>
-									<li><strong>Predefined layouts</strong>: choose an element arrangement as a starting point.</li>
-									<li><strong>Reset layout</strong>: return to the predefined arrangement.</li>
-									<li><strong>Grid gap</strong> and <strong>Grid row height</strong>: control spacing and vertical rhythm.</li>
-									<li><strong>Allow overlap</strong> and <strong>Compaction type</strong>: control how elements interact when moved.
-									</li>
-									<li><strong>Grid visualization</strong>: show the helper grid.</li>
-									<li><strong>Element outlines and labels</strong>: display element boundaries to make editing easier.</li>
+									<li><strong>Predefined Layouts</strong>, <strong>Custom Layout</strong>, and <strong>Reset Layout</strong>.</li>
+									<li><strong>Add Item</strong>: add an additional grid cell.</li>
+									<li><strong>Grid Gap</strong> and <strong>Grid Row Height</strong>.</li>
+									<li><strong>Allow Overlap</strong> and <strong>Compaction Type</strong>.</li>
+									<li><strong>Grid Visualization</strong> as a placement aid.</li>
 									</ul>
-							</div>
-							<div>
+							</article>
+							<article class="card">
 								<h3>Styling options</h3>
 								<ul>
-									<li><strong>Style presets</strong> for quick full-widget styling.</li>
-									<li><strong>Global element styles</strong> to set defaults for all elements.</li>
-									<li><strong>Per-element style sections</strong> for detailed control of individual parts of the product output.
-									</li>
-									</ul>
-								<h3>What can be styled</h3>
-								<p>Depending on the selected element, controls may include text size, text color, background, horizontal alignment,
-									vertical alignment, padding, border, border radius, and box shadow.</p>
-								</div>
-								</div>
-								<h3>Typical workflow</h3>
-								<ol>
-									<li>Add the widget to the page.</li>
-									<li>Select the product using the search field.</li>
-									<li>Choose a predefined layout.</li>
-									<li>Use outlines and helper grid while dragging elements into position.</li>
-									<li>Apply a style preset or refine the global and per-element styles.</li>
-									<li>Save the page and optionally save the result as a reusable setup.</li>
-								</ol>
+									<li><strong>Item Card Style</strong> with reusable <strong>Style Presets</strong>.</li>
+									<li>Text controls for title, excerpt, read-more, and taxonomy text sizes (with excerpt truncation).</li>
+									<li>Card layout, alignment, and image display / focal point.</li>
+									<li>Colors for text, links, and backgrounds; borders, radius, and shadow.</li>
+								</ul>
+							</article>
+							</div>
+							<h3>Element order and visibility</h3>
+							<p>Reorder and show or hide card elements (such as Title, Excerpt, Read More, Taxonomy, and custom meta)
+								using the element order &amp; visibility controls.</p>
+							<h3>Typical workflow</h3>
+							<ol>
+								<li>Add the widget to the page.</li>
+								<li>Choose the post type and refine the query (taxonomy, terms, order, pagination).</li>
+								<li>Select a predefined layout.</li>
+								<li>Adjust card styling or apply a style preset.</li>
+								<li>Drag and resize grid cells for a custom, free-form layout.</li>
+								<li>Save the result as a Saved Setup if you want to reuse it later.</li>
+							</ol>
 					</article>
 					</section>
 
-				<section class="section" id="layout-editing" aria-labelledby="layout-editing-title">
+				<section class="section" id="widgets-layout-widget" aria-labelledby="widgets-layout-widget-title">
 					<div class="section__header">
-						<p class="section__kicker">Workflow</p>
-						<h2 id="layout-editing-title">Layout Editing, Helpers, and Responsive Workflow</h2>
+						<p class="section__kicker">Widget Guide</p>
+						<h2 id="widgets-layout-widget-title">Widgets Layout Widget</h2>
 					</div>
 					<article class="card">
-						<p>All widgets support a layout-editing workflow inside Elementor.</p>
-						<h3>How editing works</h3>
+						<p>The <strong>Widgets Layout</strong> widget turns each grid cell into a drop zone for
+							<em>any</em> Elementor widget. It is ideal for building free-form sections where headings,
+							images, buttons, containers, and other widgets are placed and sized independently on the grid.</p>
+						<div class="card-grid card-grid--compact">
+							<div>
+								<h3>Adding widgets to a cell</h3>
+								<ul>
+									<li><strong>Drag a widget</strong> from the Elementor panel directly onto a cell.</li>
+									<li><strong>Click the cell's add (+) icon</strong> to open the widgets panel, then pick a widget.</li>
+									<li>A cell can hold <strong>any number of widgets</strong>, stacked in order.</li>
+									<li>Dropped widgets stay <strong>real, native Elementor elements</strong> — click one to edit it in the
+										panel as usual, and its settings save with the page.</li>
+								</ul>
+							</div>
+							<div>
+								<h3>Arranging cells and widgets</h3>
+								<ul>
+									<li>Drag a cell by its handle to reposition it on the grid; resize it from its edges.</li>
+									<li>Drag a widget's body to reorder it within a cell or move it to another cell.</li>
+									<li>Nesting is supported: drop a Container / Grid / Flexbox and add widgets inside it; you can also
+										drag a nested widget out into another cell.</li>
+									<li>Empty cells show an Elementor-style empty-view drop zone.</li>
+								</ul>
+							</div>
+							</div>
+						<h3>Layout options</h3>
+						<p>Widgets Layout uses the same grid controls as Content Layout: predefined layouts, custom layout,
+							reset, add cell, grid gap, row height, overlap, compaction, and grid visualization.</p>
+						<h3>Cell controls (in the editor)</h3>
+						<p>Hovering a cell reveals a compact control cluster with an <strong>Edit cell</strong> button (opens that
+							cell's style settings), <strong>z-index</strong> buttons, a <strong>drag handle</strong>, and a
+							<strong>remove cell</strong> button.</p>
+						<h3>Typical workflow</h3>
 						<ol>
-							<li>Start with a predefined layout.</li>
-							<li>Drag grid items in the preview to move them.</li>
-							<li>Resize grid items where resizing is available.</li>
-							<li>Use helper grid overlays for more precise positioning.</li>
-							<li>Use Elementor's device mode switcher to review desktop, tablet, and mobile views.</li>
-							<li>Click <strong>Update</strong> or <strong>Publish</strong> when you are done.</li>
+							<li>Add the widget and pick a predefined layout.</li>
+							<li>Drag widgets from the panel into the cells (or use the cell's + icon).</li>
+							<li>Reposition and resize cells; reorder widgets within and between cells.</li>
+							<li>Style each cell individually (see Per-Cell Styling).</li>
+							<li>Save or publish the page.</li>
 						</ol>
-						<h3>Resetting your work</h3>
-						<p>If a custom layout becomes too complex, use the widget's <strong>Reset Layout</strong> button to discard layout edits
-							and return to the selected predefined layout.</p>
-						<h3>Responsive editing tip</h3>
-						<p>Always check tablet and mobile views after finishing a desktop design. Some spacing, alignment, or text size controls
-							are responsive and can be adjusted per device.</p>
-						<div class="callout callout--warning" role="note">
-							<p><strong>Important:</strong> If you drag or resize items but leave the page without clicking
-								<strong>Update</strong> or <strong>Publish</strong>, those layout changes will not be saved.
-							</p>
-						</div>
+					</article>
+					</section>
+
+				<section class="section" id="per-cell-styling" aria-labelledby="per-cell-styling-title">
+					<div class="section__header">
+						<p class="section__kicker">Styling</p>
+						<h2 id="per-cell-styling-title">Per-Cell Styling (Widgets Layout)</h2>
+					</div>
+					<article class="card">
+						<p>Widgets Layout offers two levels of cell styling: a global <strong>Cell Style</strong> section that
+							applies to every cell, and a <strong>Per-Cell Style</strong> repeater that overrides styles for
+							individual cells.</p>
+						<div class="card-grid card-grid--compact">
+							<div>
+								<h3>Cell Style (global)</h3>
+								<ul>
+									<li>Background, padding, border, border radius, and box shadow applied to all cells.</li>
+									<li>Acts as the fallback whenever a per-cell field is left empty.</li>
+								</ul>
+							</div>
+							<div>
+								<h3>Per-Cell Style (repeater)</h3>
+								<ul>
+									<li>One repeater item is managed automatically for each cell in the grid.</li>
+									<li>Per cell you can set: background, padding, text color, links color, overlay color,
+										horizontal and vertical content alignment, border, border radius, and box shadow.</li>
+									<li>Any field left empty falls back to the global Cell Style settings.</li>
+								</ul>
+							</div>
+							</div>
+						<h3>Editing a cell's styles</h3>
+						<p>Click a cell's <strong>Edit cell</strong> button to jump straight to that cell's repeater item in the
+							Style tab. Repeater actions stay in sync with the grid: <strong>adding</strong> a repeater item adds a
+							cell, <strong>removing</strong> one removes its cell, and <strong>duplicating</strong> one creates a new
+							cell that copies the original cell's styles and its widgets.</p>
 					</article>
 					</section>
 
@@ -426,24 +407,23 @@
 						<h2 id="presets-title">Saved Setups and Style Presets</h2>
 					</div>
 					<article class="card">
-						<p>The plugin provides two ways to accelerate design work: <strong>Saved Setups</strong> and <strong>Style
-								Presets</strong>.</p>
+						<p>The Content Layout widget provides two ways to accelerate design work: <strong>Saved Setups</strong>
+							and <strong>Style Presets</strong>.</p>
 						<div class="card-grid card-grid--compact">
 							<div>
 								<h3>Saved Setups</h3>
 								<ul>
-									<li>Saved Setups store a combination of layout and style settings.</li>
-									<li>You can save the current widget configuration, load a previous setup, or delete one you no longer need.
-									</li>
-									<li>Use Saved Setups when you want to reuse a full widget configuration on the same site.</li>
+									<li>Store a combination of layout and style settings.</li>
+									<li>Save the current configuration, load a previous setup, or delete one you no longer need.</li>
+									<li>Use them to reuse a full widget configuration across the same site.</li>
 									</ul>
 							</div>
 							<div>
 								<h3>Style Presets</h3>
 								<ul>
-									<li>Style Presets apply a prepared visual design package quickly.</li>
-									<li>Use a preset as a starting point, then refine spacing, colors, borders, or typography manually.</li>
-									<li>Use Style Presets when you want to speed up styling but keep your own layout structure.</li>
+									<li>Apply a prepared visual design package quickly.</li>
+									<li>Use a preset as a starting point, then refine colors, borders, or typography manually.</li>
+									<li>Use them to speed up styling while keeping your own layout structure.</li>
 								</ul>
 							</div>
 							</div>
@@ -458,6 +438,36 @@
 					</article>
 					</section>
 
+				<section class="section" id="layout-editing" aria-labelledby="layout-editing-title">
+					<div class="section__header">
+						<p class="section__kicker">Workflow</p>
+						<h2 id="layout-editing-title">Layout Editing, Helpers, and Responsive Workflow</h2>
+					</div>
+					<article class="card">
+						<p>Both widgets support the same free-form layout-editing workflow inside Elementor.</p>
+						<h3>How editing works</h3>
+						<ol>
+							<li>Start with a predefined layout.</li>
+							<li>Drag grid cells in the preview to move them.</li>
+							<li>Resize grid cells from their edges.</li>
+							<li>Use the grid visualization overlay for more precise positioning.</li>
+							<li>Use Elementor's device mode switcher to review desktop, tablet, and mobile views.</li>
+							<li>Click <strong>Update</strong> or <strong>Publish</strong> when you are done.</li>
+						</ol>
+						<h3>Resetting your work</h3>
+						<p>If a custom layout becomes too complex, use the widget's <strong>Reset Layout</strong> button to discard
+							layout edits and return to the selected predefined layout.</p>
+						<h3>Responsive editing tip</h3>
+						<p>Layouts are stored per breakpoint, so always check tablet and mobile after finishing a desktop design.
+							Some spacing, alignment, and text controls are responsive and can be adjusted per device.</p>
+						<div class="callout callout--warning" role="note">
+							<p><strong>Important:</strong> If you drag or resize cells but leave the page without clicking
+								<strong>Update</strong> or <strong>Publish</strong>, those layout changes will not be saved.
+							</p>
+						</div>
+					</article>
+					</section>
+
 				<section class="section" id="troubleshooting" aria-labelledby="troubleshooting-title">
 					<div class="section__header">
 						<p class="section__kicker">Support</p>
@@ -468,30 +478,30 @@
 						<ul>
 							<li>Confirm that the plugin is activated.</li>
 							<li>Confirm that Elementor is installed and active.</li>
-							<li>Search for the widget under the <strong>Mosaic Product Layouts</strong> category.</li>
+							<li>Search for the widgets under the <strong>Mosaic Contents</strong> category.</li>
 						</ul>
-<h3>The widget appears but shows no product or category data.</h3>
+<h3>Content Layout shows no posts.</h3>
 <ul>
-	<li>Confirm that WooCommerce is active.</li>
-	<li>Confirm that your store has published products or categories.</li>
-	<li>Check the widget query settings, selected categories, or selected product.</li>
+	<li>Confirm the selected post type has published content.</li>
+	<li>Check the query settings — selected taxonomy, terms, order, or the Sticky Only option.</li>
+	<li>If pagination is enabled, confirm there are enough items to fill a page.</li>
+</ul>
+<h3>A widget I dropped into a cell disappeared or duplicated.</h3>
+<ul>
+	<li>Reorder or move widgets by dragging the widget's body, not its inner controls.</li>
+	<li>To remove a placed widget, use Elementor's native Delete on that element.</li>
+	<li>Use Undo (Ctrl/Cmd&nbsp;+&nbsp;Z) to revert an unexpected drag result.</li>
 </ul>
 <h3>My layout changes are lost after leaving the page.</h3>
 <ul>
-	<li>Make sure you clicked <strong>Update</strong> or <strong>Publish</strong> after dragging or resizing items.</li>
-	<li>Use the helper grid and reset tools to rebuild the layout if needed.</li>
+	<li>Make sure you clicked <strong>Update</strong> or <strong>Publish</strong> after dragging or resizing cells.</li>
+	<li>Use the grid visualization and reset tools to rebuild the layout if needed.</li>
 </ul>
 <h3>Styling looks different on mobile.</h3>
 <ul>
 							<li>Open Elementor's responsive mode and review tablet and mobile controls.</li>
-							<li>Check responsive typography, padding, and alignment settings.</li>
+							<li>Check responsive typography, padding, and alignment settings, and the per-breakpoint layout.</li>
 							</ul>
-<h3>Product search in Single Product Layout does not find the expected item.</h3>
-<ul>
-	<li>Confirm the product is published.</li>
-	<li>Try typing at least part of the product name.</li>
-	<li>Make sure WooCommerce products exist and are visible to queries.</li>
-</ul>
 					</article>
 					</section>
 
@@ -503,12 +513,11 @@
 					<article class="card">
 						<p><strong>Support and reference</strong></p>
 						<ul>
-							<li>Plugin project page: <a href="https://github.com/Micemade/mosaic-posttypeitem-layouts-for-elementor">GitHub
+							<li>Plugin project page: <a href="https://github.com/Micemade/mosaic-contents-for-elementor">GitHub
 									Repository</a></li>
 							<li>Elementor official website: <a href="https://elementor.com/">elementor.com</a></li>
-							<li>WooCommerce official website: <a href="https://woocommerce.com/">woocommerce.com</a></li>
 							</ul>
-							<p>Once again, thank you for purchasing Mosaic Product Layouts for Elementor.</p>
+							<p>Thank you for using Mosaic Contents for Elementor.</p>
 						<p><strong>Micemade</strong></p>
 						<p><a href="#top">Back to top</a></p>
 						</article>

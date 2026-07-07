@@ -6,11 +6,13 @@
  * Author URI: https://github.com/Micemade/mosaic-contents-for-elementor
  * Description: A set of Elementor widgets for building general-purpose content layouts.
  * Version: 0.1.0
+ * Requires at least: 7.0
+ * Requires PHP:      8.3.0
  * License: GPLv2 or later
  * License URL: http://www.gnu.org/licenses/gpl-2.0.txt
  * text-domain: mosaic-contents-for-elementor
- * Elementor tested up to: 3.43.1
- * Elementor Pro tested up to: 3.1.0
+ * Elementor tested up to: 4.1.4
+ * Elementor Pro tested up to: 4.2.0
  */
 
 namespace Micemade\MosaicContentsElementor;
@@ -186,6 +188,7 @@ final class MosaicContentsElementor {
 
 		// Require shared trait and widget classes.
 		require_once __DIR__ . '/includes/trait-widget-helpers.php';
+
 		// Require widget classes.
 		require_once __DIR__ . '/widgets/content-layout/content-layout.php';
 		require_once __DIR__ . '/widgets/widgets-layout/widgets-layout.php';

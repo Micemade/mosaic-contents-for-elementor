@@ -495,12 +495,12 @@ widgets/                          # PHP widget classes
 ├── content-layout/
 │  ├── react-settings.json
 │  └── content-layout.php
-└── widgets-layout
+└── widgets-layout/
    ├── react-settings.json
-   └── widget-layout.php
+   └── widgets-layout.php
 
 controls/                         # PHP custom controls
-├── elements-sorting.php
+├── element-sorting.php
 ├── focal-point.php
 ├── posttype-select.php
 └── saved-setups.php
@@ -525,10 +525,10 @@ assets/                           # Built (Vite output)
 **Frontend Issues:**
 ```javascript
 // Check if manager exists
-console.log(window.MosaicLayoutsReact);
+console.log(window.MosaicContentsReact);
 
 // Check instances
-console.log(window.MosaicLayoutsReact.instances);
+console.log(window.MosaicContentsReact.instances);
 
 // Check WordPress config
 console.log(window.MC4E);
@@ -541,10 +541,10 @@ console.log(window.elementor !== undefined);
 console.log(window.elementorFrontend !== undefined);
 
 // Check model getters
-console.log(window.MosaicLayoutsReact.modelGetters);
+console.log(window.MosaicContentsReact.modelGetters);
 
 // Check models
-console.log(window.MosaicLayoutsReact.models);
+console.log(window.MosaicContentsReact.models);
 
 // Trigger events manually
 elementor.channels.editor.trigger('mosaic:resetLayout');
@@ -558,7 +558,7 @@ elementor.channels.editor.trigger('mosaic:applySetup', { widgetId: '12345', sett
 wp.apiFetch({ path: '/wp/v2/settings' }).then(s => console.log(s.mc4e_content_layout_setups));
 
 // Check current model settings (preview iframe console)
-const model = window.MosaicLayoutsReact.models['content-layout-WIDGET_ID'];
+const model = window.MosaicContentsReact.models['content-layout-WIDGET_ID'];
 console.log(model.get('settings').attributes);
 
 // Verify WP option directly (WP CLI)
