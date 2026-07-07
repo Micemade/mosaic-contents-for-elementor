@@ -25,7 +25,7 @@ const ItemControls = ({
 	onManage,
 	manageTitle = 'Manage',
 	collapsible = false,
-	removeButtonClassName = 'mc4e-remove-item-btn',
+	removeButtonClassName = 'mc4e-remove-item-btn mc4e-control-buttons-editor',
 	dragHandleClassName = '',
 	onEditCell,
 }) => (
@@ -47,7 +47,7 @@ const ItemControls = ({
 		{collapsible && (
 			<button
 				type="button"
-				className="mc4e-controls-toggle"
+				className="mc4e-controls-toggle mc4e-control-buttons-editor"
 				onMouseDownCapture={(e) => e.stopPropagation()}
 				onClick={(e) => { e.stopPropagation(); onEditCell?.(itemId); }}
 				title="Edit cell"
@@ -72,7 +72,7 @@ const ItemControls = ({
 		{typeof onManage === 'function' && (
 			<button
 				type="button"
-				className="mc4e-manage-item-btn"
+				className="mc4e-manage-item-btn mc4e-control-buttons-editor"
 				onMouseDownCapture={(e) => {
 					e.stopPropagation();
 					e.preventDefault();

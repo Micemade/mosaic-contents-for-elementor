@@ -154,11 +154,11 @@
 	// -- Insertion indicator while another widget is dragged over this one
 	// Top edge = insert before; bottom edge = insert after.
 	&.wl-widget-drag-over {
-		box-shadow: inset 0 3px 0 0 #5b03af;
+		box-shadow: 0 -5px 0 0 #5b03af;
 	}
 
 	&.wl-widget-drag-over-after {
-		box-shadow: inset 0 -3px 0 0 #5b03af;
+		box-shadow: 0 5px 0 0 #5b03af;
 	}
 }
 

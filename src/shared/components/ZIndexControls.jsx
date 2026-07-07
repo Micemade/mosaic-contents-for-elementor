@@ -144,18 +144,20 @@ const ZIndexControls = ({
 
 			<button
 				type="button"
-				className="mc4e-zindex-btn mc4e-zindex-btn--up"
+				className="mc4e-zindex-btn mc4e-zindex-btn--up mc4e-control-buttons-editor"
 				onMouseDownCapture={handleBringForward}
 				title={`Bring Forward (z-index: ${currentZIndex + 1})`}
 			>
 				<i className="eicon-sort-up" aria-hidden="true" />
 			</button>
+
 			<span className="mc4e-zindex-value" title="Current z-index">
 				{currentZIndex}
 			</span>
+
 			<button
 				type="button"
-				className="mc4e-zindex-btn mc4e-zindex-btn--down"
+				className="mc4e-zindex-btn mc4e-zindex-btn--down mc4e-control-buttons-editor"
 				onMouseDownCapture={handleSendBackward}
 				title={`Send Backward (z-index: ${Math.max(0, currentZIndex - 1)})`}
 				disabled={currentZIndex <= 0}
