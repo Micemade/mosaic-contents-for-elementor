@@ -40,6 +40,7 @@ import ItemControls from '../../shared/components/ItemControls.jsx';
 import GridHelper from '../../shared/components/GridHelper.jsx';
 
 import { applyLayoutChange, addGridItem, removeGridItem, selectElementorWidget } from '../../shared/utils/layoutEditing.js';
+import { addItemToLayout } from '../../shared/utils/addItem.js';
 import { getLayout } from '../../shared/utils/layoutUtils.js';
 import { useGridSettings, useElementorDevice } from '../../shared/utils/hooks.js';
 
@@ -71,6 +72,17 @@ const parseWidgetItems = (raw) => {
 const getEditor = () => {
 	const w = window.parent || window;
 	return { el: w.elementor, $e: w.$e ?? window.$e };
+};
+
+/** Deep-clone an element model JSON with all ids removed so Elementor assigns fresh ones. */
+const stripElementIds = (model) => {
+	if (!model || typeof model !== 'object') return model;
+	const clone = { ...model };
+	delete clone.id;
+	if (Array.isArray(clone.elements)) {
+		clone.elements = clone.elements.map(stripElementIds);
+	}
+	return clone;
 };
 
 /**
@@ -288,6 +300,11 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 	const cellStyleItemsRef = useRef(cellStyleItems);
 	cellStyleItemsRef.current = cellStyleItems;
 	const reconcilingStylesRef = useRef(false);
+	// True while WE handle a user repeater button (add/remove/duplicate) — pauses
+	// the cells→repeater reconcile so it doesn't fight the cell operation.
+	const repeaterActionRef = useRef(false);
+	// Latest repeater-action handlers (avoids stale closures in the bound listener).
+	const repeaterActionsRef = useRef({});
 
 	// ── per-cell containers + DOM re-parenting ───────────────────────────────
 
@@ -932,7 +949,7 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 	// layout switch, add/remove). Convergent — only acts on the diff — and guarded
 	// against re-entrancy.
 	useEffect(() => {
-		if (!isEditMode || !widgetId || reconcilingStylesRef.current) return;
+		if (!isEditMode || !widgetId || reconcilingStylesRef.current || repeaterActionRef.current) return;
 
 		const { el, $e } = getEditor();
 		const container = el?.getContainer?.(widgetId);
@@ -972,6 +989,27 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 			setTimeout(() => { reconcilingStylesRef.current = false; }, 0);
 		}
 	}, [isEditMode, widgetId, layoutData, cellStyleItems]);
+
+	// Drive cell operations from the repeater's own add/remove/duplicate buttons.
+	// Listens on the mc4e_cell_styles collection; our own reconcile inserts/removes
+	// set reconcilingStylesRef so they aren't mistaken for user actions.
+	useEffect(() => {
+		if (!isEditMode || !widgetId) return undefined;
+
+		const { el } = getEditor();
+		const collection = el?.getContainer?.(widgetId)?.settings?.get?.('mc4e_cell_styles');
+		if (!collection?.on) return undefined;
+
+		const onAdd    = (model) => repeaterActionsRef.current.onAdd?.(model);
+		const onRemove = (model) => repeaterActionsRef.current.onRemove?.(model);
+
+		collection.on('add', onAdd);
+		collection.on('remove', onRemove);
+		return () => {
+			collection.off('add', onAdd);
+			collection.off('remove', onRemove);
+		};
+	}, [isEditMode, widgetId, cellStyleItems]);
 
 	// React to Elementor (re-)rendering widgets in the preview/page: when a
 	// tracked element becomes ready it must be moved (back) into its slot, and
@@ -1202,6 +1240,109 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 			updateWidgetItemsSetting(newItems);
 		}
 	};
+
+	// ── repeater buttons → cell operations ─────────────────────────────────────
+
+	/** Persist the custom layout JSON (history-aware when possible). */
+	const persistCustomLayout = (json) => {
+		const { el, $e } = getEditor();
+		const container = el?.getContainer?.(widgetId);
+		if ($e && container) {
+			try {
+				$e.run('document/elements/settings', { container, settings: { mc4e_custom_layout: json } });
+				return;
+			} catch { /* fall through */ }
+		}
+		window.MosaicContentsReact?.updateModelSetting?.(
+			'widgets-layout', widgetId, 'mc4e_custom_layout', json
+		);
+	};
+
+	/** Add a grid cell (same placement logic as the toolbar "Add Cell"); returns its id. */
+	const addCellReturnId = () => {
+		const currentLayout = customLayoutData || JSON.stringify(layoutData);
+		const { newLayoutJson, newItemId } = addItemToLayout(currentLayout, {
+			desktop: gridSettings.columns.desktop,
+			tablet:  gridSettings.columns.tablet,
+			mobile:  gridSettings.columns.mobile,
+		});
+		persistCustomLayout(newLayoutJson);
+		return newItemId;
+	};
+
+	/** Clone every widget of `srcCellId` into `newCellId`'s container (fresh ids). */
+	const cloneCellWidgets = (srcCellId, newCellId) => {
+		const { el, $e } = getEditor();
+		if (!el || !$e) return;
+		const srcWidgets = widgetItemsMap.get(srcCellId) || [];
+		if (!srcWidgets.length) return;
+
+		const targetContainer = ensureCellContainer(newCellId);
+		if (!targetContainer) return;
+
+		suppressSyncRef.current = true;
+		const newEntries = [];
+		srcWidgets.forEach((w) => {
+			const model = el.getContainer?.(w.id)?.model?.toJSON?.();
+			if (!model) return;
+			try {
+				const res = $e.run('document/elements/create', {
+					container: targetContainer,
+					model: stripElementIds(model),
+					options: { edit: false },
+				});
+				const created = Array.isArray(res) ? res[0] : res;
+				const newId = created?.id || created?.model?.id;
+				if (newId) newEntries.push({ id: newId, type: w.type });
+			} catch { /* skip this widget */ }
+		});
+
+		if (newEntries.length) {
+			const items = widgetItemsRef.current.map((c) => ({ i: c.i, widgets: [...(c.widgets || [])] }));
+			let cell = items.find((c) => c.i === newCellId);
+			if (!cell) { cell = { i: newCellId, widgets: [] }; items.push(cell); }
+			newEntries.forEach((e) => {
+				if (!cell.widgets.some((x) => x.id === e.id)) cell.widgets.push(e);
+			});
+			updateWidgetItemsSetting(items);
+		}
+		setTimeout(() => { suppressSyncRef.current = false; }, 0);
+	};
+
+	// A repeater item was added by the user: fresh "Add" (blank cell_id) or a
+	// "Duplicate" (carries the source cell's id). Either way create a cell and
+	// bind this item to it; for a duplicate also clone the source cell's widgets.
+	const onRepeaterItemAdded = (itemModel) => {
+		if (reconcilingStylesRef.current) return; // our own reconcile insert
+		const srcCellId = itemModel?.get?.('cell_id') || '';
+
+		repeaterActionRef.current = true;
+		try {
+			const newCellId = addCellReturnId();
+			try { itemModel.set('cell_id', newCellId); } catch { /* noop */ }
+			if (srcCellId && widgetItemsMap.get(srcCellId)?.length) {
+				cloneCellWidgets(srcCellId, newCellId);
+			}
+		} finally {
+			setTimeout(() => { repeaterActionRef.current = false; }, 0);
+		}
+	};
+
+	// A repeater item was removed by the user → remove its cell.
+	const onRepeaterItemRemoved = (itemModel) => {
+		if (reconcilingStylesRef.current) return; // our own reconcile remove
+		const cellId = itemModel?.get?.('cell_id');
+		if (!cellId) return;
+
+		repeaterActionRef.current = true;
+		try {
+			handleRemoveItem(cellId);
+		} finally {
+			setTimeout(() => { repeaterActionRef.current = false; }, 0);
+		}
+	};
+
+	repeaterActionsRef.current = { onAdd: onRepeaterItemAdded, onRemove: onRepeaterItemRemoved };
 
 	// ── render ────────────────────────────────────────────────────────────────
 
