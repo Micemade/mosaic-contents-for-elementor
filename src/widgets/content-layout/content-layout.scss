@@ -268,7 +268,7 @@
  */
 .mc4e-editor-toolbar {
 	position: absolute;
-	top: -50px;
+	top: -45px;
 	left: 0;
 	z-index: 9999;
 	display: flex;
@@ -286,36 +286,44 @@
 		opacity: 1;
 	}
 
-	.mc4e-toolbar-btn {
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		padding: 8px 10px;
-		border: none;
-		border-radius: 3px;
-		background: var(--e-a-bg-default, #fff);
-		font-size: 13px;
-		font-weight: 500;
-		cursor: pointer;
-		transition: background-color .2s ease;
-		color: var(--e-a-btn-color, #0c0d0e);
+	// VERY SPECIFIC STYLES FOR ELEMENTOR EDITOR MODE BUTTONS ─────────────────────────────────────────
+	// themes sometimes force their button styles onto the editor buttons, so we need to be very specific to override them.
+	html.elementor-html body.elementor-editor-active .mc4e-react-root .mosaic-content-layouts-widgets & {
+		button.mc4e-toolbar-btn {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			padding: 8px 10px;
+			border: none;
+			border-radius: 3px;
+			background: var(--e-a-bg-default, #fff);
+			font-size: 13px;
+			font-weight: 500;
+			cursor: pointer;
+			transition: background-color .2s ease;
+			color: var(--e-a-btn-color, #0c0d0e);
 
-		&:hover {
-			background: var(--e-a-bg-hover,#f1f2f3);
-		}
+			&:hover {
+				background: var(--e-a-bg-hover,#f1f2f3);
+			}
 
-		&:active {
-			background: var(--e-a-bg-active,#e6e8ea);
-		}
+			&:active {
+				background: var(--e-a-bg-active,#e6e8ea);
+			}
 
-		svg {
-			width: 14px;
-			height: 14px;
-			flex-shrink: 0;
-		}
+			svg {
+				width: 14px;
+				height: 14px;
+				flex-shrink: 0;
+			}
 
-		span {
-			white-space: nowrap;
+			span {
+				white-space: nowrap;
+			}
+			&:after, &:before {
+				content: none;
+				display: none;
+			}
 		}
 	}
 

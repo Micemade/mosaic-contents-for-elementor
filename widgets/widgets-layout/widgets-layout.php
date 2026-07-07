@@ -552,7 +552,7 @@ class WidgetsLayout extends Widget_Base {
 			Group_Control_Border::get_type(),
 			array(
 				'name'     => 'mc4e_cell_border',
-				'selector' => '{{WRAPPER}} .wl-item',
+				'selector' => '{{WRAPPER}} .wl-item .wl-item-inner',
 			)
 		);
 

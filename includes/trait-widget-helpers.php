@@ -393,7 +393,7 @@ trait WidgetHelpers {
 <div id="mc4e-<?php echo esc_attr( $widget_id ); ?>" class="<?php echo esc_attr( $widget_name ); ?>-wrapper"
 	data-widget-id="<?php echo esc_attr( $widget_id ); ?>">
 	<input type="hidden" class="elementor-settings-data" value="<?php echo esc_attr( $json_data ); ?>" />
-	<div class="<?php echo esc_attr( $widget_name ); ?>-react-root"></div>
+	<div class="<?php echo esc_attr( $widget_name ); ?>-react-root mc4e-react-root"></div>
 </div>
 <?php
 	}
@@ -461,7 +461,7 @@ trait WidgetHelpers {
 	<div id="mc4e-{{ widgetId }}" class="<?php echo esc_attr( $widget_name ); ?>-wrapper"
 		data-widget-id="{{ widgetId }}">
 		<input type="hidden" class="elementor-settings-data" value="{{ jsonData }}" />
-		<div class="<?php echo esc_attr( $widget_name ); ?>-react-root"></div>
+		<div class="<?php echo esc_attr( $widget_name ); ?>-react-root mc4e-react-root"></div>
 	</div>
 	<?php
 	}
