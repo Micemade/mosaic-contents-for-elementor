@@ -14,6 +14,7 @@
     "watch:posttype-select": "BUILD_ENTRY=PostTypeSelectControl vite build --watch",
     "watch:all": "concurrently \"BUILD_ENTRY=main-frontend vite build --watch\" \"BUILD_ENTRY=main-editor vite build --watch\" \"BUILD_ENTRY=focal-point-control vite build --watch\" \"BUILD_ENTRY=saved-setups-control vite build --watch\" \"BUILD_ENTRY=PostTypeSelectControl vite build --watch\"",
     "lint": "eslint .",
+    "update-pot": "wp i18n make-pot . languages/mosaic-contents-for-elementor.pot --domain=mosaic-contents-for-elementor --package-name=\"Mosaic Contents for Elementor\" --exclude=node_modules,assets,docs,marketing,scripts,vendor",
     "preview": "vite preview",
     "format": "prettier --write .",
     "zip": "npm run build:prod && node zip.mjs"
