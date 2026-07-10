@@ -131,6 +131,10 @@ final class MosaicContentsElementor {
 		require_once __DIR__ . '/controls/posttype-select.php';
 		$controls_manager->register( new \Micemade\MosaicContentsElementor\Controls\Posttype_Select() );
 
+		// Require and register the meta key select control.
+		require_once __DIR__ . '/controls/meta-key-select.php';
+		$controls_manager->register( new \Micemade\MosaicContentsElementor\Controls\Meta_Key_Select() );
+
 		// Require and register the element sorting control.
 		require_once __DIR__ . '/controls/element-sorting.php';
 		$controls_manager->register( new \Micemade\MosaicContentsElementor\Controls\Element_Sorting() );

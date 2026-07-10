@@ -104,6 +104,31 @@ class RestAPI {
 			)
 		);
 
+		// Available (non-protected) meta keys for a post type.
+		register_rest_route(
+			self::NAMESPACE,
+			'/post-meta-keys',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( $this, 'get_post_meta_keys' ),
+				'permission_callback' => array( $this, 'check_permission' ),
+				'args'                => array(
+					'post_type' => array(
+						'description'       => __( 'Post type slug.', 'mosaic-contents-for-elementor' ),
+						'type'              => 'string',
+						'required'          => true,
+						'sanitize_callback' => 'sanitize_key',
+					),
+					'search'    => array(
+						'description'       => __( 'Optional search term to filter meta keys.', 'mosaic-contents-for-elementor' ),
+						'type'              => 'string',
+						'required'          => false,
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+				),
+			)
+		);
+
 		register_rest_route(
 			self::NAMESPACE,
 			'/taxonomy-terms',
@@ -373,34 +398,123 @@ class RestAPI {
 	}
 
 	/**
+	 * Get distinct non-protected meta keys used by a post type, as select options.
+	 *
+	 * SECURITY: Only non-protected meta keys (no leading "_" / internal keys) are
+	 * returned; the result can be narrowed/extended via the `mc4e_post_meta_keys`
+	 * filter. Requires `edit_posts` (see check_permission()).
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response Array of { value, label } options.
+	 */
+	public function get_post_meta_keys( WP_REST_Request $request ): WP_REST_Response {
+		global $wpdb;
+
+		$post_type = (string) $request->get_param( 'post_type' );
+		$search    = (string) $request->get_param( 'search' );
+
+		if ( empty( $post_type ) || ! post_type_exists( $post_type ) ) {
+			return rest_ensure_response( array() );
+		}
+
+		// Distinct meta keys attached to published posts of this type.
+		$keys = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT DISTINCT pm.meta_key
+				 FROM {$wpdb->postmeta} pm
+				 INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+				 WHERE p.post_type = %s AND p.post_status = 'publish'
+				 ORDER BY pm.meta_key ASC",
+				$post_type
+			)
+		);
+
+		$keys = array_filter(
+			(array) $keys,
+			static function ( $key ) {
+				return ! empty( $key ) && ! is_protected_meta( $key, 'post' );
+			}
+		);
+
+		/**
+		 * Filter the list of selectable meta keys for a post type.
+		 *
+		 * @param string[] $keys      Non-protected meta keys.
+		 * @param string   $post_type Post type slug.
+		 */
+		$keys = apply_filters( 'mc4e_post_meta_keys', array_values( $keys ), $post_type );
+
+		if ( '' !== $search ) {
+			$needle = strtolower( $search );
+			$keys   = array_values(
+				array_filter(
+					$keys,
+					static function ( $key ) use ( $needle ) {
+						return false !== strpos( strtolower( (string) $key ), $needle );
+					}
+				)
+			);
+		}
+
+		$options = array_map(
+			static function ( $key ) {
+				return array(
+					'value' => $key,
+					'label' => $key,
+				);
+			},
+			$keys
+		);
+
+		return rest_ensure_response( $options );
+	}
+
+	/**
 	 * Get selected post meta values for a set of posts.
 	 *
-	 * SECURITY: Only whitelisted meta keys are returned to prevent leakage of sensitive metadata.
+	 * SECURITY: Only non-protected meta keys are returned (guarded by `edit_posts`
+	 * + rate limiting); the set can be further restricted/extended with the
+	 * `mc4e_allowed_post_meta_keys` filter.
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 * @return WP_REST_Response
 	 */
 	public function get_post_meta_values( WP_REST_Request $request ): WP_REST_Response {
 		$post_ids  = array_filter( array_map( 'absint', explode( ',', (string) $request->get_param( 'post_ids' ) ) ) );
-		$meta_keys = array_filter( array_map( 'sanitize_key', explode( ',', (string) $request->get_param( 'meta_keys' ) ) ) );
-
-		/**
-		 * Whitelist of allowed meta keys that can be queried.
-		 * Only add keys that are safe to expose to users with 'edit_posts' capability.
-		 *
-		 * @filter mc4e_allowed_post_meta_keys
-		 */
-		$allowed_meta_keys = apply_filters(
-			'mc4e_allowed_post_meta_keys',
-			array(
-				'_thumbnail_id',        // Featured image ID (safe to expose)
-				'_mc4e_custom_field_1', // Example custom field
-				'_mc4e_custom_field_2',
+		// Case-preserving sanitize (meta keys can contain uppercase).
+		$meta_keys = array_filter(
+			array_map(
+				static function ( $key ) {
+					return preg_replace( '/[^A-Za-z0-9_\-]/', '', trim( (string) $key ) );
+				},
+				explode( ',', (string) $request->get_param( 'meta_keys' ) )
 			)
 		);
 
-		// Restrict to whitelist only
-		$meta_keys = array_intersect( $meta_keys, $allowed_meta_keys );
+		// Only expose non-protected meta keys (drop leading "_"/internal keys).
+		$meta_keys = array_values(
+			array_filter(
+				$meta_keys,
+				static function ( $key ) {
+					return ! is_protected_meta( $key, 'post' );
+				}
+			)
+		);
+
+		/**
+		 * Optional additional allowlist. Return a non-empty array to restrict the
+		 * exposable keys to that set; return an empty array (default) to allow all
+		 * non-protected keys.
+		 *
+		 * @filter mc4e_allowed_post_meta_keys
+		 */
+		$allowed_meta_keys = apply_filters( 'mc4e_allowed_post_meta_keys', array(
+			'_wc_average_rating',
+			'_wc_review_count',
+		) );
+		if ( ! empty( $allowed_meta_keys ) ) {
+			$meta_keys = array_intersect( $meta_keys, $allowed_meta_keys );
+		}
 
 		if ( empty( $meta_keys ) ) {
 			return rest_ensure_response( array() );

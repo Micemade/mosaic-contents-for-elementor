@@ -110,25 +110,6 @@ const fetchPostTypeMeta = async (postType) => {
 	return POST_TYPE_META_CACHE.get(postType) || null;
 };
 
-const collectControlViews = (rootView, collector = []) => {
-	if (!rootView || collector.includes(rootView)) {
-		return collector;
-	}
-
-	collector.push(rootView);
-
-	const children = rootView.children;
-	if (children?._views) {
-		Object.values(children._views).forEach((childView) => collectControlViews(childView, collector));
-	}
-
-	if (Array.isArray(rootView._childViews)) {
-		rootView._childViews.forEach((childView) => collectControlViews(childView, collector));
-	}
-
-	return collector;
-};
-
 const getActivePanelView = () => {
 	try {
 		return elementor.getPanelView()?.getCurrentPageView() || null;
@@ -137,22 +118,59 @@ const getActivePanelView = () => {
 	}
 };
 
-const updateControlOptions = (controlName, options) => {
+const UPDATE_CONTROL_RETRIES = 6;
+const UPDATE_CONTROL_RETRY_DELAY = 60;
+
+/**
+ * Patch the widget's cached control config.
+ *
+ * The panel builds its control collection from `widgetsCache[type].controls`
+ * once, when the page view is created. Patching the cache keeps dependent
+ * options correct the next time the widget's panel is opened.
+ */
+const updateControlConfig = (model, controlName, options) => {
+	try {
+		const widgetType = model?.get?.('widgetType');
+		const cache = elementor?.widgetsCache || elementor?.config?.widgets;
+		const control = cache?.[widgetType]?.controls?.[controlName];
+
+		if (control) {
+			control.options = options || {};
+		}
+	} catch (_) {
+		// Non-fatal: the panel update below still applies.
+	}
+};
+
+/**
+ * Repoint a control's options in the open panel.
+ *
+ * Elementor's ControlsStack only renders child views for the *active* section
+ * (see its `filter()`), so a control in a collapsed section has a model but no
+ * view. Setting options on the model is what matters: reopening a section calls
+ * `_renderChildren()`, which rebuilds views from these models. The view, when
+ * one exists, is re-rendered so an already-visible control updates immediately.
+ */
+const updateControlOptions = (controlName, options, attempt = 0) => {
 	const panelView = getActivePanelView();
-	if (!panelView) {
+	const controlModel = panelView?.getControlModel?.(controlName) || null;
+
+	if (!controlModel) {
+		// The panel may not be built yet when a cached post-type lookup
+		// resolves on the same tick — retry briefly.
+		if (attempt < UPDATE_CONTROL_RETRIES) {
+			setTimeout(
+				() => updateControlOptions(controlName, options, attempt + 1),
+				UPDATE_CONTROL_RETRY_DELAY
+			);
+		}
 		return;
 	}
 
-	const allViews = collectControlViews(panelView);
-	const controlView = allViews.find((view) => view?.model?.get?.('name') === controlName);
+	controlModel.set('options', options || {});
 
-	if (!controlView) {
-		return;
-	}
-
-	controlView.model.set('options', options || {});
-
-	if (typeof controlView.render === 'function') {
+	const controlView = panelView.getControlViewByModel?.(controlModel);
+	if (controlView && typeof controlView.render === 'function') {
 		controlView.render();
 	}
 };
@@ -183,9 +201,18 @@ const fetchTaxonomyTermsOptions = async (taxonomy) => {
 	}
 };
 
+/**
+ * Point a dependent control at a new set of options: the cached widget config
+ * (survives re-renders) and the live view (updates the open panel).
+ */
+const applyControlOptions = (model, controlName, options) => {
+	updateControlConfig(model, controlName, options);
+	updateControlOptions(controlName, options);
+};
+
 const syncTermsOptionsForTaxonomy = async (model, taxonomy) => {
 	const termsOptions = await fetchTaxonomyTermsOptions(taxonomy);
-	updateControlOptions('mc4e_terms', termsOptions);
+	applyControlOptions(model, 'mc4e_terms', termsOptions);
 
 	const selectedTerms = model.getSetting('mc4e_terms');
 	if (Array.isArray(selectedTerms)) {
@@ -202,10 +229,12 @@ const syncTermsOptionsForTaxonomy = async (model, taxonomy) => {
 const syncTaxonomyOptionsForPostType = async (model, postType, forceResetTaxonomy = false) => {
 	const postTypeMeta = await fetchPostTypeMeta(postType);
 	if (!postTypeMeta) {
-		updateControlOptions('mc4e_taxonomy', {});
-		updateControlOptions('mc4e_terms', {});
+		applyControlOptions(model, 'mc4e_taxonomy', {});
+		applyControlOptions(model, 'mc4e_terms', {});
+		applyControlOptions(model, 'mc4e_terms_taxonomy', { '': 'All taxonomies' });
 		model.setSetting('mc4e_taxonomy', '');
 		model.setSetting('mc4e_terms', []);
+		model.setSetting('mc4e_terms_taxonomy', '');
 		return;
 	}
 
@@ -221,7 +250,17 @@ const syncTaxonomyOptionsForPostType = async (model, postType, forceResetTaxonom
 		return acc;
 	}, {});
 
-	updateControlOptions('mc4e_taxonomy', taxonomyOptions);
+	applyControlOptions(model, 'mc4e_taxonomy', taxonomyOptions);
+
+	// Display taxonomy selector (Post Meta Display > Terms): same options + "All".
+	const termsTaxonomyOptions = { '': 'All taxonomies', ...taxonomyOptions };
+	applyControlOptions(model, 'mc4e_terms_taxonomy', termsTaxonomyOptions);
+
+	// Drop a taxonomy the newly selected post type does not register.
+	const currentTermsTaxonomy = model.getSetting('mc4e_terms_taxonomy');
+	if (currentTermsTaxonomy && !termsTaxonomyOptions[currentTermsTaxonomy]) {
+		model.setSetting('mc4e_terms_taxonomy', '');
+	}
 
 	const currentTaxonomy = model.getSetting('mc4e_taxonomy');
 	const fallbackTaxonomy = Object.keys(taxonomyOptions)[0] || '';

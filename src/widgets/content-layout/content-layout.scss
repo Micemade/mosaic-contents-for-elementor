@@ -137,6 +137,11 @@
 			line-height: 1.2;
 		}
 
+		.post-author {
+			display: flex;
+			gap: 4px;
+		}
+
 		.price {
 			.woocommerce-Price-amount.amount {
 				font-size: inherit;

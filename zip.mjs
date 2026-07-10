@@ -11,7 +11,7 @@ const OUT = path.resolve('..', `${PLUGIN_SLUG}.zip`);
 const EXCLUDE = [
 	'.agents',
 	'.claude',
-	'.clinde',
+	'.cline',
 	'.continue',
 	'.cursor',
 	'.github',
@@ -31,6 +31,8 @@ const EXCLUDE = [
 	'docker-compose.yml',
 	'marketing',
 	'marketing/**',
+	'scripts',
+	'scripts/**',
 	'zip.mjs',
 	// '**/*.map',
 	'**/*.md'

@@ -32,6 +32,7 @@ import { applyLayoutChange, selectElementorWidget, addGridItem, removeGridItem }
 import { getLayout } from '../../shared/utils/layoutUtils.js';
 import { createCache } from '../../shared/utils/LRUCache.js';
 import { loadCachedData } from '../../shared/utils/dataLoading.js';
+import { getRestNonceHeaders } from '../../shared/utils/fetchHelpers.js';
 import { useCssVariables, useGridSettings, useElementorDevice } from '../../shared/utils/hooks.js';
 import { getVisibleLayout } from '../../shared/utils/visibleLayout.js';
 
@@ -62,6 +63,31 @@ function getRestRoot() {
 
 	const root = localizedRoot || wpApiRoot || fallback;
 	return root.endsWith('/') ? root : `${root}/`;
+}
+
+/**
+ * Format a post's ISO date (wp/v2 `date`/`modified`) for display.
+ *
+ * @param {string} iso    ISO date string.
+ * @param {string} format One of 'long' | 'medium' | 'short' | 'numeric'.
+ * @returns {string}
+ */
+function formatPostDate(iso, format = 'long') {
+	if (!iso) return '';
+	const d = new Date(iso);
+	if (Number.isNaN(d.getTime())) return '';
+	if (format === 'numeric') return String(iso).slice(0, 10); // YYYY-MM-DD
+	const opts =
+		format === 'short'
+			? { year: 'numeric', month: '2-digit', day: '2-digit' }
+			: format === 'medium'
+				? { year: 'numeric', month: 'short', day: 'numeric' }
+				: { year: 'numeric', month: 'long', day: 'numeric' };
+	try {
+		return new Intl.DateTimeFormat(undefined, opts).format(d);
+	} catch {
+		return String(iso).slice(0, 10);
+	}
 }
 
 async function resolvePostTypeRestBase(postType) {
@@ -135,7 +161,7 @@ async function fetchPosts(querySettings, signal) {
 
 	if (mc4e_sticky) params.append('sticky', 'true');
 
-	params.append('_embed', 'wp:featuredmedia,wp:term');
+	params.append('_embed', 'wp:featuredmedia,wp:term,author');
 
 	const postType = mc4e_post_type || 'post';
 	const restBase = await resolvePostTypeRestBase(postType);
@@ -154,6 +180,7 @@ async function fetchPosts(querySettings, signal) {
 	const items = data.map((item) => {
 		const featured = item?._embedded?.['wp:featuredmedia']?.[0] || null;
 		const terms = (item?._embedded?.['wp:term'] || []).flat();
+		const authorObj = item?._embedded?.author?.[0] || null;
 
 		return {
 			id: item.id,
@@ -162,6 +189,11 @@ async function fetchPosts(querySettings, signal) {
 			permalink: item?.link || '#',
 			meta: item?.meta || {},
 			terms,
+			author: authorObj
+				? { name: authorObj?.name || '', link: authorObj?.link || '' }
+				: null,
+			date: item?.date || '',
+			modified: item?.modified || '',
 			images: featured
 				? [
 					{
@@ -228,6 +260,8 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 	const [error, setError] = useState(null);
 	const [currentPage, setCurrentPage] = useState(1);
 	const [paginationMeta, setPaginationMeta] = useState({ total: 0, totalPages: 1 });
+	// Per-post values for the selected Post Meta Display keys ({ [postId]: { key: value } }).
+	const [metaValues, setMetaValues] = useState({});
 
 	// Debounced page change to prevent rapid API calls
 	const debouncedSetCurrentPage = useCallback((page) => {
@@ -259,6 +293,12 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 	const selectedTerms = widgetData?.mc4e_terms || [];
 	const selectedPostType = widgetData?.mc4e_post_type || 'post';
 	const customButtonClassName = widgetData?.mc4e_custom_button_class || '';
+	// Post Meta Display: author / date / terms-taxonomy options.
+	const authorPrefix = widgetData?.mc4e_author_prefix ?? 'By ';
+	const authorLink = widgetData?.mc4e_author_link || false;
+	const dateType = widgetData?.mc4e_date_type || 'published';
+	const dateFormat = widgetData?.mc4e_date_format || 'long';
+	const termsTaxonomy = widgetData?.mc4e_terms_taxonomy || '';
 
 	// Element ordering from repeater control
 	const elementOrdering = useMemo(
@@ -268,10 +308,47 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 			{ element_label: 'Featured Image', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
 			{ element_label: 'Read More', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
 			{ element_label: 'Terms', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
+			{ element_label: 'Post Author', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
+			{ element_label: 'Post Date', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
 			{ element_label: 'Post Meta', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
 		]),
 		[widgetData?.mc4e_element_ordering]
 	);
+
+	// Distinct meta keys chosen in the Post Meta Display repeater.
+	const selectedMetaKeys = useMemo(() => {
+		const defs = widgetData?.mc4e_post_meta || [];
+		return [...new Set(defs.map((d) => d?.meta_key).filter(Boolean))];
+	}, [widgetData?.mc4e_post_meta]);
+
+	// Fetch each post's value for the selected meta keys. These arbitrary custom
+	// fields aren't in the wp/v2 `meta` object, so we pull them from the plugin's
+	// /post-meta endpoint and merge them into item rendering via `metaValues`.
+	const itemIdsKey = useMemo(() => items.map((it) => it.id).join(','), [items]);
+	useEffect(() => {
+		const ids = itemIdsKey ? itemIdsKey.split(',').filter(Boolean) : [];
+		if (!selectedMetaKeys.length || !ids.length) {
+			setMetaValues({});
+			return undefined;
+		}
+
+		let cancelled = false;
+		(async () => {
+			try {
+				const url =
+					`${getRestRoot()}mc4e/v1/post-meta` +
+					`?post_ids=${encodeURIComponent(ids.join(','))}` +
+					`&meta_keys=${encodeURIComponent(selectedMetaKeys.join(','))}`;
+				const response = await fetch(url, { headers: getRestNonceHeaders() });
+				const data = response.ok ? await response.json() : {};
+				if (!cancelled) setMetaValues(data && typeof data === 'object' ? data : {});
+			} catch {
+				if (!cancelled) setMetaValues({});
+			}
+		})();
+
+		return () => { cancelled = true; };
+	}, [itemIdsKey, selectedMetaKeys]);
 
 	// Grid settings from Elementor controls
 	const gridSettings = useGridSettings(widgetData, 'mc4e_items_margin', 'mc4e_row_height');
@@ -616,10 +693,36 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 																</a>
 															</div>
 														);
-													case 'terms':
-														return matchedPost.terms && matchedPost.terms.length > 0 ? (
+													case 'post_author': {
+														if (!matchedPost.author?.name) return null;
+														const authorName = decode(matchedPost.author.name);
+														return (
+															<div key={el.key} className={`post-author${elClasses}`}>
+																{authorPrefix && <span className="author-prefix">
+																	{`${authorPrefix} `}
+																</span>}
+																{authorLink && matchedPost.author.link ? (
+																	<a href={matchedPost.author.link} className="author-link">{authorName}</a>
+																) : (
+																	<span className="author-name">{authorName}</span>
+																)}
+															</div>
+														);
+													}
+													case 'post_date': {
+														const iso = dateType === 'modified' ? matchedPost.modified : matchedPost.date;
+														const formatted = formatPostDate(iso, dateFormat);
+														return formatted ? (
+															<div key={el.key} className={`post-date${elClasses}`}>{formatted}</div>
+														) : null;
+													}
+													case 'terms': {
+														const visibleTerms = termsTaxonomy
+															? (matchedPost.terms || []).filter((t) => t.taxonomy === termsTaxonomy)
+															: (matchedPost.terms || []);
+														return visibleTerms.length > 0 ? (
 															<div key={el.key} className={`taxonomy terms${elClasses}`}>
-																{matchedPost.terms.flatMap((term, index) => [
+																{visibleTerms.flatMap((term, index) => [
 																	...(index > 0 ? [', '] : []),
 																	<a
 																		key={`${term.taxonomy}-${term.id}`}
@@ -631,11 +734,17 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 																])}
 															</div>
 														) : null;
+													}
 													case 'post_meta': {
+														// Prefer the wp/v2 `meta` value; fall back to the value
+														// fetched via /post-meta for arbitrary custom fields.
+														const resolveMeta = (key) =>
+															`${matchedPost?.meta?.[key] ?? metaValues?.[matchedPost?.id]?.[key] ?? ''}`;
+
 														const rows = (widgetData?.mc4e_post_meta || []).filter((metaDef) => {
 															const key = metaDef?.meta_key;
 															if (!key) return false;
-															const value = `${matchedPost?.meta?.[key] ?? ''}`;
+															const value = resolveMeta(key);
 															const condition = metaDef?.meta_condition || 'always';
 															const expected = `${metaDef?.meta_condition_value ?? ''}`;
 
@@ -651,7 +760,7 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 															<div key={el.key} className={`post-meta${elClasses}`}>
 																{rows.map((metaDef) => {
 																	const key = metaDef.meta_key;
-																	const value = `${matchedPost?.meta?.[key] ?? ''}`;
+																	const value = resolveMeta(key);
 																	const label = metaDef?.meta_label || key;
 
 																	return (

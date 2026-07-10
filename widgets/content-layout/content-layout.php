@@ -286,7 +286,7 @@ class ContentLayout extends Widget_Base {
 			'meta_key',
 			array(
 				'label'       => __( 'Meta Key', 'mosaic-contents-for-elementor' ),
-				'type'        => Controls_Manager::TEXT,
+				'type'        => 'mc4e_meta_key_select',
 				'label_block' => true,
 			)
 		);
@@ -349,6 +349,101 @@ class ContentLayout extends Widget_Base {
 				'type'        => Controls_Manager::REPEATER,
 				'fields'      => $meta_repeater->get_controls(),
 				'title_field' => '{{{ meta_key }}}',
+			)
+		);
+
+		// ── Author ─────────────────────────────────────────────────────────
+		$this->add_control(
+			'mc4e_author_heading',
+			array(
+				'label'     => __( 'Author', 'mosaic-contents-for-elementor' ),
+				'type'      => Controls_Manager::HEADING,
+				'separator' => 'before',
+			)
+		);
+
+		$this->add_control(
+			'mc4e_author_prefix',
+			array(
+				'label'   => __( 'Author Prefix', 'mosaic-contents-for-elementor' ),
+				'type'    => Controls_Manager::TEXT,
+				'default' => __( 'By ', 'mosaic-contents-for-elementor' ),
+			)
+		);
+
+		$this->add_control(
+			'mc4e_author_link',
+			array(
+				'label'        => __( 'Link to Author Archive', 'mosaic-contents-for-elementor' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'label_on'     => __( 'Yes', 'mosaic-contents-for-elementor' ),
+				'label_off'    => __( 'No', 'mosaic-contents-for-elementor' ),
+				'return_value' => 'yes',
+				'default'      => '',
+			)
+		);
+
+		// ── Date ───────────────────────────────────────────────────────────
+		$this->add_control(
+			'mc4e_date_heading',
+			array(
+				'label'     => __( 'Date', 'mosaic-contents-for-elementor' ),
+				'type'      => Controls_Manager::HEADING,
+				'separator' => 'before',
+			)
+		);
+
+		$this->add_control(
+			'mc4e_date_type',
+			array(
+				'label'   => __( 'Date to Show', 'mosaic-contents-for-elementor' ),
+				'type'    => Controls_Manager::SELECT,
+				'default' => 'published',
+				'options' => array(
+					'published' => __( 'Published', 'mosaic-contents-for-elementor' ),
+					'modified'  => __( 'Last Modified', 'mosaic-contents-for-elementor' ),
+				),
+			)
+		);
+
+		$this->add_control(
+			'mc4e_date_format',
+			array(
+				'label'   => __( 'Date Format', 'mosaic-contents-for-elementor' ),
+				'type'    => Controls_Manager::SELECT,
+				'default' => 'long',
+				'options' => array(
+					'long'    => __( 'Long (e.g. January 1, 2026)', 'mosaic-contents-for-elementor' ),
+					'medium'  => __( 'Medium (e.g. Jan 1, 2026)', 'mosaic-contents-for-elementor' ),
+					'short'   => __( 'Short (e.g. 01/01/2026)', 'mosaic-contents-for-elementor' ),
+					'numeric' => __( 'Numeric (e.g. 2026-01-01)', 'mosaic-contents-for-elementor' ),
+				),
+			)
+		);
+
+		// ── Terms ──────────────────────────────────────────────────────────
+		$this->add_control(
+			'mc4e_terms_heading',
+			array(
+				'label'     => __( 'Terms', 'mosaic-contents-for-elementor' ),
+				'type'      => Controls_Manager::HEADING,
+				'separator' => 'before',
+			)
+		);
+
+		$this->add_control(
+			'mc4e_terms_taxonomy',
+			array(
+				'label'       => __( 'Show Terms From', 'mosaic-contents-for-elementor' ),
+				'type'        => Controls_Manager::SELECT,
+				'default'     => '',
+				// Seeded for the default post type; re-populated per selected
+				// post type by editor-hooks.js (syncTaxonomyOptionsForPostType).
+				'options'     => array_merge(
+					array( '' => __( 'All taxonomies', 'mosaic-contents-for-elementor' ) ),
+					$taxonomy_options
+				),
+				'description' => __( 'Which taxonomy to pull the displayed terms from.', 'mosaic-contents-for-elementor' ),
 			)
 		);
 
@@ -549,6 +644,14 @@ class ContentLayout extends Widget_Base {
 					array( true, true, true, true, true )
 				),
 				$this->default_elements_visibility(
+					__( 'Post Author', 'mosaic-contents-for-elementor' ),
+					array( true, true, true, true, true )
+				),
+				$this->default_elements_visibility(
+					__( 'Post Date', 'mosaic-contents-for-elementor' ),
+					array( true, true, true, true, true )
+				),
+				$this->default_elements_visibility(
 					__( 'Post Meta', 'mosaic-contents-for-elementor' ),
 					array( true, true, true, true, true )
 				),
@@ -696,7 +799,7 @@ class ContentLayout extends Widget_Base {
 		$this->add_responsive_control(
 			'mc4e_taxonomy_size',
 			array(
-				'label'     => esc_html__( 'Taxonomy text size', 'mosaic-contents-for-elementor' ),
+				'label'     => esc_html__( 'Terms text size', 'mosaic-contents-for-elementor' ),
 				'type'      => Controls_Manager::SLIDER,
 				'size_units' => array( 'px', 'em', 'rem', 'vw', 'vh' ),
 				'default'   => array(
@@ -747,6 +850,57 @@ class ContentLayout extends Widget_Base {
 					),
 				)
 			);
+
+			$this->add_responsive_control(
+			'mc4e_date_size',
+			array(
+				'label'     => esc_html__( 'Date size', 'mosaic-contents-for-elementor' ),
+				'type'      => Controls_Manager::SLIDER,
+				'size_units' => array( 'px', 'em', 'rem', 'vw', 'vh' ),
+				'default'   => array(
+					'size' => 14,
+					'unit' => 'px',
+				),
+				'tablet_default' => [
+					'size' => 14,
+					'unit' => 'px',
+				],
+				'mobile_default' => [
+					'size' => 12,
+					'unit' => 'px',
+				],
+				'range'     => self::get_range(), 
+				'selectors' => array(
+					'#mc4e-{{ID}} .flex-wrapper .item-elements .post-date' => 'font-size:{{SIZE}}{{UNIT}};',
+				),
+			)
+		);
+
+		$this->add_responsive_control(
+			'mc4e_author_size',
+			array(
+				'label'     => esc_html__( 'Author text size', 'mosaic-contents-for-elementor' ),
+				'type'      => Controls_Manager::SLIDER,
+				'size_units' => array( 'px', 'em', 'rem', 'vw', 'vh' ),
+				'default'   => array(
+					'size' => 14,
+					'unit' => 'px',
+				),
+				'tablet_default' => [
+					'size' => 14,
+					'unit' => 'px',
+				],
+				'mobile_default' => [
+					'size' => 12,
+					'unit' => 'px',
+				],
+				'range'     => self::get_range(), 
+				'selectors' => array(
+					'#mc4e-{{ID}} .flex-wrapper .item-elements .post-author' => 'font-size:{{SIZE}}{{UNIT}};',
+				),
+			)
+		);
+
 		$this->end_controls_tab();
 
 		
@@ -972,7 +1126,7 @@ class ContentLayout extends Widget_Base {
 				'type'      => Controls_Manager::COLOR,
 				'default'   => '#333333',
 				'selectors' => array(
-					'{{WRAPPER}} .item-elements .name a, {{WRAPPER}} .item-elements .taxonomy a' => 'color: {{VALUE}};',
+					'{{WRAPPER}} .item-elements .name a, {{WRAPPER}} .item-elements .taxonomy a, {{WRAPPER}} .item-elements a' => 'color: {{VALUE}};',
 				),
 			)
 		);

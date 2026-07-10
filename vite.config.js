@@ -48,6 +48,11 @@ const entries = {
 		input: path.resolve(__dirname, 'src/controls/PostTypeSelectControl.jsx'),
 		outDir: 'assets/admin',
 	},
+	// Meta key select control (editor panel only)
+	'MetaKeySelectControl': {
+		input: path.resolve(__dirname, 'src/controls/MetaKeySelectControl.jsx'),
+		outDir: 'assets/admin',
+	},
 };
 
 const currentEntry = entries[entry];

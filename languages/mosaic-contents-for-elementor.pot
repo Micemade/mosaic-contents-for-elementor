@@ -95,7 +95,7 @@ msgid "Default"
 msgstr ""
 
 #: includes/trait-widget-helpers.php:331
-msgid "Automatic (from Store API)"
+msgid "Automatic"
 msgstr ""
 
 #: mosaic-contents-for-elementor.php:217

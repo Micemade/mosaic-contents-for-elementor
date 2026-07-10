@@ -328,7 +328,7 @@ trait WidgetHelpers {
 	 */
 	protected function get_image_sizes() {
 		$sizes = array(
-			'automatic' => __( 'Automatic (from Store API)', 'mosaic-contents-for-elementor' ),
+			'automatic' => __( 'Automatic', 'mosaic-contents-for-elementor' ),
 		);
 
 		$registered_sizes = wp_get_registered_image_subsizes();

@@ -27,6 +27,26 @@
 		"type": "array",
 		"default": []
 	},
+	"mc4e_author_prefix": {
+		"type": "string",
+		"default": "By "
+	},
+	"mc4e_author_link": {
+		"type": "boolean",
+		"default": false
+	},
+	"mc4e_date_type": {
+		"type": "string",
+		"default": "published"
+	},
+	"mc4e_date_format": {
+		"type": "string",
+		"default": "long"
+	},
+	"mc4e_terms_taxonomy": {
+		"type": "string",
+		"default": ""
+	},
 	"mc4e_enable_pagination": {
 		"type": "boolean",
 		"default": false
