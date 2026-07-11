@@ -86,7 +86,10 @@ class RestAPI {
 			array(
 				'methods'             => 'GET',
 				'callback'            => array( $this, 'get_post_meta_values' ),
-				'permission_callback' => array( $this, 'check_permission' ),
+				// Public: these values are rendered to visitors on the frontend.
+				// The callback only ever returns non-protected keys on published
+				// posts, and `mc4e_allowed_post_meta_keys` can narrow that further.
+				'permission_callback' => '__return_true',
 				'args'                => array(
 					'post_ids' => array(
 						'description'       => __( 'Comma-separated post IDs.', 'mosaic-contents-for-elementor' ),
@@ -508,10 +511,7 @@ class RestAPI {
 		 *
 		 * @filter mc4e_allowed_post_meta_keys
 		 */
-		$allowed_meta_keys = apply_filters( 'mc4e_allowed_post_meta_keys', array(
-			'_wc_average_rating',
-			'_wc_review_count',
-		) );
+		$allowed_meta_keys = apply_filters( 'mc4e_allowed_post_meta_keys', array() );
 		if ( ! empty( $allowed_meta_keys ) ) {
 			$meta_keys = array_intersect( $meta_keys, $allowed_meta_keys );
 		}

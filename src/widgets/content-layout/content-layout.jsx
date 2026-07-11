@@ -300,19 +300,30 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 	const dateFormat = widgetData?.mc4e_date_format || 'long';
 	const termsTaxonomy = widgetData?.mc4e_terms_taxonomy || '';
 
-	// Element ordering from repeater control
+	// Element ordering from repeater control. The fallback list mirrors the
+	// PHP defaults in register_controls() (order and labels) so an empty
+	// setting renders identically to a materialized one.
 	const elementOrdering = useMemo(
 		() => parseElementOrdering(widgetData?.mc4e_element_ordering, [
+			{ element_label: 'Terms', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
 			{ element_label: 'Title', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
-			{ element_label: 'Excerpt', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
+			{ element_label: 'Excerpt', visible_desktop: 'no', visible_tablet: 'no', visible_mobile: 'no' },
 			{ element_label: 'Featured Image', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
 			{ element_label: 'Read More', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
-			{ element_label: 'Terms', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
 			{ element_label: 'Post Author', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
 			{ element_label: 'Post Date', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
 			{ element_label: 'Post Meta', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
 		]),
 		[widgetData?.mc4e_element_ordering]
+	);
+
+	// The featured image renders as a structural flex child of .item-wrapper
+	// (its position is set by the layout variant), so it sits outside the
+	// element-order map below. Pull its visibility classes from the ordering
+	// list so its per-breakpoint visibility switchers still apply.
+	const featuredImageHideClasses = useMemo(
+		() => elementOrdering.find((el) => el.key === 'featured_image')?.hideClasses || '',
+		[elementOrdering]
 	);
 
 	// Distinct meta keys chosen in the Post Meta Display repeater.
@@ -646,7 +657,7 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 
 									{ /* If no featured image, skip */}
 									{matchedPost.images.length > 0 && (
-										<figure className="featured-image posttypeitem-featured-image gradient-preloader">
+										<figure className={`featured-image posttypeitem-featured-image gradient-preloader${featuredImageHideClasses ? ` ${featuredImageHideClasses}` : ''}`}>
 											<FeaturedImage
 												postId={matchedPost.id}
 												postType={selectedPostType}
