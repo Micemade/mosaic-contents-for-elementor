@@ -333,7 +333,7 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 	// at exactly the breakpoints where the image is hidden.
 	const flexWrapperHideImageClasses = useMemo(
 		() => (featuredImage?.hiddenBreakpoints || [])
-			.map((bp) => `mosaic-${bp}-hide-image`)
+			.map((bp) => `mosaic-hide-${bp}-image`)
 			.join(' '),
 		[featuredImage]
 	);

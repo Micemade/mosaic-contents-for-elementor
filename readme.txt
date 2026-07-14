@@ -20,7 +20,7 @@ Mosaic Contents for Elementor (MC4E) adds two Elementor widgets under the **Mosa
 Key capabilities:
 
 * Free-form drag-and-resize editing directly inside Elementor, with an underlying snap grid.
-* Separate desktop, tablet, and mobile layouts (stored per breakpoint).
+* Separate desktop, tablet, and mobile layouts (stored per breakpoint) - each view layout can be unique!
 * Editor-friendly React-powered rendering with two-way Elementor settings sync.
 * Content Layout: works with any post type and its taxonomies; per-element visibility and ordering; style presets; saved setups. Content is fetched via the WordPress REST API.
 * Widgets Layout: multiple native widgets per cell; nested Containers; drag widgets between cells; per-cell styling (global Cell Style plus a per-cell repeater with automatic cell-to-item sync).
