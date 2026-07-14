@@ -21,24 +21,34 @@ export function normalizeLabel(label) {
 }
 
 /**
- * Get CSS class names for breakpoint-based visibility hiding.
+ * Get the breakpoints at which a repeater element is hidden.
  *
- * Inspects the visibility switchers on a repeater item and returns
- * an array of `mosaic-hide-{breakpoint}` classes for each breakpoint
- * where the element should be hidden.
+ * Inspects the visibility switchers on a repeater item and returns the
+ * breakpoint names whose switcher is off.
+ *
+ * @param {Object} item - Repeater item with visible_{breakpoint} properties.
+ * @returns {Array<string>} Breakpoint names (e.g. ["tablet", "mobile"]).
+ */
+export function getHiddenBreakpoints(item) {
+	const hidden = [];
+	for (const [key, value] of Object.entries(item)) {
+		if (key.startsWith('visible_') && value !== 'yes') {
+			hidden.push(key.replace('visible_', ''));
+		}
+	}
+	return hidden;
+}
+
+/**
+ * Get CSS class names for breakpoint-based visibility hiding.
  *
  * @param {Object} item - Repeater item with visible_{breakpoint} properties.
  * @returns {string} Space-separated CSS class string (e.g. "mosaic-hide-mobile mosaic-hide-tablet").
  */
 export function getVisibilityClasses(item) {
-	const hideClasses = [];
-	for (const [key, value] of Object.entries(item)) {
-		if (key.startsWith('visible_') && value !== 'yes') {
-			const bp = key.replace('visible_', '');
-			hideClasses.push(`mosaic-hide-${bp}`);
-		}
-	}
-	return hideClasses.join(' ');
+	return getHiddenBreakpoints(item)
+		.map((bp) => `mosaic-hide-${bp}`)
+		.join(' ');
 }
 
 /**
@@ -46,7 +56,7 @@ export function getVisibilityClasses(item) {
  *
  * @param {Array} ordering - Raw repeater data from Elementor setting.
  * @param {Array} defaultOrdering - Default ordering if setting is empty/invalid.
- * @returns {Array<{key: string, label: string, hideClasses: string}>}
+ * @returns {Array<{key: string, label: string, hideClasses: string, hiddenBreakpoints: Array<string>}>}
  */
 export function parseElementOrdering(ordering, defaultOrdering) {
 	const data = Array.isArray(ordering) && ordering.length > 0
@@ -57,5 +67,6 @@ export function parseElementOrdering(ordering, defaultOrdering) {
 		key: normalizeLabel(item.element_label || ''),
 		label: item.element_label || '',
 		hideClasses: getVisibilityClasses(item),
+		hiddenBreakpoints: getHiddenBreakpoints(item),
 	}));
 }

@@ -1126,7 +1126,7 @@ class ContentLayout extends Widget_Base {
 				'type'      => Controls_Manager::COLOR,
 				'default'   => '#333333',
 				'selectors' => array(
-					'{{WRAPPER}} .item-elements .name a, {{WRAPPER}} .item-elements .taxonomy a, {{WRAPPER}} .item-elements a' => 'color: {{VALUE}};',
+					'{{WRAPPER}} .item-elements .name a, {{WRAPPER}} .item-elements .taxonomy a, {{WRAPPER}} .item-elements a:not(.read-more-link)' => 'color: {{VALUE}};',
 				),
 			)
 		);

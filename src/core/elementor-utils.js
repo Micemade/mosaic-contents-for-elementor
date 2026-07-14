@@ -190,6 +190,15 @@ ${mq} {
 	.categories-layout .flex-wrapper {
 		text-align: var(--mc4e-cat-align-text-${name}, center);
 	}
+
+	/* Featured image hidden at this breakpoint - the wrapper reclaims the
+	   space the image-size control reserved for it. The extra class beats
+	   that control's "{{WRAPPER}} .item-wrapper .flex-wrapper" selector, and
+	   flex-basis (not width) is what sizes a flex item on its main axis. */
+	.content-layout .item-wrapper .flex-wrapper.mosaic-${name}-hide-image {
+		flex-basis: 100%!important;
+		width: 100%;
+	}
 }
 `;
 	});

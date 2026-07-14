@@ -321,9 +321,21 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 	// (its position is set by the layout variant), so it sits outside the
 	// element-order map below. Pull its visibility classes from the ordering
 	// list so its per-breakpoint visibility switchers still apply.
-	const featuredImageHideClasses = useMemo(
-		() => elementOrdering.find((el) => el.key === 'featured_image')?.hideClasses || '',
+	const featuredImage = useMemo(
+		() => elementOrdering.find((el) => el.key === 'featured_image'),
 		[elementOrdering]
+	);
+	const featuredImageHideClasses = featuredImage?.hideClasses || '';
+
+	// Hiding the image only removes it from the flow; the sibling .flex-wrapper
+	// keeps the flex-basis the image-size control gave it and leaves a gap. These
+	// companion classes let the injected breakpoint stylesheet reclaim the space
+	// at exactly the breakpoints where the image is hidden.
+	const flexWrapperHideImageClasses = useMemo(
+		() => (featuredImage?.hiddenBreakpoints || [])
+			.map((bp) => `mosaic-${bp}-hide-image`)
+			.join(' '),
+		[featuredImage]
 	);
 
 	// Distinct meta keys chosen in the Post Meta Display repeater.
@@ -673,7 +685,10 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 									)}
 
 
-									<div className='flex-wrapper' style={{ ...!matchedPost.images.length && { flexBasis: "100%" } }}>
+									<div
+										className={`flex-wrapper${flexWrapperHideImageClasses ? ` ${flexWrapperHideImageClasses}` : ''}`}
+										style={{ ...!matchedPost.images.length && { flexBasis: "100%" } }}
+									>
 										<div className="item-elements">
 
 											{elementOrdering.map((el) => {
