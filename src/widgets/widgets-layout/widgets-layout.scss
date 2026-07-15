@@ -14,11 +14,16 @@
 .wl-item {
 	position: relative;
 	height: 100%;
-	&:hover {
-		outline: 2px dashed rgba(0, 255, 249, 0.75);
-		cursor: default !important;
-		background: rgba(0, 255, 249, 0.15);
+
+	// Cell overlay controls when editing.
+	.edit &{
+		&:hover {
+			outline: 2px dashed rgba(0, 255, 249, 0.75);
+			cursor: default !important;
+			background: rgba(0, 255, 249, 0.15);
+		}
 	}
+	
 
 	// Cell inner: shared between empty and filled 
 	.wl-item-inner {

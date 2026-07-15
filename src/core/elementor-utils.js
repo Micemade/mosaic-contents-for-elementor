@@ -80,8 +80,56 @@ export const getElementorGridBreakpoints = () => {
 };
 
 /**
+ * Expand a three-tier column config to cover every active breakpoint.
+ *
+ * react-grid-layout's Responsive component requires a `cols` entry for every
+ * key present in its `breakpoints` map. Elementor can expose more breakpoints
+ * than the three the widgets configure (e.g. `tablet_extra`, `laptop`,
+ * `widescreen`), and a missing entry makes RGL throw during initial render.
+ * Each extra breakpoint inherits the tier it falls into by min-width: at or
+ * above the desktop floor → desktop, at or above the tablet floor → tablet,
+ * otherwise mobile.
+ *
+ * @param {Object} breakpoints - Min-width map from getElementorGridBreakpoints().
+ * @param {{desktop?:number, tablet?:number, mobile?:number}} [columns] - Configured tiers.
+ * @returns {Object} Column count keyed by every breakpoint in `breakpoints`.
+ */
+export const buildResponsiveCols = (breakpoints, columns = {}) => {
+	const desktopCols = columns.desktop || 12;
+	const tabletCols = columns.tablet || 8;
+	const mobileCols = columns.mobile || 4;
+
+	const desktopFloor = breakpoints.desktop ?? Infinity;
+	const tabletFloor = breakpoints.tablet ?? 0;
+
+	const cols = {};
+	Object.entries(breakpoints).forEach(([name, minWidth]) => {
+		if (name === 'desktop') {
+			cols[name] = desktopCols;
+		} else if (name === 'tablet') {
+			cols[name] = tabletCols;
+		} else if (name === 'mobile') {
+			cols[name] = mobileCols;
+		} else if (minWidth >= desktopFloor) {
+			cols[name] = desktopCols;
+		} else if (minWidth >= tabletFloor) {
+			cols[name] = tabletCols;
+		} else {
+			cols[name] = mobileCols;
+		}
+	});
+
+	// Guarantee the base tiers exist even if the breakpoints map omits one.
+	if (cols.desktop == null) cols.desktop = desktopCols;
+	if (cols.tablet == null) cols.tablet = tabletCols;
+	if (cols.mobile == null) cols.mobile = mobileCols;
+
+	return cols;
+};
+
+/**
  * Check if currently in Elementor editor mode
- * 
+ *
  * @returns {boolean} True if in editor mode
  */
 export const isElementorEditor = () => {

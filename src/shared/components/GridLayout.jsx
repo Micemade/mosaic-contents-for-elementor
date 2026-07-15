@@ -15,7 +15,7 @@ import { useState, useEffect } from 'react';
 import { publish } from './utils/events';
 import { Responsive as RGL } from 'react-grid-layout';
 import { withSize } from 'react-sizeme';
-import { getElementorGridBreakpoints } from '../../core/elementor-utils';
+import { getElementorGridBreakpoints, buildResponsiveCols } from '../../core/elementor-utils';
 import 'react-grid-layout/css/styles.css';
 
 const ELEMENTOR_BREAKPOINTS = getElementorGridBreakpoints();
@@ -69,12 +69,10 @@ function GridLayout(props) {
 		selectWidget,
 	} = props;
 
-	// Grid columns per breakpoint
-	const cols = {
-		desktop: columns.desktop || 12,
-		tablet: columns.tablet || 8,
-		mobile: columns.mobile || 4,
-	};
+	// Grid columns per breakpoint. Must cover every key in ELEMENTOR_BREAKPOINTS
+	// or react-grid-layout throws when the container width resolves to an extra
+	// Elementor breakpoint (e.g. tablet_extra) that has no cols entry.
+	const cols = buildResponsiveCols(ELEMENTOR_BREAKPOINTS, columns);
 
 	const defaultProps = {
 		breakpoints: ELEMENTOR_BREAKPOINTS,
