@@ -234,7 +234,7 @@ class RestAPI {
 	 * @param string $value The search parameter value.
 	 * @return true|WP_Error True if valid, WP_Error otherwise.
 	 */
-	public function validate_search_param( $value ): bool {
+	public function validate_search_param( $value ) {
 		if ( empty( $value ) ) {
 			return true; // Empty is valid (optional parameter)
 		}

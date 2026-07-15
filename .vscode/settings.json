@@ -1,0 +1,8 @@
+{
+	// Let Intelephense resolve Elementor's classes (Widget_Base, Controls_Manager, etc.),
+	// which live outside this workspace in the vendored Elementor dev source.
+	// Paths are resolved relative to the workspace root.
+	"intelephense.environment.includePaths": [
+		"../../vendor/elementor-dev"
+	]
+}

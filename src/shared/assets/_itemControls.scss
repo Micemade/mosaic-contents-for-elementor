@@ -242,14 +242,7 @@
 }
 
 // Show controls on grid item hover.
-.react-grid-item:hover > .mc4e-item-controls,
-.react-grid-item:hover > .sp-element > .mc4e-item-controls {
+.react-grid-item:hover > .mc4e-item-controls {
 	opacity: 1;
 	visibility: visible;
 }
-
-
-
-
-
-

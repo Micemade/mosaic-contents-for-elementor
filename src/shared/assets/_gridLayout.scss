@@ -48,6 +48,7 @@
 			background: rgb(0, 251, 255);
 			opacity: 0.2;
 			// transition: transform 50ms linear;
+			pointer-events: none;
 			user-select: none;
 		}
 		.minMax {
@@ -71,11 +72,6 @@
 
 			&.react-draggable-dragging {
 				cursor: grabbing;
-				
-				// Hide item controls while dragging to prevent interference
-				.mc4e-item-controls {
-					opacity: 0;
-				}
 			}
 			.react-resizable-handle {
 				opacity: 1;
