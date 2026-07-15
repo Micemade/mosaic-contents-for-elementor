@@ -281,7 +281,7 @@ class WidgetsLayout extends Widget_Base {
 				'label'     => __( 'Text Color', 'mosaic-contents-for-elementor' ),
 				'type'      => Controls_Manager::COLOR,
 				'selectors' => array(
-					'{{WRAPPER}} {{CURRENT_ITEM}} .wl-item-inner .wl-cell-content .elementor-element *' => 'color: {{VALUE}};',
+					'{{WRAPPER}} {{CURRENT_ITEM}} .wl-widget-mount :where(.elementor-element, .elementor-heading-title, .elementor-icon-box-title)' => 'color: {{VALUE}};',
 				),
 			)
 		);
@@ -292,7 +292,7 @@ class WidgetsLayout extends Widget_Base {
 				'label'     => __( 'Links Color', 'mosaic-contents-for-elementor' ),
 				'type'      => Controls_Manager::COLOR,
 				'selectors' => array(
-					'{{WRAPPER}} {{CURRENT_ITEM}} .wl-item-inner .wl-cell-content .elementor-element a' => 'color: {{VALUE}};',
+					'{{WRAPPER}} {{CURRENT_ITEM}} .wl-widget-mount :where(.elementor-element) a:not(.elementor-button)' => 'color: {{VALUE}};',
 				),
 			)
 		);
@@ -441,7 +441,7 @@ class WidgetsLayout extends Widget_Base {
 				'label'     => __( 'Text Color', 'mosaic-contents-for-elementor' ),
 				'type'      => Controls_Manager::COLOR,
 				'selectors' => array(
-					'{{WRAPPER}} .wl-item-inner .wl-cell-content .elementor-element *' => 'color: {{VALUE}};',
+					'{{WRAPPER}} .wl-widget-mount :where(.elementor-element, .elementor-heading-title, .elementor-icon-box-title)' => 'color: {{VALUE}};',
 				),
 			)
 		);
@@ -452,7 +452,7 @@ class WidgetsLayout extends Widget_Base {
 				'label'     => __( 'Links Color', 'mosaic-contents-for-elementor' ),
 				'type'      => Controls_Manager::COLOR,
 				'selectors' => array(
-					'{{WRAPPER}} .wl-item-inner .wl-cell-content .elementor-element a' => 'color: {{VALUE}};',
+					'{{WRAPPER}} .wl-widget-mount :where(.elementor-element) a:not(.elementor-button)' => 'color: {{VALUE}};',
 				),
 			)
 		);
