@@ -127,6 +127,9 @@ const UPDATE_CONTROL_RETRY_DELAY = 60;
  * The panel builds its control collection from `widgetsCache[type].controls`
  * once, when the page view is created. Patching the cache keeps dependent
  * options correct the next time the widget's panel is opened.
+ * @param model
+ * @param controlName
+ * @param options
  */
 const updateControlConfig = (model, controlName, options) => {
 	try {
@@ -150,6 +153,9 @@ const updateControlConfig = (model, controlName, options) => {
  * view. Setting options on the model is what matters: reopening a section calls
  * `_renderChildren()`, which rebuilds views from these models. The view, when
  * one exists, is re-rendered so an already-visible control updates immediately.
+ * @param controlName
+ * @param options
+ * @param attempt
  */
 const updateControlOptions = (controlName, options, attempt = 0) => {
 	const panelView = getActivePanelView();
@@ -204,6 +210,9 @@ const fetchTaxonomyTermsOptions = async (taxonomy) => {
 /**
  * Point a dependent control at a new set of options: the cached widget config
  * (survives re-renders) and the live view (updates the open panel).
+ * @param model
+ * @param controlName
+ * @param options
  */
 const applyControlOptions = (model, controlName, options) => {
 	updateControlConfig(model, controlName, options);
@@ -354,7 +363,7 @@ const patchRepeaterCollection = (collection, widgetId, scheduleRepeaterUpdate) =
 
 	['add', 'remove', 'reset', 'sort'].forEach((method) => {
 		const original = collection[method];
-		if (typeof original !== 'function') return;
+		if (typeof original !== 'function') {return;}
 		collection[method] = function (...args) {
 			const result = original.apply(this, args);
 			scheduleRepeaterUpdate();
@@ -577,7 +586,7 @@ export const registerEditorHooks = () => {
 						const seq = taxonomySyncSeq;
 						await syncTaxonomyOptionsForPostType(model, nextPostType || 'post', false);
 						if (seq !== taxonomySyncSeq) {
-							return;
+							
 						}
 					};
 
@@ -589,7 +598,7 @@ export const registerEditorHooks = () => {
 						void (async () => {
 							await syncTaxonomyOptionsForPostType(model, nextPostType || 'post', true);
 							if (seq !== taxonomySyncSeq) {
-								return;
+								
 							}
 						})();
 					});
@@ -782,10 +791,10 @@ export const registerEditorHooks = () => {
  * @return void
  */
 export const setupEditorObserver = () => {
-	if (typeof elementor === 'undefined') return;
+	if (typeof elementor === 'undefined') {return;}
 
 	const previewFrame = document.querySelector('#elementor-preview-iframe');
-	if (!previewFrame) return;
+	if (!previewFrame) {return;}
 
 	const initPreview = () => {
 		// Access iframe document

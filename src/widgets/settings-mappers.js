@@ -1,6 +1,6 @@
 /**
  * Settings Mappers
- * 
+ *
  * Extract and format widget settings from Elementor models.
  * Uses a generic factory driven by JSON setting definitions.
  * Not all settings are mapped; only those needed for React components.
@@ -10,12 +10,12 @@ import { getActiveBreakpointNames } from '../core/elementor-utils';
 
 /**
  * Extract responsive setting value from Elementor model
- * 
- * @param {Object} settings - Elementor settings object
- * @param {string} key - Base setting key (e.g., 'title_size')
- * @param {Array} breakpoints - Breakpoint names ['desktop', 'tablet', 'mobile']
- * @param {Object} definition - Setting definition with defaults
- * @returns {Object} Responsive values { desktop: ..., tablet: ..., mobile: ... }
+ *
+ * @param {Object} settings    - Elementor settings object
+ * @param {string} key         - Base setting key (e.g., 'title_size')
+ * @param {Array}  breakpoints - Breakpoint names ['desktop', 'tablet', 'mobile']
+ * @param {Object} definition  - Setting definition with defaults
+ * @return {Object} Responsive values { desktop: ..., tablet: ..., mobile: ... }
  */
 const getResponsiveValue = (settings, key, breakpoints, definition) => {
 	const result = {};
@@ -48,12 +48,12 @@ const getResponsiveValue = (settings, key, breakpoints, definition) => {
 
 /**
  * Create a settings mapper function for any widget type.
- * 
+ *
  * Returns a mapper that reads an Elementor model and produces
  * a plain settings object based on the provided JSON definition.
- * 
+ *
  * @param {Object} settingsDefinition - JSON schema defining the widget's settings
- * @returns {Function} (model) => Object  — settings mapper
+ * @return {Function} (model) => Object  — settings mapper
  */
 export const createSettingsMapper = (settingsDefinition) => (model) => {
 	const settings = model.get('settings');

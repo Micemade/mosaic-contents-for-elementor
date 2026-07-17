@@ -179,7 +179,7 @@ trait WidgetHelpers {
 		if ( ! isset( self::$settings_cache[ $widget_name ] ) ) {
 			$json_file = plugin_dir_path( __DIR__ ) . "widgets/{$widget_name}/react-settings.json";
 			if ( file_exists( $json_file ) ) {
-				$json_content = file_get_contents( $json_file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+				$json_content                         = file_get_contents( $json_file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 				self::$settings_cache[ $widget_name ] = json_decode( $json_content, true );
 			} else {
 				self::$settings_cache[ $widget_name ] = array();
@@ -224,7 +224,7 @@ trait WidgetHelpers {
 		}
 
 		$image_base_url = plugins_url( 'assets/admin/images/style-presets/', defined( 'MC4E_PLUGIN_FILE' ) ? MC4E_PLUGIN_FILE : dirname( __DIR__ ) . '/mosaic-contents-for-elementor.php' );
-		$options = array();
+		$options        = array();
 
 		foreach ( $decoded_presets as $preset ) {
 			if ( empty( $preset['id'] ) || empty( $preset['label'] ) ) {
@@ -238,7 +238,7 @@ trait WidgetHelpers {
 
 			$options[ $preset_id ] = array(
 				'title' => sanitize_text_field( $preset['label'] ),
-				'image' => $image_base_url . $preset_id . '.svg',
+				'image' => esc_url( $image_base_url . $preset_id . '.svg' ),
 			);
 		}
 
@@ -252,7 +252,7 @@ trait WidgetHelpers {
 	 *
 	 * @return array Associative array of layout_id => label.
 	 */
-	protected function get_layout_options( $widget_name ) {
+	protected function get_layout_options() {
 		$json_path = MC4E_PLUGIN_DIR . 'assets/presets/layouts.json';
 		$layouts   = wp_json_file_decode( $json_path, array( 'associative' => true ) );
 
@@ -335,8 +335,8 @@ trait WidgetHelpers {
 
 		if ( ! empty( $registered_sizes ) ) {
 			foreach ( $registered_sizes as $name => $size ) {
-				$label      = ucwords( str_replace( array( '-', '_' ), ' ', $name ) );
-				$dimensions = $size['width'] . 'x' . $size['height'];
+				$label          = ucwords( str_replace( array( '-', '_' ), ' ', $name ) );
+				$dimensions     = $size['width'] . 'x' . $size['height'];
 				$sizes[ $name ] = sprintf( '%s (%s)', $label, $dimensions );
 			}
 		}
@@ -366,7 +366,7 @@ trait WidgetHelpers {
 	 * @param array  $devices       Array of booleans for [desktop, widescreen, tablet, mobile_extra, mobile].
 	 * @return array Associative array of visibility settings for all breakpoints.
 	 */
-	protected function default_elements_visibility( $element_label, $devices=array() ) {
+	protected function default_elements_visibility( $element_label, $devices = array() ) {
 
 		return array(
 			'element_label'        => $element_label,
@@ -395,7 +395,7 @@ trait WidgetHelpers {
 	<input type="hidden" class="elementor-settings-data" value="<?php echo esc_attr( $json_data ); ?>" />
 	<div class="<?php echo esc_attr( $widget_name ); ?>-react-root mc4e-react-root"></div>
 </div>
-<?php
+		<?php
 	}
 
 	/**
@@ -434,7 +434,7 @@ trait WidgetHelpers {
 					$breakpoint_default     = isset( $definition[ $breakpoint_default_key ] )
 						? $definition[ $breakpoint_default_key ]
 						: $definition['default'];
-					$default_json = is_array( $breakpoint_default ) ? wp_json_encode( $breakpoint_default ) : "'{$breakpoint_default}'";
+					$default_json           = is_array( $breakpoint_default ) ? wp_json_encode( $breakpoint_default ) : "'{$breakpoint_default}'";
 
 					if ( $index === 0 ) {
 						$responsive_values[] = "{$breakpoint}: settings.{$key} || {$default_json}";
@@ -456,13 +456,13 @@ trait WidgetHelpers {
 		$js_settings_code = implode( ",\n", $js_settings );
 		?>
 <# const widgetId=view.model.id; const data={
-	<?php echo $js_settings_code; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> }; const
+		<?php echo $js_settings_code; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> }; const
 	jsonData=JSON.stringify(data); #>
 	<div id="mc4e-{{ widgetId }}" class="<?php echo esc_attr( $widget_name ); ?>-wrapper"
 		data-widget-id="{{ widgetId }}">
 		<input type="hidden" class="elementor-settings-data" value="{{ jsonData }}" />
 		<div class="<?php echo esc_attr( $widget_name ); ?>-react-root mc4e-react-root"></div>
 	</div>
-	<?php
+		<?php
 	}
 }

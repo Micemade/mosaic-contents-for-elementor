@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<ruleset name="Mosaic Contents for Elementor">
+	<description>Pragmatic WordPress coding standards for the plugin's PHP.</description>
+
+	<!-- What to scan. -->
+	<file>.</file>
+	<arg name="extensions" value="php"/>
+	<arg name="basepath" value="."/>
+	<arg name="parallel" value="8"/>
+	<arg name="colors"/>
+	<arg value="sp"/><!-- Show sniff codes and progress. -->
+
+	<!-- What to skip: dependencies, build output and generated assets. -->
+	<exclude-pattern>*/node_modules/*</exclude-pattern>
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>*/assets/*</exclude-pattern>
+	<exclude-pattern>*/build/*</exclude-pattern>
+	<exclude-pattern>*/languages/*</exclude-pattern>
+	<exclude-pattern>*.min.js</exclude-pattern>
+
+	<!--
+		Base: WordPress-Extra (WordPress-Core + best-practice/security sniffs)
+		WITHOUT WordPress-Docs, so docblocks are not force-required.
+	-->
+	<rule ref="WordPress-Extra">
+		<!-- Modern array syntax [] is allowed. -->
+		<exclude name="Generic.Arrays.DisallowShortArraySyntax"/>
+		<!-- Don't force Yoda conditions. -->
+		<exclude name="WordPress.PHP.YodaConditions"/>
+		<!-- Namespaced OOP files don't follow the class-*.php filename convention. -->
+		<exclude name="WordPress.Files.FileName"/>
+	</rule>
+
+	<!-- Verify translator text domain. -->
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="mosaic-contents-for-elementor"/>
+			</property>
+		</properties>
+	</rule>
+
+	<!-- Allowed prefixes for any global symbols (procedural code / constants). -->
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="Micemade\MosaicContentsElementor"/>
+				<element value="mc4e"/>
+				<element value="MC4E"/>
+			</property>
+		</properties>
+	</rule>
+
+	<!-- Target environment. -->
+	<config name="minimum_wp_version" value="7.0"/>
+</ruleset>

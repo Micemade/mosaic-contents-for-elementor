@@ -91,7 +91,7 @@ class RestAPI {
 				// posts, and `mc4e_allowed_post_meta_keys` can narrow that further.
 				'permission_callback' => '__return_true',
 				'args'                => array(
-					'post_ids' => array(
+					'post_ids'  => array(
 						'description'       => __( 'Comma-separated post IDs.', 'mosaic-contents-for-elementor' ),
 						'type'              => 'string',
 						'required'          => true,
@@ -189,9 +189,9 @@ class RestAPI {
 			return false;
 		}
 
-		$cache_key      = 'mc4e_api_rate_' . $user_id;
-		$limit_per_min  = 100;
-		$request_count  = (int) get_transient( $cache_key );
+		$cache_key     = 'mc4e_api_rate_' . $user_id;
+		$limit_per_min = 100;
+		$request_count = (int) get_transient( $cache_key );
 
 		if ( $request_count >= $limit_per_min ) {
 			return false;
@@ -302,7 +302,7 @@ class RestAPI {
 				return array(
 					'value'   => $id,
 					'label'   => get_the_title( $id ),
-					'mediaId' => get_post_thumbnail_id( $id ) ?: 0,
+					'mediaId' => (int) get_post_thumbnail_id( $id ),
 				);
 			},
 			$product_ids
@@ -350,11 +350,11 @@ class RestAPI {
 			}
 
 			$data[] = array(
-				'name'       => $post_type->name,
-				'label'      => $post_type->label,
-				'rest_base'  => $post_type->rest_base ?: $post_type->name,
-				'taxonomies' => array_values( $taxonomies ),
-				'taxonomy_labels' => $taxonomy_labels,
+				'name'                => $post_type->name,
+				'label'               => $post_type->label,
+				'rest_base'           => ! empty( $post_type->rest_base ) ? $post_type->rest_base : $post_type->name,
+				'taxonomies'          => array_values( $taxonomies ),
+				'taxonomy_labels'     => $taxonomy_labels,
 				'taxonomy_rest_bases' => $taxonomy_rest_bases,
 			);
 		}
@@ -483,7 +483,7 @@ class RestAPI {
 	 * @return WP_REST_Response
 	 */
 	public function get_post_meta_values( WP_REST_Request $request ): WP_REST_Response {
-		$post_ids  = array_filter( array_map( 'absint', explode( ',', (string) $request->get_param( 'post_ids' ) ) ) );
+		$post_ids = array_filter( array_map( 'absint', explode( ',', (string) $request->get_param( 'post_ids' ) ) ) );
 		// Case-preserving sanitize (meta keys can contain uppercase).
 		$meta_keys = array_filter(
 			array_map(
@@ -530,7 +530,7 @@ class RestAPI {
 			}
 
 			foreach ( $meta_keys as $meta_key ) {
-				$value = get_post_meta( $post_id, $meta_key, true );
+				$value                            = get_post_meta( $post_id, $meta_key, true );
 				$payload[ $post_id ][ $meta_key ] = is_scalar( $value ) ? (string) $value : '';
 			}
 		}

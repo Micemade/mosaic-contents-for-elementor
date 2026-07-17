@@ -168,11 +168,11 @@ class WidgetsLayout extends Widget_Base {
 		$this->add_control(
 			'mc4e_helper_notice',
 			array(
-				'type'         => Controls_Manager::NOTICE,
-				'notice_type'  => 'info',
-				'dismissible'  => false,
-				'heading'      => esc_html__( 'Helpers', 'mosaic-contents-for-elementor' ),
-				'content'      => esc_html__( 'Visual aid — a grid visualization for placing and resizing cells.', 'mosaic-contents-for-elementor' ),
+				'type'        => Controls_Manager::NOTICE,
+				'notice_type' => 'info',
+				'dismissible' => false,
+				'heading'     => esc_html__( 'Helpers', 'mosaic-contents-for-elementor' ),
+				'content'     => esc_html__( 'Visual aid — a grid visualization for placing and resizing cells.', 'mosaic-contents-for-elementor' ),
 			)
 		);
 
@@ -281,7 +281,7 @@ class WidgetsLayout extends Widget_Base {
 				'label'     => __( 'Text Color', 'mosaic-contents-for-elementor' ),
 				'type'      => Controls_Manager::COLOR,
 				'selectors' => array(
-					'{{WRAPPER}} {{CURRENT_ITEM}} .wl-widget-mount :where(.elementor-element, .elementor-heading-title, .elementor-icon-box-title)' => 'color: {{VALUE}};',
+					'{{WRAPPER}} {{CURRENT_ITEM}} .wl-widget-mount :where(.elementor-element, .elementor-heading-title, .elementor-icon-box-title)' => 'color: {{VALUE}}!important;',
 				),
 			)
 		);
@@ -292,7 +292,7 @@ class WidgetsLayout extends Widget_Base {
 				'label'     => __( 'Links Color', 'mosaic-contents-for-elementor' ),
 				'type'      => Controls_Manager::COLOR,
 				'selectors' => array(
-					'{{WRAPPER}} {{CURRENT_ITEM}} .wl-widget-mount :where(.elementor-element) a:not(.elementor-button)' => 'color: {{VALUE}};',
+					'{{WRAPPER}} {{CURRENT_ITEM}} .wl-widget-mount :where(.elementor-element) a:not(.elementor-button)' => 'color: {{VALUE}}!important;',
 				),
 			)
 		);
@@ -390,12 +390,12 @@ class WidgetsLayout extends Widget_Base {
 		$this->add_control(
 			'mc4e_cell_styles',
 			array(
-				'label'        => __( 'Cells', 'mosaic-contents-for-elementor' ),
-				'type'         => Controls_Manager::REPEATER,
-				'fields'       => $cell_repeater->get_controls(),
-				'title_field'  => 'Cell {{{ cell_id }}}',
+				'label'         => __( 'Cells', 'mosaic-contents-for-elementor' ),
+				'type'          => Controls_Manager::REPEATER,
+				'fields'        => $cell_repeater->get_controls(),
+				'title_field'   => 'Cell {{{ cell_id }}}',
 				'prevent_empty' => false,
-				'default'      => array(),
+				'default'       => array(),
 			)
 		);
 
@@ -441,7 +441,7 @@ class WidgetsLayout extends Widget_Base {
 				'label'     => __( 'Text Color', 'mosaic-contents-for-elementor' ),
 				'type'      => Controls_Manager::COLOR,
 				'selectors' => array(
-					'{{WRAPPER}} .wl-widget-mount :where(.elementor-element, .elementor-heading-title, .elementor-icon-box-title)' => 'color: {{VALUE}};',
+					'{{WRAPPER}} .wl-widget-mount :where(.elementor-element, .elementor-heading-title, .elementor-icon-box-title)' => 'color: {{VALUE}}!important;',
 				),
 			)
 		);
@@ -452,7 +452,7 @@ class WidgetsLayout extends Widget_Base {
 				'label'     => __( 'Links Color', 'mosaic-contents-for-elementor' ),
 				'type'      => Controls_Manager::COLOR,
 				'selectors' => array(
-					'{{WRAPPER}} .wl-widget-mount :where(.elementor-element) a:not(.elementor-button)' => 'color: {{VALUE}};',
+					'{{WRAPPER}} .wl-widget-mount :where(.elementor-element) a:not(.elementor-button)' => 'color: {{VALUE}}!important;',
 				),
 			)
 		);
@@ -566,6 +566,4 @@ class WidgetsLayout extends Widget_Base {
 
 		$this->end_controls_section();
 	}
-
-
 }

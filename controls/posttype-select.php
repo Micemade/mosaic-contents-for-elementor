@@ -84,7 +84,7 @@ class Posttype_Select extends Base_Data_Control {
 		// Enqueue the React-based control script.
 		wp_enqueue_script(
 			'mc4e-PostTypeSelectControl',
-			plugins_url( 'assets/admin/js/PostTypeSelectControl.js', dirname( __FILE__ ) ),
+			plugins_url( 'assets/admin/js/PostTypeSelectControl.js', __DIR__ ),
 			array( 'jquery', 'react', 'react-dom', 'wp-api-fetch', 'wp-i18n' ),
 			'1.0.0',
 			true
@@ -93,7 +93,7 @@ class Posttype_Select extends Base_Data_Control {
 		// Enqueue the control styles.
 		wp_enqueue_style(
 			'mc4e-PostTypeSelectControl',
-			plugins_url( 'assets/admin/css/PostTypeSelectControl.css', dirname( __FILE__ ) ),
+			plugins_url( 'assets/admin/css/PostTypeSelectControl.css', __DIR__ ),
 			array(),
 			'1.0.0'
 		);

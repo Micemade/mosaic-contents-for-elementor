@@ -61,7 +61,7 @@ class Meta_Key_Select extends Base_Data_Control {
 	public function enqueue() {
 		wp_enqueue_script(
 			'mc4e-MetaKeySelectControl',
-			plugins_url( 'assets/admin/js/MetaKeySelectControl.js', dirname( __FILE__ ) ),
+			plugins_url( 'assets/admin/js/MetaKeySelectControl.js', __DIR__ ),
 			array( 'jquery', 'react', 'react-dom', 'wp-api-fetch', 'wp-i18n' ),
 			'1.0.0',
 			true
@@ -69,7 +69,7 @@ class Meta_Key_Select extends Base_Data_Control {
 
 		wp_enqueue_style(
 			'mc4e-MetaKeySelectControl',
-			plugins_url( 'assets/admin/css/MetaKeySelectControl.css', dirname( __FILE__ ) ),
+			plugins_url( 'assets/admin/css/MetaKeySelectControl.css', __DIR__ ),
 			array(),
 			'1.0.0'
 		);

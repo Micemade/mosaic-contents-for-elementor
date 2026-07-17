@@ -29,10 +29,6 @@ class ContentLayout extends Widget_Base {
 	 */
 	private $post_types_data_cache = null;
 
-	public function __construct( $data = array(), $args = null ) {
-		parent::__construct( $data, $args );
-	}
-
 	public function get_style_depends() {
 		return array( 'custom-widget-css' );
 	}
@@ -77,7 +73,7 @@ class ContentLayout extends Widget_Base {
 			return $this->post_types_data_cache;
 		}
 
-		$data = $response->get_data();
+		$data                        = $response->get_data();
 		$this->post_types_data_cache = is_array( $data ) ? $data : array();
 
 		return $this->post_types_data_cache;
@@ -142,7 +138,7 @@ class ContentLayout extends Widget_Base {
 	 * @return array
 	 */
 	private function get_terms_options( $taxonomy = '' ) {
-		$options    = array();
+		$options = array();
 
 		if ( empty( $taxonomy ) ) {
 			return $options;
@@ -482,22 +478,22 @@ class ContentLayout extends Widget_Base {
 		$this->add_control(
 			'mc4e_reset_layout',
 			array(
-				'label'        => __( 'Reset to Predefined Layout', 'mosaic-contents-for-elementor' ),
-				'type'         => Controls_Manager::BUTTON,
-				'text'         => __( 'Reset Layout', 'mosaic-contents-for-elementor' ),
-				'description'  => __( 'Clear layout modifications and restore the selected predefined layout.', 'mosaic-contents-for-elementor' ),
-				'event'        => 'mosaic:resetLayout',
+				'label'       => __( 'Reset to Predefined Layout', 'mosaic-contents-for-elementor' ),
+				'type'        => Controls_Manager::BUTTON,
+				'text'        => __( 'Reset Layout', 'mosaic-contents-for-elementor' ),
+				'description' => __( 'Clear layout modifications and restore the selected predefined layout.', 'mosaic-contents-for-elementor' ),
+				'event'       => 'mosaic:resetLayout',
 			)
 		);
 
 		$this->add_control(
 			'mc4e_add_item',
 			array(
-				'label'        => __( 'Add Item', 'mosaic-contents-for-elementor' ),
-				'type'         => Controls_Manager::BUTTON,
-				'text'         => __( 'Add Item', 'mosaic-contents-for-elementor' ),
-				'description'  => __( 'Add a new item to the layout.', 'mosaic-contents-for-elementor' ),
-				'event'        => 'mosaic:addItem',
+				'label'       => __( 'Add Item', 'mosaic-contents-for-elementor' ),
+				'type'        => Controls_Manager::BUTTON,
+				'text'        => __( 'Add Item', 'mosaic-contents-for-elementor' ),
+				'description' => __( 'Add a new item to the layout.', 'mosaic-contents-for-elementor' ),
+				'event'       => 'mosaic:addItem',
 			)
 		);
 
@@ -568,30 +564,29 @@ class ContentLayout extends Widget_Base {
 			)
 		);
 
-
 		$this->add_control(
 			'mc4e_helper_notice',
 			array(
-				'type' => \Elementor\Controls_Manager::NOTICE,
+				'type'        => \Elementor\Controls_Manager::NOTICE,
 				'notice_type' => 'info',
 				'dismissible' => false,
-				'heading' => esc_html__( 'Helpers', 'mosaic-contents-for-elementor' ),
-				'content' => esc_html__( 'Visual aid - a grid visualization for placing and resizing items.', 'mosaic-contents-for-elementor' ),
+				'heading'     => esc_html__( 'Helpers', 'mosaic-contents-for-elementor' ),
+				'content'     => esc_html__( 'Visual aid - a grid visualization for placing and resizing items.', 'mosaic-contents-for-elementor' ),
 			)
 		);
 
 		$this->add_control(
 			'mc4e_helper_grid',
 			array(
-				'label'        => __( 'Grid Visualization', 'mosaic-contents-for-elementor' ),
-				'type'         => Controls_Manager::SELECT,
-				'default'      => 'none',
-				'options'      => array(
+				'label'       => __( 'Grid Visualization', 'mosaic-contents-for-elementor' ),
+				'type'        => Controls_Manager::SELECT,
+				'default'     => 'none',
+				'options'     => array(
 					'none'   => __( 'None', 'mosaic-contents-for-elementor' ),
 					'front'  => __( 'Front', 'mosaic-contents-for-elementor' ),
 					'behind' => __( 'Behind', 'mosaic-contents-for-elementor' ),
 				),
-				'description'  => __( 'Visual aid for underlying grid structure.', 'mosaic-contents-for-elementor' ),
+				'description' => __( 'Visual aid for underlying grid structure.', 'mosaic-contents-for-elementor' ),
 			)
 		);
 
@@ -661,10 +656,10 @@ class ContentLayout extends Widget_Base {
 		// ── Style Section ────────────────────────────────────────────────
 		$this->start_controls_section(
 			'card_style_settings_section',
-			[
+			array(
 				'label' => esc_html__( 'Item Card Style', 'mosaic-contents-for-elementor' ),
-				'tab' => \Elementor\Controls_Manager::TAB_STYLE,
-			]
+				'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
+			)
 		);
 
 		$this->add_control(
@@ -686,29 +681,6 @@ class ContentLayout extends Widget_Base {
 				'type' => Controls_Manager::DIVIDER,
 			)
 		);
-/* 
-		$this->add_control(
-			'popover-toggle-test',
-			[
-				'label' => esc_html__( 'Popover test', 'mosaic-contents-for-elementor' ),
-				'type' => \Elementor\Controls_Manager::POPOVER_TOGGLE,
-				'label_off' => esc_html__( 'Default', 'mosaic-contents-for-elementor' ),
-				'label_on' => esc_html__( 'Custom', 'mosaic-contents-for-elementor' ),
-				'return_value' => 'yes',
-			]
-		);
-		$this->start_popover();
-		$this->add_control(
-				'popover_content',
-				array(
-					'type'            => Controls_Manager::RAW_HTML,
-					'raw'             =>  __( '<strong>JUST AN EMPTY POPOVER', 'mosaic-contents-for-elementor' ) ,
-					'separator'       => 'after',
-					'content_classes' => 'elementor-panel-alert elementor-panel-alert-info',
-				)
-			);
-		$this->end_popover();
-		 */
 
 		// ACTIVE, HOVER, INACTIVE.
 		$this->start_controls_tabs( 'card_styles' );
@@ -724,23 +696,23 @@ class ContentLayout extends Widget_Base {
 		$this->add_responsive_control(
 			'mc4e_title_size',
 			array(
-				'label'     => esc_html__( 'Title size', 'mosaic-contents-for-elementor' ),
-				'type'      => Controls_Manager::SLIDER,
-				'size_units' => array( 'px', 'em', 'rem', 'vw', 'vh' ),
-				'default'   => array(
+				'label'          => esc_html__( 'Title size', 'mosaic-contents-for-elementor' ),
+				'type'           => Controls_Manager::SLIDER,
+				'size_units'     => array( 'px', 'em', 'rem', 'vw', 'vh' ),
+				'default'        => array(
 					'size' => 24,
 					'unit' => 'px',
 				),
-				'tablet_default' => [
+				'tablet_default' => array(
 					'size' => 22,
 					'unit' => 'px',
-				],
-				'mobile_default' => [
+				),
+				'mobile_default' => array(
 					'size' => 20,
 					'unit' => 'px',
-				],
-				'range'     => self::get_range(),
-				'selectors' => array(
+				),
+				'range'          => self::get_range(),
+				'selectors'      => array(
 					'#mc4e-{{ID}} .flex-wrapper .item-elements .name' => 'font-size:{{SIZE}}{{UNIT}};',
 				),
 			)
@@ -749,23 +721,23 @@ class ContentLayout extends Widget_Base {
 		$this->add_responsive_control(
 			'mc4e_excerpt_size',
 			array(
-				'label'     => esc_html__( 'Excerpt size', 'mosaic-contents-for-elementor' ),
-				'type'      => Controls_Manager::SLIDER,
-				'size_units' => array( 'px', 'em', 'rem', 'vw', 'vh' ),
-				'default'   => array(
+				'label'          => esc_html__( 'Excerpt size', 'mosaic-contents-for-elementor' ),
+				'type'           => Controls_Manager::SLIDER,
+				'size_units'     => array( 'px', 'em', 'rem', 'vw', 'vh' ),
+				'default'        => array(
 					'size' => 16,
 					'unit' => 'px',
 				),
-				'tablet_default' => [
+				'tablet_default' => array(
 					'size' => 16,
 					'unit' => 'px',
-				],
-				'mobile_default' => [
+				),
+				'mobile_default' => array(
 					'size' => 14,
 					'unit' => 'px',
-				],
-				'range'     => self::get_range(),
-				'selectors' => array(
+				),
+				'range'          => self::get_range(),
+				'selectors'      => array(
 					'#mc4e-{{ID}} .flex-wrapper .item-elements .excerpt' => 'font-size:{{SIZE}}{{UNIT}};',
 				),
 			)
@@ -774,23 +746,23 @@ class ContentLayout extends Widget_Base {
 		$this->add_responsive_control(
 			'mc4e_readmore_size',
 			array(
-				'label'     => esc_html__( 'Read more text size', 'mosaic-contents-for-elementor' ),
-				'type'      => Controls_Manager::SLIDER,
-				'size_units' => array( 'px', 'em', 'rem', 'vw', 'vh' ),
-				'default'   => array(
+				'label'          => esc_html__( 'Read more text size', 'mosaic-contents-for-elementor' ),
+				'type'           => Controls_Manager::SLIDER,
+				'size_units'     => array( 'px', 'em', 'rem', 'vw', 'vh' ),
+				'default'        => array(
 					'size' => 16,
 					'unit' => 'px',
 				),
-				'tablet_default' => [
+				'tablet_default' => array(
 					'size' => 14,
 					'unit' => 'px',
-				],
-				'mobile_default' => [
+				),
+				'mobile_default' => array(
 					'size' => 12,
 					'unit' => 'px',
-				],
-				'range'     => self::get_range(),
-				'selectors' => array(
+				),
+				'range'          => self::get_range(),
+				'selectors'      => array(
 					'#mc4e-{{ID}} .flex-wrapper .item-elements .read-more-link' => 'font-size:{{SIZE}}{{UNIT}} !important;',
 				),
 			)
@@ -799,40 +771,40 @@ class ContentLayout extends Widget_Base {
 		$this->add_responsive_control(
 			'mc4e_taxonomy_size',
 			array(
-				'label'     => esc_html__( 'Terms text size', 'mosaic-contents-for-elementor' ),
-				'type'      => Controls_Manager::SLIDER,
-				'size_units' => array( 'px', 'em', 'rem', 'vw', 'vh' ),
-				'default'   => array(
+				'label'          => esc_html__( 'Terms text size', 'mosaic-contents-for-elementor' ),
+				'type'           => Controls_Manager::SLIDER,
+				'size_units'     => array( 'px', 'em', 'rem', 'vw', 'vh' ),
+				'default'        => array(
 					'size' => 14,
 					'unit' => 'px',
 				),
-				'tablet_default' => [
+				'tablet_default' => array(
 					'size' => 14,
 					'unit' => 'px',
-				],
-				'mobile_default' => [
+				),
+				'mobile_default' => array(
 					'size' => 12,
 					'unit' => 'px',
-				],
-				'range'     => self::get_range(), 
-				'selectors' => array(
+				),
+				'range'          => self::get_range(),
+				'selectors'      => array(
 					'#mc4e-{{ID}} .flex-wrapper .item-elements .taxonomy' => 'font-size:{{SIZE}}{{UNIT}};',
 				),
 			)
 		);
 
 		$this->add_control(
-				'mc4e_excerpt_truncate',
-				array(
-					'label'        => esc_html__( 'Truncate excerpt', 'mosaic-contents-for-elementor' ),
-					'type'         => Controls_Manager::SWITCHER,
-					'label_on'     => __( 'Yes', 'mosaic-contents-for-elementor' ),
-					'label_off'    => __( 'No', 'mosaic-contents-for-elementor' ),
-					'return_value' => 'yes',
-					'default'      => 'yes',
-					'separator'    => 'before',
-				)
-			);
+			'mc4e_excerpt_truncate',
+			array(
+				'label'        => esc_html__( 'Truncate excerpt', 'mosaic-contents-for-elementor' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'label_on'     => __( 'Yes', 'mosaic-contents-for-elementor' ),
+				'label_off'    => __( 'No', 'mosaic-contents-for-elementor' ),
+				'return_value' => 'yes',
+				'default'      => 'yes',
+				'separator'    => 'before',
+			)
+		);
 
 			$this->add_control(
 				'mc4e_excerpt_truncate_lines',
@@ -852,50 +824,50 @@ class ContentLayout extends Widget_Base {
 			);
 
 			$this->add_responsive_control(
-			'mc4e_date_size',
-			array(
-				'label'     => esc_html__( 'Date size', 'mosaic-contents-for-elementor' ),
-				'type'      => Controls_Manager::SLIDER,
-				'size_units' => array( 'px', 'em', 'rem', 'vw', 'vh' ),
-				'default'   => array(
-					'size' => 14,
-					'unit' => 'px',
-				),
-				'tablet_default' => [
-					'size' => 14,
-					'unit' => 'px',
-				],
-				'mobile_default' => [
-					'size' => 12,
-					'unit' => 'px',
-				],
-				'range'     => self::get_range(), 
-				'selectors' => array(
-					'#mc4e-{{ID}} .flex-wrapper .item-elements .post-date' => 'font-size:{{SIZE}}{{UNIT}};',
-				),
-			)
-		);
+				'mc4e_date_size',
+				array(
+					'label'          => esc_html__( 'Date size', 'mosaic-contents-for-elementor' ),
+					'type'           => Controls_Manager::SLIDER,
+					'size_units'     => array( 'px', 'em', 'rem', 'vw', 'vh' ),
+					'default'        => array(
+						'size' => 14,
+						'unit' => 'px',
+					),
+					'tablet_default' => array(
+						'size' => 14,
+						'unit' => 'px',
+					),
+					'mobile_default' => array(
+						'size' => 12,
+						'unit' => 'px',
+					),
+					'range'          => self::get_range(),
+					'selectors'      => array(
+						'#mc4e-{{ID}} .flex-wrapper .item-elements .post-date' => 'font-size:{{SIZE}}{{UNIT}};',
+					),
+				)
+			);
 
 		$this->add_responsive_control(
 			'mc4e_author_size',
 			array(
-				'label'     => esc_html__( 'Author text size', 'mosaic-contents-for-elementor' ),
-				'type'      => Controls_Manager::SLIDER,
-				'size_units' => array( 'px', 'em', 'rem', 'vw', 'vh' ),
-				'default'   => array(
+				'label'          => esc_html__( 'Author text size', 'mosaic-contents-for-elementor' ),
+				'type'           => Controls_Manager::SLIDER,
+				'size_units'     => array( 'px', 'em', 'rem', 'vw', 'vh' ),
+				'default'        => array(
 					'size' => 14,
 					'unit' => 'px',
 				),
-				'tablet_default' => [
+				'tablet_default' => array(
 					'size' => 14,
 					'unit' => 'px',
-				],
-				'mobile_default' => [
+				),
+				'mobile_default' => array(
 					'size' => 12,
 					'unit' => 'px',
-				],
-				'range'     => self::get_range(), 
-				'selectors' => array(
+				),
+				'range'          => self::get_range(),
+				'selectors'      => array(
 					'#mc4e-{{ID}} .flex-wrapper .item-elements .post-author' => 'font-size:{{SIZE}}{{UNIT}};',
 				),
 			)
@@ -903,7 +875,6 @@ class ContentLayout extends Widget_Base {
 
 		$this->end_controls_tab();
 
-		
 		// The layout tab.
 		$this->start_controls_tab(
 			'layout_tab',
@@ -914,10 +885,10 @@ class ContentLayout extends Widget_Base {
 		$this->add_control(
 			'mc4e_item_layout',
 			array(
-				'label'       => __( 'Item Card Layout', 'mosaic-contents-for-elementor' ),
-				'type'        => Controls_Manager::SELECT,
-				'default'     => 'vertical',
-				'options'     => array(
+				'label'   => __( 'Item Card Layout', 'mosaic-contents-for-elementor' ),
+				'type'    => Controls_Manager::SELECT,
+				'default' => 'vertical',
+				'options' => array(
 					'image-background' => __( 'Image background', 'mosaic-contents-for-elementor' ),
 					'horizontal'       => __( 'Image left', 'mosaic-contents-for-elementor' ),
 					'horizontal-alt'   => __( 'Image right', 'mosaic-contents-for-elementor' ),
@@ -928,31 +899,32 @@ class ContentLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'hr_layout_align', [ 'type' => Controls_Manager::DIVIDER, ]
+			'hr_layout_align',
+			array( 'type' => Controls_Manager::DIVIDER )
 		);
 
 		$this->add_responsive_control(
 			'mc4e_item_align',
 			array(
-				'label'        => esc_html__( 'Align', 'mosaic-contents-for-elementor' ),
-				'type'         => Controls_Manager::CHOOSE,
-				'options'      => array(
-					'flex-start'   => array(
+				'label'     => esc_html__( 'Align', 'mosaic-contents-for-elementor' ),
+				'type'      => Controls_Manager::CHOOSE,
+				'options'   => array(
+					'flex-start' => array(
 						'title' => __( 'Left', 'mosaic-contents-for-elementor' ),
 						'icon'  => 'eicon-h-align-left',
 					),
-					'center' => array(
+					'center'     => array(
 						'title' => __( 'Center', 'mosaic-contents-for-elementor' ),
 						'icon'  => 'eicon-h-align-center',
 					),
-					'flex-end'  => array(
+					'flex-end'   => array(
 						'title' => __( 'Right', 'mosaic-contents-for-elementor' ),
 						'icon'  => 'eicon-h-align-right',
 					),
 
 				),
-				'default'      => '',
-				'selectors'     => array(
+				'default'   => '',
+				'selectors' => array(
 					'{{WRAPPER}} .item-wrapper .flex-wrapper .item-elements' => 'justify-content: {{VALUE}};',
 					'{{WRAPPER}} .item-wrapper .flex-wrapper .item-elements > *' => 'justify-content: {{VALUE}};',
 				),
@@ -986,28 +958,30 @@ class ContentLayout extends Widget_Base {
 		);
 
 		$this->add_control(
-			'hr_layout_gap', [ 'type' => Controls_Manager::DIVIDER, ]
+			'hr_layout_gap',
+			array( 'type' => Controls_Manager::DIVIDER )
 		);
 
 		$this->add_responsive_control(
 			'mc4e_elements_gap',
 			array(
-				'label'     => esc_html__( 'Elements gap', 'mosaic-contents-for-elementor' ),
-				'type'      => Controls_Manager::SLIDER,
+				'label'      => esc_html__( 'Elements gap', 'mosaic-contents-for-elementor' ),
+				'type'       => Controls_Manager::SLIDER,
 				'size_units' => array( 'px', '%', 'em', 'rem', 'vw', 'vh' ),
-				'default'   => array(
+				'default'    => array(
 					'size' => 0.2,
 					'unit' => 'em',
 				),
-				'range'     => self::get_range(),
-				'selectors' => array(
+				'range'      => self::get_range(),
+				'selectors'  => array(
 					'{{WRAPPER}} .item-elements' => 'gap:{{SIZE}}{{UNIT}};',
 				),
 			)
 		);
 
 		$this->add_control(
-			'hr_layout_padding', [ 'type' => Controls_Manager::DIVIDER, ]
+			'hr_layout_padding',
+			array( 'type' => Controls_Manager::DIVIDER )
 		);
 
 		$this->add_responsive_control(
@@ -1016,7 +990,7 @@ class ContentLayout extends Widget_Base {
 				'label'      => __( 'Padding', 'mosaic-contents-for-elementor' ),
 				'type'       => Controls_Manager::DIMENSIONS,
 				'size_units' => array( 'px', '%', 'em', 'rem', 'vw', 'vh' ),
-				'selectors' => array(
+				'selectors'  => array(
 					'{{WRAPPER}} .item-wrapper .flex-wrapper' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
 				),
 			)
@@ -1031,7 +1005,7 @@ class ContentLayout extends Widget_Base {
 				'label' => esc_html__( 'Image', 'mosaic-contents-for-elementor' ),
 			)
 		);
-		
+
 		$this->add_responsive_control(
 			'mc4e_image_size',
 			array(
@@ -1041,7 +1015,7 @@ class ContentLayout extends Widget_Base {
 					'size' => 50,
 					'unit' => '',
 				),
-				'range'       => array(
+				'range'     => array(
 					'em' => array(
 						'min'  => 1,
 						'max'  => 100,
@@ -1052,19 +1026,19 @@ class ContentLayout extends Widget_Base {
 					'{{WRAPPER}} .item-wrapper .featured-image' => 'flex-basis: {{size}}%;',
 					'{{WRAPPER}} .item-wrapper .flex-wrapper' => 'flex-basis: calc(100% - {{size}}%);',
 				),
-				'condition'   => array(
+				'condition' => array(
 					'mc4e_item_layout!' => 'image-background',
-				)
+				),
 			)
 		);
 
 		$this->add_control(
 			'mc4e_image_resolution',
 			array(
-				'label'       => esc_html__( 'Image resolution', 'mosaic-contents-for-elementor' ),
-				'type'        => Controls_Manager::SELECT,
-				'default'     => 'automatic',
-				'options'     => $this->get_image_sizes(),
+				'label'   => esc_html__( 'Image resolution', 'mosaic-contents-for-elementor' ),
+				'type'    => Controls_Manager::SELECT,
+				'default' => 'automatic',
+				'options' => $this->get_image_sizes(),
 			)
 		);
 
@@ -1098,7 +1072,7 @@ class ContentLayout extends Widget_Base {
 		);
 
 		$this->end_controls_tab();
-		
+
 		// item colors tab.
 		$this->start_controls_tab(
 			'item_colors_tab',
@@ -1106,7 +1080,7 @@ class ContentLayout extends Widget_Base {
 				'label' => esc_html__( 'Colors', 'mosaic-contents-for-elementor' ),
 			)
 		);
-		
+
 		$this->add_control(
 			'mc4e_text_color',
 			array(
@@ -1133,15 +1107,13 @@ class ContentLayout extends Widget_Base {
 		$this->add_group_control(
 			\Elementor\Group_Control_Background::get_type(),
 			array(
-				'name'      => 'mc4e_background_color',
-				'label'     => esc_html__( 'Background', 'mosaic-contents-for-elementor' ),
-				'types'     => array( 'classic', 'gradient' ),
+				'name'     => 'mc4e_background_color',
+				'label'    => esc_html__( 'Background', 'mosaic-contents-for-elementor' ),
+				'types'    => array( 'classic', 'gradient' ),
 				'selector' => '{{WRAPPER}} .item-wrapper .flex-wrapper',
-				'default'   => '#ffffff',
+				'default'  => '#ffffff',
 			)
 		);
-
-
 
 		$this->end_controls_tab();
 
@@ -1155,9 +1127,9 @@ class ContentLayout extends Widget_Base {
 		$this->add_group_control(
 			Group_Control_Border::get_type(),
 			array(
-				'name'      => 'mc4e_item_border',
-				'label'     => __( 'items border', 'mosaic-contents-for-elementor' ),
-				'selector'  => '{{WRAPPER}} .item-wrapper',
+				'name'     => 'mc4e_item_border',
+				'label'    => __( 'items border', 'mosaic-contents-for-elementor' ),
+				'selector' => '{{WRAPPER}} .item-wrapper',
 			)
 		);
 
@@ -1168,7 +1140,7 @@ class ContentLayout extends Widget_Base {
 				'label'      => __( 'Border Radius', 'mosaic-contents-for-elementor' ),
 				'type'       => Controls_Manager::DIMENSIONS,
 				'size_units' => array( 'px', '%' ),
-				'selectors' => array(
+				'selectors'  => array(
 					'{{WRAPPER}} .item-wrapper' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
 				),
 			)
@@ -1177,11 +1149,11 @@ class ContentLayout extends Widget_Base {
 		$this->add_group_control(
 			Group_Control_Box_Shadow::get_type(),
 			array(
-				'name'      => 'mc4e_box_shadow',
-				'selector'  => '{{WRAPPER}} .item-wrapper',
+				'name'     => 'mc4e_box_shadow',
+				'selector' => '{{WRAPPER}} .item-wrapper',
 			)
 		);
-		
+
 		$this->end_controls_tab();
 
 		$this->end_controls_tabs();

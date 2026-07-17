@@ -8,9 +8,9 @@ const events = {};
 /**
  * Subscribe to an event.
  *
- * @param {string} eventName - Name of the event
- * @param {Function} callback - Callback function
- * @returns {Function} Unsubscribe function
+ * @param {string}   eventName - Name of the event
+ * @param {Function} callback  - Callback function
+ * @return {Function} Unsubscribe function
  */
 export function subscribe(eventName, callback) {
 	if (!events[eventName]) {
@@ -28,7 +28,7 @@ export function subscribe(eventName, callback) {
  * Publish an event.
  *
  * @param {string} eventName - Name of the event
- * @param {*} data - Optional data to pass to subscribers
+ * @param {*}      data      - Optional data to pass to subscribers
  */
 export function publish(eventName, data) {
 	if (!events[eventName]) {

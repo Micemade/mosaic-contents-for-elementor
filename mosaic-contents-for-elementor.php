@@ -6,8 +6,8 @@
  * Author URI: https://github.com/Micemade/mosaic-contents-for-elementor
  * Description: A set of Elementor widgets for building general-purpose content layouts.
  * Version: 0.1.0
- * Requires at least: 7.0
- * Requires PHP:      8.3.0
+ * Requires at least: 6.0
+ * Requires PHP:      8.0
  * License: GPLv2 or later
  * License URL: http://www.gnu.org/licenses/gpl-2.0.txt
  * text-domain: mosaic-contents-for-elementor
@@ -45,7 +45,7 @@ final class MosaicContentsElementor {
 	const ELEMENTOR_MINIMUM_VERSION = '3.0.0';
 	const PHP_MINIMUM_VERSION       = '7.0';
 
-	private static $_instance = null;
+	private static $instance = null;
 
 	public function __construct() {
 		add_action( 'plugins_loaded', array( $this, 'init_plugin' ) );
@@ -149,7 +149,10 @@ final class MosaicContentsElementor {
 		wp_enqueue_script( 'react-dom' );
 
 		// Panel-only styles (parent window, not the preview iframe).
-		wp_register_style( 'mc4e-editor-panel', false );
+		// Dummy handle (no $src) used only to carry inline styles below;
+		// the version has no cache-busting effect without a file, but is
+		// passed explicitly per WordPress enqueue standards.
+		wp_register_style( 'mc4e-editor-panel', false, array(), MC4E_VERSION );
 		wp_enqueue_style( 'mc4e-editor-panel' );
 		wp_add_inline_style(
 			'mc4e-editor-panel',
@@ -200,17 +203,15 @@ final class MosaicContentsElementor {
 		// Register widgets with elementor.
 		$widgets_manager->register( new ContentLayout() );
 		$widgets_manager->register( new WidgetsLayout() );
-
 	}
 
 	public static function get_instance() {
 
-		if ( null == self::$_instance ) {
-			self::$_instance = new self();
+		if ( null === self::$instance ) {
+			self::$instance = new self();
 		}
 
-		return self::$_instance;
-
+		return self::$instance;
 	}
 
 	public function create_new_category( $elements_manager ) {
@@ -222,7 +223,6 @@ final class MosaicContentsElementor {
 				'icon'  => 'fa fa-plug',
 			)
 		);
-
 	}
 
 	public function enqueue_scripts() {
@@ -230,22 +230,22 @@ final class MosaicContentsElementor {
 		if ( ! class_exists( '\Elementor\Plugin' ) ) {
 			return;
 		}
-		
+
 		// Skip on Elementor preview (editor uses its own script)
 		if ( \Elementor\Plugin::$instance->preview->is_preview_mode() ) {
 			return;
 		}
-		
+
 		// Check if current page uses Elementor
 		$post_id = get_the_ID();
 		if ( ! $post_id || ! \Elementor\Plugin::$instance->db->is_built_with_elementor( $post_id ) ) {
 			return;
 		}
-		
+
 		// Enqueue WordPress's React and ReactDOM
 		wp_enqueue_script( 'react' );
 		wp_enqueue_script( 'react-dom' );
-		
+
 		// Frontend-only script (lightweight, no editor features)
 		wp_enqueue_script(
 			'mc4e-frontend-js',
@@ -280,7 +280,6 @@ final class MosaicContentsElementor {
 
 		wp_localize_script( 'mc4e-frontend-js', 'MC4E', $localize_data );
 		wp_localize_script( 'mc4e-editor-js', 'MC4E', $localize_data );
-
 	}
 
 	/**

@@ -1,0 +1,21 @@
+# EditorConfig — https://editorconfig.org
+# Baseline formatting rules shared across editors/team, independent of any
+# single extension's settings. Requires the "EditorConfig for VS Code" extension.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = tab
+indent_size = 4
+
+# YAML does not allow tabs.
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
+
+# Preserve hard line breaks (two trailing spaces) in Markdown.
+[*.md]
+trim_trailing_whitespace = false

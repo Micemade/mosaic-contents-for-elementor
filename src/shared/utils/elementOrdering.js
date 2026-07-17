@@ -14,7 +14,7 @@
  * matching the pattern used in rendering.
  *
  * @param {string} label - Display label from repeater control.
- * @returns {string} Normalized key.
+ * @return {string} Normalized key.
  */
 export function normalizeLabel(label) {
 	return label.toLowerCase().replace(/\s+/g, '_');
@@ -27,7 +27,7 @@ export function normalizeLabel(label) {
  * breakpoint names whose switcher is off.
  *
  * @param {Object} item - Repeater item with visible_{breakpoint} properties.
- * @returns {Array<string>} Breakpoint names (e.g. ["tablet", "mobile"]).
+ * @return {Array<string>} Breakpoint names (e.g. ["tablet", "mobile"]).
  */
 export function getHiddenBreakpoints(item) {
 	const hidden = [];
@@ -43,7 +43,7 @@ export function getHiddenBreakpoints(item) {
  * Get CSS class names for breakpoint-based visibility hiding.
  *
  * @param {Object} item - Repeater item with visible_{breakpoint} properties.
- * @returns {string} Space-separated CSS class string (e.g. "mosaic-hide-mobile mosaic-hide-tablet").
+ * @return {string} Space-separated CSS class string (e.g. "mosaic-hide-mobile mosaic-hide-tablet").
  */
 export function getVisibilityClasses(item) {
 	return getHiddenBreakpoints(item)
@@ -54,9 +54,9 @@ export function getVisibilityClasses(item) {
 /**
  * Parse element ordering data into an ordered array of element configs.
  *
- * @param {Array} ordering - Raw repeater data from Elementor setting.
+ * @param {Array} ordering        - Raw repeater data from Elementor setting.
  * @param {Array} defaultOrdering - Default ordering if setting is empty/invalid.
- * @returns {Array<{key: string, label: string, hideClasses: string, hiddenBreakpoints: Array<string>}>}
+ * @return {Array<{key: string, label: string, hideClasses: string, hiddenBreakpoints: Array<string>}>}
  */
 export function parseElementOrdering(ordering, defaultOrdering) {
 	const data = Array.isArray(ordering) && ordering.length > 0

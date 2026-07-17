@@ -1,6 +1,6 @@
 /**
  * Widget Registry
- * 
+ *
  * Central registry mapping widget names to their React components and settings mappers.
  * Add new widgets here to make them available throughout the system.
  */

@@ -71,7 +71,7 @@ class Saved_Setups extends Base_Data_Control {
 		// Enqueue the React-based control script.
 		wp_enqueue_script(
 			'mc4e-saved-setups-control',
-			plugins_url( 'assets/admin/js/saved-setups-control.js', dirname( __FILE__ ) ),
+			plugins_url( 'assets/admin/js/saved-setups-control.js', __DIR__ ),
 			array( 'jquery', 'react', 'react-dom', 'wp-api-fetch', 'wp-i18n' ),
 			'1.0.0',
 			true
@@ -80,7 +80,7 @@ class Saved_Setups extends Base_Data_Control {
 		// Enqueue the control styles.
 		wp_enqueue_style(
 			'mc4e-saved-setups-control',
-			plugins_url( 'assets/admin/css/saved-setups-control.css', dirname( __FILE__ ) ),
+			plugins_url( 'assets/admin/css/saved-setups-control.css', __DIR__ ),
 			array(),
 			'1.0.0'
 		);

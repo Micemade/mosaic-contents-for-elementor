@@ -1,6 +1,6 @@
 /**
  * Add Grid Item Utility for Elementor
- * 
+ *
  * Provides functionality to add new items to the grid layout.
  * Adapted from the Gutenberg AddItem component for Elementor's architecture.
  */
@@ -9,10 +9,10 @@ import { getActiveBreakpointNames } from '../../core/elementor-utils';
 
 /**
  * Find the highest existing item number in the layouts
- * 
- * @param {Object} layouts - Layout object with breakpoint keys (desktop, tablet, mobile)
+ *
+ * @param {Object} layouts    - Layout object with breakpoint keys (desktop, tablet, mobile)
  * @param {string} itemPrefix - Prefix for item IDs (e.g., 'item-')
- * @returns {number} Highest item number found
+ * @return {number} Highest item number found
  */
 const getHighestItemNumber = (layouts, itemPrefix = 'item-') => {
 	// Only get arrays (breakpoint layouts), exclude zindex and other non-array properties
@@ -38,10 +38,10 @@ const getHighestItemNumber = (layouts, itemPrefix = 'item-') => {
  * layout. Falls back to getHighestItemNumber + 1 when no gap exists (should
  * not happen if callers respect the cap).
  *
- * @param {Object} layouts - Layout object with breakpoint keys
+ * @param {Object} layouts    - Layout object with breakpoint keys
  * @param {string} itemPrefix - Prefix for item IDs (e.g., 'group-item-')
- * @param {number} maxItems - Upper bound of the ID range (e.g., 3)
- * @returns {number} First available item number
+ * @param {number} maxItems   - Upper bound of the ID range (e.g., 3)
+ * @return {number} First available item number
  */
 const getFirstAvailableItemNumber = (layouts, itemPrefix, maxItems) => {
 	const layoutArrays = Object.entries(layouts)
@@ -59,7 +59,7 @@ const getFirstAvailableItemNumber = (layouts, itemPrefix, maxItems) => {
 	);
 
 	for (let n = 1; n <= maxItems; n++) {
-		if (!existingNumbers.has(n)) return n;
+		if (!existingNumbers.has(n)) {return n;}
 	}
 	// Fallback (shouldn't be reached when callers check capacity).
 	return getHighestItemNumber(layouts, itemPrefix) + 1;
@@ -67,13 +67,13 @@ const getFirstAvailableItemNumber = (layouts, itemPrefix, maxItems) => {
 
 /**
  * Check if a position is occupied by any existing item
- * 
- * @param {Array} existingLayouts - Existing layout items
- * @param {number} x - X position to check
- * @param {number} y - Y position to check
- * @param {number} w - Width of item to place
- * @param {number} h - Height of item to place
- * @returns {boolean} True if position overlaps with any existing item
+ *
+ * @param {Array}  existingLayouts - Existing layout items
+ * @param {number} x               - X position to check
+ * @param {number} y               - Y position to check
+ * @param {number} w               - Width of item to place
+ * @param {number} h               - Height of item to place
+ * @return {boolean} True if position overlaps with any existing item
  */
 const isPositionOccupied = (existingLayouts, x, y, w, h) => {
 	return existingLayouts.some(item => {
@@ -87,11 +87,11 @@ const isPositionOccupied = (existingLayouts, x, y, w, h) => {
 /**
  * Find the first available gap in the grid and calculate available space
  * Scans from top-left, row by row
- * 
- * @param {Array} existingLayouts - Existing layout items
- * @param {number} gridWidth - Number of columns in the grid
- * @param {number} minWidth - Minimum width to consider as a valid gap
- * @returns {Object|null} Position { x, y, availableWidth } or null if no gap found
+ *
+ * @param {Array}  existingLayouts - Existing layout items
+ * @param {number} gridWidth       - Number of columns in the grid
+ * @param {number} minWidth        - Minimum width to consider as a valid gap
+ * @return {Object|null} Position { x, y, availableWidth } or null if no gap found
  */
 const findFirstAvailableGap = (existingLayouts, gridWidth, minWidth = 1) => {
 	if (!existingLayouts || existingLayouts.length === 0) {
@@ -127,13 +127,13 @@ const findFirstAvailableGap = (existingLayouts, gridWidth, minWidth = 1) => {
 
 /**
  * Calculate the maximum height available at a position without overlapping
- * 
- * @param {Array} existingLayouts - Existing layout items
- * @param {number} x - X position
- * @param {number} y - Y position
- * @param {number} width - Width of the item
- * @param {number} maxHeight - Maximum height to check
- * @returns {number} Maximum available height
+ *
+ * @param {Array}  existingLayouts - Existing layout items
+ * @param {number} x               - X position
+ * @param {number} y               - Y position
+ * @param {number} width           - Width of the item
+ * @param {number} maxHeight       - Maximum height to check
+ * @return {number} Maximum available height
  */
 const getAvailableHeight = (existingLayouts, x, y, width, maxHeight) => {
 	for (let h = 1; h <= maxHeight; h++) {
@@ -147,13 +147,13 @@ const getAvailableHeight = (existingLayouts, x, y, width, maxHeight) => {
 /**
  * Find the height to use for a new item based on nearby items,
  * constrained to not overlap with any existing items
- * 
- * @param {Array} existingLayouts - Existing layout items
- * @param {number} gapX - X position of the gap
- * @param {number} gapY - Y position of the gap
- * @param {number} gapWidth - Width of the new item
- * @param {number} defaultHeight - Default height to use if no match found
- * @returns {number} Height to use
+ *
+ * @param {Array}  existingLayouts - Existing layout items
+ * @param {number} gapX            - X position of the gap
+ * @param {number} gapY            - Y position of the gap
+ * @param {number} gapWidth        - Width of the new item
+ * @param {number} defaultHeight   - Default height to use if no match found
+ * @return {number} Height to use
  */
 const getHeightFromNearbyItems = (existingLayouts, gapX, gapY, gapWidth, defaultHeight) => {
 	if (!existingLayouts || existingLayouts.length === 0) {
@@ -191,16 +191,16 @@ const getHeightFromNearbyItems = (existingLayouts, gapX, gapY, gapWidth, default
 
 /**
  * Build a new item for a specific breakpoint
- * 
+ *
  * Placement priority:
  * 1. First available gap in existing layout (from top-left), filling horizontal space
  * 2. New row at the bottom
- * 
- * @param {string} device - Breakpoint name (desktop, tablet, mobile)
- * @param {Array} existingLayouts - Existing layout items for this breakpoint
- * @param {number} gridWidth - Number of columns for this breakpoint
- * @param {string} itemId - ID for the new item
- * @returns {Object} New layout item
+ *
+ * @param {string} device          - Breakpoint name (desktop, tablet, mobile)
+ * @param {Array}  existingLayouts - Existing layout items for this breakpoint
+ * @param {number} gridWidth       - Number of columns for this breakpoint
+ * @param {string} itemId          - ID for the new item
+ * @return {Object} New layout item
  */
 const buildNewItemForDevice = (device, existingLayouts, gridWidth, itemId) => {
 	// Default dimensions based on device
@@ -278,12 +278,12 @@ const buildNewItemForDevice = (device, existingLayouts, gridWidth, itemId) => {
 
 /**
  * Add a new item to the layout
- * 
- * @param {string} currentLayoutJson - Current layout as JSON string
- * @param {Object} gridColumns - Object with column counts per breakpoint { desktop: 48, tablet: 24, mobile: 12 }
- * @param {Object} [options] - Additional options
+ *
+ * @param {string} currentLayoutJson            - Current layout as JSON string
+ * @param {Object} gridColumns                  - Object with column counts per breakpoint { desktop: 48, tablet: 24, mobile: 12 }
+ * @param {Object} [options]                    - Additional options
  * @param {string} [options.itemPrefix='item-'] - Prefix for item IDs (e.g. 'group-item-' for groups)
- * @returns {Object} Object containing { newLayoutJson, newItemId }
+ * @return {Object} Object containing { newLayoutJson, newItemId }
  */
 export const addItemToLayout = (currentLayoutJson, gridColumns = { desktop: 48, tablet: 24, mobile: 12 }, options = {}) => {
 	const itemPrefix = options.itemPrefix || 'item-';
@@ -327,7 +327,7 @@ export const addItemToLayout = (currentLayoutJson, gridColumns = { desktop: 48, 
 	const updatedLayouts = { ...layouts };
 	
 	breakpoints.forEach(device => {
-		if (device === 'widescreen') return; // Skip widescreen if present
+		if (device === 'widescreen') {return;} // Skip widescreen if present
 		
 		const existingItems = layouts[device] || [];
 		const columns = gridColumns[device] || 48;
@@ -371,10 +371,10 @@ export const addItemToLayout = (currentLayoutJson, gridColumns = { desktop: 48, 
 
 /**
  * Remove an item from the layout
- * 
+ *
  * @param {string} currentLayoutJson - Current layout as JSON string
- * @param {string} itemId - ID of the item to remove
- * @returns {string} Updated layout as JSON string
+ * @param {string} itemId            - ID of the item to remove
+ * @return {string} Updated layout as JSON string
  */
 export const removeItemFromLayout = (currentLayoutJson, itemId) => {
 	let layouts;

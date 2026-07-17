@@ -1,6 +1,6 @@
 /**
  * Elementor Integration Utilities
- * 
+ *
  * Helper functions for React components to interact with Elementor.
  * Provides methods to update settings and trigger events.
  */
@@ -8,12 +8,12 @@
 /**
  * Update Elementor model setting from React component
  * Critical for saving custom layouts after drag/resize
- * 
- * @param {string} widgetType - Widget type (e.g., 'content-layout')
- * @param {string} widgetId - Widget instance ID
+ *
+ * @param {string} widgetType  - Widget type (e.g., 'content-layout')
+ * @param {string} widgetId    - Widget instance ID
  * @param {string} settingName - Setting key to update
- * @param {*} value - New value
- * @returns {boolean} Success status
+ * @param {*}      value       - New value
+ * @return {boolean} Success status
  */
 export const updateElementorSetting = (widgetType, widgetId, settingName, value) => {
 	if (typeof window.MosaicContentsReact === 'undefined') {
@@ -28,8 +28,8 @@ export const updateElementorSetting = (widgetType, widgetId, settingName, value)
 
 /**
  * Get active Elementor breakpoints
- * 
- * @returns {Array} Array of breakpoint names (e.g., ['desktop', 'tablet', 'mobile'])
+ *
+ * @return {Array} Array of breakpoint names (e.g., ['desktop', 'tablet', 'mobile'])
  */
 export const getActiveBreakpointNames = () => {
 
@@ -50,7 +50,7 @@ export const getActiveBreakpointNames = () => {
 /**
  * Get Elementor breakpoint values formatted for react-grid-layout min-width map.
  *
- * @returns {{desktop:number, tablet:number, mobile:number}}
+ * @return {{desktop:number, tablet:number, mobile:number}}
  */
 export const getElementorGridBreakpoints = () => {
 	if (typeof elementorFrontend !== 'undefined' && elementorFrontend.config?.responsive?.activeBreakpoints) {
@@ -90,9 +90,9 @@ export const getElementorGridBreakpoints = () => {
  * above the desktop floor → desktop, at or above the tablet floor → tablet,
  * otherwise mobile.
  *
- * @param {Object} breakpoints - Min-width map from getElementorGridBreakpoints().
- * @param {{desktop?:number, tablet?:number, mobile?:number}} [columns] - Configured tiers.
- * @returns {Object} Column count keyed by every breakpoint in `breakpoints`.
+ * @param {Object}                                            breakpoints - Min-width map from getElementorGridBreakpoints().
+ * @param {{desktop?:number, tablet?:number, mobile?:number}} [columns]   - Configured tiers.
+ * @return {Object} Column count keyed by every breakpoint in `breakpoints`.
  */
 export const buildResponsiveCols = (breakpoints, columns = {}) => {
 	const desktopCols = columns.desktop || 12;
@@ -120,9 +120,9 @@ export const buildResponsiveCols = (breakpoints, columns = {}) => {
 	});
 
 	// Guarantee the base tiers exist even if the breakpoints map omits one.
-	if (cols.desktop == null) cols.desktop = desktopCols;
-	if (cols.tablet == null) cols.tablet = tabletCols;
-	if (cols.mobile == null) cols.mobile = mobileCols;
+	if (cols.desktop == null) {cols.desktop = desktopCols;}
+	if (cols.tablet == null) {cols.tablet = tabletCols;}
+	if (cols.mobile == null) {cols.mobile = mobileCols;}
 
 	return cols;
 };
@@ -130,7 +130,7 @@ export const buildResponsiveCols = (breakpoints, columns = {}) => {
 /**
  * Check if currently in Elementor editor mode
  *
- * @returns {boolean} True if in editor mode
+ * @return {boolean} True if in editor mode
  */
 export const isElementorEditor = () => {
 	return typeof elementor !== 'undefined' ||
@@ -141,8 +141,8 @@ export const isElementorEditor = () => {
  * Inject dynamic breakpoint stylesheet
  * Generates CSS media queries from Elementor's active breakpoint configuration
  * and injects them into the document head. Only runs once.
- * 
- * @returns {boolean} Success status
+ *
+ * @return {boolean} Success status
  */
 export const injectBreakpointStylesheet = () => {
 	// Avoid reinjecting
@@ -265,23 +265,23 @@ ${mq} {
  * Switches to the given tab (default: 'style') if not already active,
  * then expands the section accordion and scrolls it into view.
  *
- * @param {string} sectionId - Elementor section control ID (e.g. 'sp_title_style_section')
+ * @param {string} sectionId     - Elementor section control ID (e.g. 'sp_title_style_section')
  * @param {string} [tab='style'] - Tab name: 'content' | 'style' | 'advanced'
  */
 export const openPanelSection = (sectionId, tab = 'style') => {
 
-	if (typeof elementor === 'undefined') return;
+	if (typeof elementor === 'undefined') {return;}
 	try {
 		// The panel lives in the parent frame.
 		const parentWindow = window.parent;
 		const parentDocument = parentWindow?.document;
-		if (!parentDocument) return;
+		if (!parentDocument) {return;}
 
 		const panel = parentDocument.querySelector('#elementor-panel');
-		if (!panel) return;
+		if (!panel) {return;}
 
 		const clickElement = (element) => {
-			if (!element) return;
+			if (!element) {return;}
 			element.dispatchEvent(new parentWindow.MouseEvent('click', {
 				bubbles: true,
 				cancelable: true,
@@ -292,7 +292,7 @@ export const openPanelSection = (sectionId, tab = 'style') => {
 		const expandSection = () => {
 			const sectionClassName = `elementor-control-${sectionId}`;
 			const section = panel.getElementsByClassName(sectionClassName)[0];
-			if (!section) return;
+			if (!section) {return;}
 
 			// Elementor toggles sections by clicking .elementor-section-toggle.
 			if (!section.classList.contains('elementor-open')) {

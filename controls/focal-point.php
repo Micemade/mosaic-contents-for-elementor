@@ -50,7 +50,7 @@ class Focal_Point extends Base_Data_Control {
 	 */
 	protected function get_default_settings() {
 		return array(
-			'label_block' => true,
+			'label_block'   => true,
 			'preview_image' => '', // Optional preview image URL
 		);
 	}
@@ -84,7 +84,7 @@ class Focal_Point extends Base_Data_Control {
 		// Enqueue the React-based control script
 		wp_enqueue_script(
 			'mc4e-focal-point-control',
-			plugins_url( 'assets/admin/js/focal-point-control.js', dirname( __FILE__ ) ),
+			plugins_url( 'assets/admin/js/focal-point-control.js', __DIR__ ),
 			array( 'jquery', 'react', 'react-dom' ),
 			'1.0.0',
 			true
@@ -93,7 +93,7 @@ class Focal_Point extends Base_Data_Control {
 		// Enqueue the control styles
 		wp_enqueue_style(
 			'mc4e-focal-point-control',
-			plugins_url( 'assets/admin/css/focal-point-control.css', dirname( __FILE__ ) ),
+			plugins_url( 'assets/admin/css/focal-point-control.css', __DIR__ ),
 			array(),
 			'1.0.0'
 		);
@@ -110,8 +110,8 @@ class Focal_Point extends Base_Data_Control {
 	 */
 	public function content_template() {
 		$control_uid = $this->get_control_uid();
-		$x_uid = $this->get_control_uid( 'x' );
-		$y_uid = $this->get_control_uid( 'y' );
+		$x_uid       = $this->get_control_uid( 'x' );
+		$y_uid       = $this->get_control_uid( 'y' );
 		?>
 <div class="elementor-control-field">
 	<# if ( data.label ) { #>

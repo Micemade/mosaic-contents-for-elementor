@@ -1,7 +1,7 @@
 /**
  * Get WordPress REST nonce exposed by plugin localization.
  *
- * @returns {string}
+ * @return {string}
  */
 export const getRestNonce = () =>
 	window.MC4E?.restNonce || window.parent?.MC4E?.restNonce || '';
@@ -9,7 +9,7 @@ export const getRestNonce = () =>
 /**
  * Build REST nonce headers object.
  *
- * @returns {Object}
+ * @return {Object}
  */
 export const getRestNonceHeaders = () => {
 	const nonce = getRestNonce();
@@ -20,8 +20,8 @@ export const getRestNonceHeaders = () => {
  * Parse JSON response and throw a readable error for failed requests.
  *
  * @param {Response} response
- * @param {string} fallbackMessage
- * @returns {Promise<*>}
+ * @param {string}   fallbackMessage
+ * @return {Promise<*>}
  */
 export const parseJsonOrThrow = async (response, fallbackMessage) => {
 	if (!response.ok) {

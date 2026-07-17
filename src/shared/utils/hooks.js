@@ -15,7 +15,7 @@ import { getActiveBreakpointNames } from '../../core/elementor-utils';
  * re-reads it whenever Elementor fires a `change` event on that channel.
  * Falls back to 'desktop' when running outside the editor (frontend, SSR).
  *
- * @returns {string} Current device mode: 'desktop' | 'tablet' | 'mobile'
+ * @return {string} Current device mode: 'desktop' | 'tablet' | 'mobile'
  */
 export const useElementorDevice = () => {
 	const getMode = () => {
@@ -29,7 +29,7 @@ export const useElementorDevice = () => {
 	const [device, setDevice] = useState(getMode);
 
 	useEffect(() => {
-		if (typeof elementor === 'undefined' || !elementor?.channels?.deviceMode) return;
+		if (typeof elementor === 'undefined' || !elementor?.channels?.deviceMode) {return;}
 		const handler = () => setDevice(getMode());
 		elementor.channels.deviceMode.on('change', handler);
 		return () => elementor.channels.deviceMode.off('change', handler);
@@ -46,7 +46,7 @@ export const useElementorDevice = () => {
  * Scalar colour/background/border/shadow values become simple vars.
  *
  * @param {Object} widgetData - Full settings object from Elementor model.
- * @returns {Object} Style object to spread on the widget root element.
+ * @return {Object} Style object to spread on the widget root element.
  */
 export const useCssVariables = (widgetData) => {
 	return useMemo(() => {
@@ -92,10 +92,10 @@ export const useCssVariables = (widgetData) => {
  * All widgets share the same column structure; only the setting-key
  * prefix differs (e.g. `mc4e_items_margin` vs `mc4e_cat_items_margin`).
  *
- * @param {Object}  widgetData - Full settings object.
- * @param {string}  marginKey  - Setting key for items margin.
- * @param {string}  rowHeightKey - Setting key for row height.
- * @returns {Object} { columns, itemsMargin, rowHeight }
+ * @param {Object} widgetData   - Full settings object.
+ * @param {string} marginKey    - Setting key for items margin.
+ * @param {string} rowHeightKey - Setting key for row height.
+ * @return {Object} { columns, itemsMargin, rowHeight }
  */
 export const useGridSettings = (widgetData, marginKey, rowHeightKey) => {
 	return useMemo(

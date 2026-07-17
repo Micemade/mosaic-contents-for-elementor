@@ -37,7 +37,7 @@ export const registerFrontendHooks = () => {
  * @return void
  */
 export const initializeFrontendWidgets = () => {
-	if (!document) return;
+	if (!document) {return;}
 
 	getRegisteredWidgets().forEach(widgetType => {
 		const selector = `.elementor-widget-${widgetType}`;

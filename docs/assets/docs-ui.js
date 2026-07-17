@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	 * This checks both layout viewport width and visual viewport width because
 	 * embedded previews can report them differently.
 	 *
-	 * @returns {boolean} True when the compact docs layout should be active.
+	 * @return {boolean} True when the compact docs layout should be active.
 	 */
 	const isCompactViewport = () => {
 		const visualWidth = viewport ? viewport.width : window.innerWidth;
@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	/**
 	 * Applies the body class that switches the docs UI into compact mode.
 	 *
-	 * @returns {void}
+	 * @return {void}
 	 */
 	const syncCompactClass = () => {
 		document.body.classList.toggle("docs-mobile", isCompactViewport());
@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	 * layout mode. The TOC stays open on larger screens and becomes collapsible
 	 * in compact mode.
 	 *
-	 * @returns {void}
+	 * @return {void}
 	 */
 	const syncTocPanel = () => {
 		if (!tocToggle || !tocPanel) {
@@ -98,7 +98,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	 * assistive technology.
 	 *
 	 * @param {string} activeId The fragment identifier for the active section.
-	 * @returns {void}
+	 * @return {void}
 	 */
 	const setActiveLink = (activeId) => {
 		sections.forEach(({ link, section }) => {

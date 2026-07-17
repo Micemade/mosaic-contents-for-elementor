@@ -5,15 +5,13 @@ import { __ } from '@wordpress/i18n';
 import { memo } from '@wordpress/element';
 import PropTypes from 'prop-types';
 
-import placeholderImgForBuild from '../woocommerce-placeholder-300x300.png';
-
 // Get placeholder image URL from localized script data
 const placeholderImg = window.MC4E?.placeholderImg || '';
 
 /**
  * Internal dependencies.
  */
-import { getFeaturedImage } from '../utils/productUtils';
+import { useFeaturedImage } from '../utils/productUtils';
 
 const getImageProperties = (images) => {
 
@@ -50,7 +48,7 @@ const FeaturedImage = ({ postId, postType = 'post', name, images, featuredImageS
 	// (only if not in 'automatic' mode, otherwise we get srcset and sizes from "images" prop)
 	const { loadingFeaturedImg, featuredImage } = isAuto
 		? { loadingFeaturedImg: false, featuredImage: null }
-		: getFeaturedImage(postId, featuredImageSize, postType);
+		: useFeaturedImage(postId, featuredImageSize, postType);
 
 	// if (loadingFeaturedImg) {
 	// 	return <div className='gradient-preloader' />;

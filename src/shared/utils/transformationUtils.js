@@ -2,7 +2,7 @@
  * Convert object keys from snake_case to camelCase.
  *
  * @param {Object} input
- * @returns {Object}
+ * @return {Object}
  */
 export const mapKeysToCamelCase = (input = {}) => {
 	if (!input || typeof input !== 'object' || Array.isArray(input)) {

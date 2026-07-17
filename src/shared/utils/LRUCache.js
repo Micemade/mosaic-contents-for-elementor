@@ -15,7 +15,7 @@ export class LRUCache {
 	}
 
 	get(key) {
-		if (!this.cache.has(key)) return undefined;
+		if (!this.cache.has(key)) {return undefined;}
 
 		// Move to end (most recently used)
 		const value = this.cache.get(key);
@@ -50,7 +50,7 @@ export class LRUCache {
  * - Frontend: plain object (lightweight, no eviction needed)
  *
  * @param {number} [maxSize=20] - Maximum entries for the LRU cache.
- * @returns {LRUCache|Object}
+ * @return {LRUCache|Object}
  */
 export const createCache = (maxSize = 20) =>
 	isElementorEditor() ? new LRUCache(maxSize) : {};
@@ -59,8 +59,8 @@ export const createCache = (maxSize = 20) =>
  * Read a cached value from either LRUCache or plain object cache.
  *
  * @param {LRUCache|Object} cache
- * @param {string} key
- * @returns {*}
+ * @param {string}          key
+ * @return {*}
  */
 export const getCacheEntry = (cache, key) =>
 	cache instanceof LRUCache ? cache.get(key) : cache[key];
@@ -69,9 +69,9 @@ export const getCacheEntry = (cache, key) =>
  * Write a cached value to either LRUCache or plain object cache.
  *
  * @param {LRUCache|Object} cache
- * @param {string} key
- * @param {*} value
- * @returns {void}
+ * @param {string}          key
+ * @param {*}               value
+ * @return {void}
  */
 export const setCacheEntry = (cache, key, value) => {
 	if (cache instanceof LRUCache) {

@@ -3,17 +3,17 @@ import { getCacheEntry, setCacheEntry } from './LRUCache';
 /**
  * Load data with cache and standard loading/fetching state handling.
  *
- * @param {Object} options
- * @param {Object} options.cache
- * @param {string} options.cacheKey
+ * @param {Object}   options
+ * @param {Object}   options.cache
+ * @param {string}   options.cacheKey
  * @param {Function} options.fetcher
  * @param {Function} options.onCacheHit
  * @param {Function} options.onSuccess
  * @param {Function} options.onError
  * @param {Function} options.setIsLoading
  * @param {Function} options.setIsFetching
- * @param {boolean} options.hasExistingData
- * @returns {Promise<void>}
+ * @param {boolean}  options.hasExistingData
+ * @return {Promise<void>}
  */
 export const loadCachedData = async ({
 	cache,

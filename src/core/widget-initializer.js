@@ -1,6 +1,6 @@
 /**
  * Widget Initializer Factory
- * 
+ *
  * Creates initialization functions for each widget type.
  * Handles DOM extraction, settings parsing, and widget manager coordination.
  */
@@ -9,10 +9,10 @@ import widgetManager from './widget-manager';
 
 /**
  * Factory function to create widget initializers for each widget type
- * 
+ *
  * @param {string} widgetType - Widget type (e.g., 'content-layout')
- * @param {string} mode - Widget mode: 'display' (frontend) or 'edit' (editor)
- * @returns {Function} Widget initializer function
+ * @param {string} mode       - Widget mode: 'display' (frontend) or 'edit' (editor)
+ * @return {Function} Widget initializer function
  */
 export const createWidgetInitializer = (widgetType, mode = 'display') => {
 	return ($scope) => {
@@ -33,7 +33,7 @@ export const createWidgetInitializer = (widgetType, mode = 'display') => {
 
 		// Extract widget ID - prioritize data-widget-id from wrapper (set in content_template)
 		// Fallback to $scope data attributes for backwards compatibility
-		let widgetId = wrapper?.dataset?.widgetId || $scope.data('id') || $scope.data('widget-id');
+		const widgetId = wrapper?.dataset?.widgetId || $scope.data('id') || $scope.data('widget-id');
 
 		if (!widgetId) {
 			console.error(`Widget ID not found for ${widgetType} widget. Check content_template() includes data-widget-id="{{ view.model.id }}"`);

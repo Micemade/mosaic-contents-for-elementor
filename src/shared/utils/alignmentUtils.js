@@ -11,7 +11,7 @@ const FLEX_TO_TEXT_ALIGN = {
  *
  * @param {Object} alignSetting Responsive align object keyed by breakpoint.
  * @param {string} cssVarPrefix CSS variable prefix, e.g. '--mc4e-posttypeitem-align-text-'.
- * @returns {Object}
+ * @return {Object}
  */
 export const getBreakpointTextAlignVars = (alignSetting, cssVarPrefix) => {
 	const vars = {};

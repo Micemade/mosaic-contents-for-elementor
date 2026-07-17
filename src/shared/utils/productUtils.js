@@ -54,14 +54,14 @@ const resolvePostTypeRestBase = async (postType) => {
 	return postTypeRestBaseCache.get(postType) || postType;
 };
 
-export const getFeaturedImage = (productId, featuredImageSize, postType = 'post') => {
+export const useFeaturedImage = (productId, featuredImageSize, postType = 'post') => {
 
 	const [loadingFeaturedImg, setLoadingFeaturedImg] = useState(true);
 	const [featuredImage, setFeaturedImage] = useState(null);
 
 	useEffect(() => {
 
-		if (!productId || typeof productId === "undefined") return;
+		if (!productId || typeof productId === "undefined") { return; }
 
 		// If "featuredImageSize" is not set (is 'automatic'), get image source url from registered sizes.
 		async function fetchFeaturedImage() {
