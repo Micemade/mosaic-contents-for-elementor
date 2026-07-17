@@ -44,6 +44,20 @@ class RestAPI {
 	private const DEFAULT_PER_PAGE = 50;
 
 	/**
+	 * Object cache group for this plugin's REST lookups.
+	 *
+	 * @var string
+	 */
+	private const CACHE_GROUP = 'mc4e';
+
+	/**
+	 * How long cached meta key lookups stay fresh.
+	 *
+	 * @var int
+	 */
+	private const CACHE_TTL = 5 * MINUTE_IN_SECONDS;
+
+	/**
 	 * Initialize the REST API routes.
 	 *
 	 * @return void
@@ -411,8 +425,6 @@ class RestAPI {
 	 * @return WP_REST_Response Array of { value, label } options.
 	 */
 	public function get_post_meta_keys( WP_REST_Request $request ): WP_REST_Response {
-		global $wpdb;
-
 		$post_type = (string) $request->get_param( 'post_type' );
 		$search    = (string) $request->get_param( 'search' );
 
@@ -420,22 +432,10 @@ class RestAPI {
 			return rest_ensure_response( array() );
 		}
 
-		// Distinct meta keys attached to published posts of this type.
-		$keys = $wpdb->get_col(
-			$wpdb->prepare(
-				"SELECT DISTINCT pm.meta_key
-				 FROM {$wpdb->postmeta} pm
-				 INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
-				 WHERE p.post_type = %s AND p.post_status = 'publish'
-				 ORDER BY pm.meta_key ASC",
-				$post_type
-			)
-		);
-
 		$keys = array_filter(
-			(array) $keys,
+			$this->query_post_meta_keys( $post_type ),
 			static function ( $key ) {
-				return ! empty( $key ) && ! is_protected_meta( $key, 'post' );
+				return ! is_protected_meta( $key, 'post' );
 			}
 		);
 
@@ -470,6 +470,44 @@ class RestAPI {
 		);
 
 		return rest_ensure_response( $options );
+	}
+
+	/**
+	 * Distinct meta keys attached to published posts of a post type.
+	 *
+	 * Core exposes no API for enumerating meta keys, so a direct query is the
+	 * only way to build this list; the result is cached per post type.
+	 *
+	 * @param string $post_type Post type slug (already validated by the caller).
+	 * @return string[] Meta keys, including protected ones.
+	 */
+	private function query_post_meta_keys( string $post_type ): array {
+		$cache_key = 'meta_keys_' . $post_type;
+		$cached    = wp_cache_get( $cache_key, self::CACHE_GROUP );
+
+		if ( false !== $cached ) {
+			return (array) $cached;
+		}
+
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- No core API enumerates meta keys; result is cached below.
+		$keys = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT DISTINCT pm.meta_key
+				 FROM {$wpdb->postmeta} pm
+				 INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+				 WHERE p.post_type = %s AND p.post_status = 'publish'
+				 ORDER BY pm.meta_key ASC",
+				$post_type
+			)
+		);
+
+		$keys = array_values( array_filter( (array) $keys ) );
+
+		wp_cache_set( $cache_key, $keys, self::CACHE_GROUP, self::CACHE_TTL );
+
+		return $keys;
 	}
 
 	/**
