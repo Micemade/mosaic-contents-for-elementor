@@ -1,9 +1,9 @@
 <?php
 /**
  * Plugin Name: Mosaic Contents for Elementor
- * Plugin URI: https://github.com/Micemade/mosaic-contents-for-elementor
+ * Plugin URI: https://wordpress.org/plugins/mosaic-contents-for-elementor/
  * Author: Micemade
- * Author URI: https://github.com/Micemade/mosaic-contents-for-elementor
+ * Author URI: https://micemade.com
  * Description: A set of Elementor widgets for building general-purpose content layouts.
  * Version: 0.1.0
  * Requires at least: 6.0
@@ -11,6 +11,7 @@
  * License: GPLv2 or later
  * License URL: http://www.gnu.org/licenses/gpl-2.0.txt
  * text-domain: mosaic-contents-for-elementor
+ * Requires Plugins: elementor
  * Elementor tested up to: 4.1.4
  * Elementor Pro tested up to: 4.2.0
  */
@@ -40,13 +41,43 @@ if ( ! defined( 'MC4E_PLUGIN_URL' ) ) {
 	define( 'MC4E_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 }
 
+/**
+ * Main plugin class for Mosaic Contents for Elementor.
+ *
+ * Bootstraps the plugin: registers Elementor widgets, controls and category,
+ * enqueues editor/preview/frontend assets, wires up settings and the custom
+ * REST API, and performs environment (PHP/Elementor) checks.
+ *
+ * @since 0.1.0
+ */
 final class MosaicContentsElementor {
 
+	/**
+	 * Minimum Elementor version required to run the plugin.
+	 *
+	 * @var string
+	 */
 	const ELEMENTOR_MINIMUM_VERSION = '3.0.0';
-	const PHP_MINIMUM_VERSION       = '7.0';
 
+	/**
+	 * Minimum PHP version required to run the plugin.
+	 *
+	 * @var string
+	 */
+	const PHP_MINIMUM_VERSION = '8.0';
+
+	/**
+	 * Singleton instance of the plugin.
+	 *
+	 * @var self|null
+	 */
 	private static $instance = null;
 
+	/**
+	 * Constructor.
+	 *
+	 * Registers all WordPress and Elementor hooks and initializes the REST API.
+	 */
 	public function __construct() {
 		add_action( 'plugins_loaded', array( $this, 'init_plugin' ) );
 		add_action( 'elementor/elements/categories_registered', array( $this, 'create_new_category' ) );
@@ -67,15 +98,23 @@ final class MosaicContentsElementor {
 		$this->init_rest_api();
 	}
 
+	/**
+	 * Initialize the plugin after all plugins are loaded.
+	 *
+	 * Verifies the PHP and Elementor version requirements, showing an admin
+	 * notice and bailing out when a requirement is not met.
+	 *
+	 * @return void
+	 */
 	public function init_plugin() {
-		if ( version_compare( PHP_VERSION, self::PHP_MINIMUM_VERSION, '<' ) ) {
-			add_action( 'admin_notices', array( $this, 'admin_notice_minimum_php_version' ) );
-			return;
-		}
-
 		// Check if Elementor is installed and activated
 		if ( ! did_action( 'elementor/loaded' ) ) {
 			add_action( 'admin_notices', array( $this, 'admin_notice_missing_elementor' ) );
+			return;
+		}
+
+		if ( version_compare( PHP_VERSION, self::PHP_MINIMUM_VERSION, '<' ) ) {
+			add_action( 'admin_notices', array( $this, 'admin_notice_minimum_php_version' ) );
 			return;
 		}
 
@@ -115,6 +154,7 @@ final class MosaicContentsElementor {
 	 * Register custom Elementor controls.
 	 *
 	 * @param \Elementor\Controls_Manager $controls_manager Elementor controls manager.
+	 * @return void
 	 */
 	public function init_controls( $controls_manager ) {
 		// Require the focal point control class.
@@ -141,7 +181,9 @@ final class MosaicContentsElementor {
 	}
 
 	/**
-	 * Enqueue scripts for Elementor editor.
+	 * Enqueue scripts and styles for the Elementor editor panel.
+	 *
+	 * @return void
 	 */
 	public function enqueue_editor_scripts() {
 		// Enqueue React and ReactDOM for editor
@@ -163,8 +205,12 @@ final class MosaicContentsElementor {
 	}
 
 	/**
-	 * Enqueue scripts for Elementor editor preview (iframe).
-	 * Full-featured script with drag/resize, add/remove items, settings sync.
+	 * Enqueue scripts and styles for the Elementor editor preview (iframe).
+	 *
+	 * Loads the full-featured editor script with drag/resize, add/remove items
+	 * and settings sync, plus the REST runtime configuration.
+	 *
+	 * @return void
 	 */
 	public function enqueue_preview_scripts() {
 		// Enqueue WordPress's React and ReactDOM
@@ -191,6 +237,12 @@ final class MosaicContentsElementor {
 		$this->enqueue_rest_config();
 	}
 
+	/**
+	 * Register the plugin's Elementor widgets.
+	 *
+	 * @param \Elementor\Widgets_Manager $widgets_manager Elementor widgets manager.
+	 * @return void
+	 */
 	public function init_widgets( $widgets_manager ) {
 
 		// Require shared trait and widget classes.
@@ -205,6 +257,11 @@ final class MosaicContentsElementor {
 		$widgets_manager->register( new WidgetsLayout() );
 	}
 
+	/**
+	 * Retrieve the singleton instance of the plugin.
+	 *
+	 * @return self The single plugin instance.
+	 */
 	public static function get_instance() {
 
 		if ( null === self::$instance ) {
@@ -214,6 +271,12 @@ final class MosaicContentsElementor {
 		return self::$instance;
 	}
 
+	/**
+	 * Register the "Mosaic Contents" widget category in Elementor.
+	 *
+	 * @param \Elementor\Elements_Manager $elements_manager Elementor elements manager.
+	 * @return void
+	 */
 	public function create_new_category( $elements_manager ) {
 
 		$elements_manager->add_category(
@@ -225,6 +288,14 @@ final class MosaicContentsElementor {
 		);
 	}
 
+	/**
+	 * Enqueue the lightweight frontend script and styles.
+	 *
+	 * Only loads on non-preview pages that are actually built with Elementor,
+	 * then attaches the REST runtime configuration.
+	 *
+	 * @return void
+	 */
 	public function enqueue_scripts() {
 		// Only enqueue if Elementor is active and on a page with Elementor content
 		if ( ! class_exists( '\Elementor\Plugin' ) ) {
@@ -238,7 +309,7 @@ final class MosaicContentsElementor {
 
 		// Check if current page uses Elementor
 		$post_id = get_the_ID();
-		if ( ! $post_id || ! \Elementor\Plugin::$instance->db->is_built_with_elementor( $post_id ) ) {
+		if ( ! $post_id || ! \Elementor\Plugin::$instance->documents->get( $post_id )->is_built_with_elementor() ) {
 			return;
 		}
 
@@ -267,6 +338,8 @@ final class MosaicContentsElementor {
 
 	/**
 	 * Localize runtime data required by widget scripts.
+	 *
+	 * @return void
 	 */
 	private function enqueue_rest_config() {
 		$localize_data = array(
@@ -287,6 +360,8 @@ final class MosaicContentsElementor {
 	 *
 	 * Registers WP option 'mc4e_content_layout_setups' with show_in_rest
 	 * so it can be read/written via wp.apiFetch({ path: '/wp/v2/settings' }).
+	 *
+	 * @return void
 	 */
 	public function register_settings() {
 		if ( ! current_user_can( 'manage_options' ) ) {
@@ -314,6 +389,11 @@ final class MosaicContentsElementor {
 		$rest_api->init();
 	}
 
+	/**
+	 * Display an admin notice when Elementor is not installed or activated.
+	 *
+	 * @return void
+	 */
 	public function admin_notice_missing_elementor() {
 		$message = sprintf(
 			/* translators: 1: Plugin name 2: Elementor */
@@ -324,6 +404,41 @@ final class MosaicContentsElementor {
 
 		printf( '<div class="notice notice-warning is-dismissible"><p>%1$s</p></div>', wp_kses_post( $message ) );
 	}
+
+	/**
+	 * Display an admin notice when the installed PHP version is too low.
+	 *
+	 * @return void
+	 */
+	public function admin_notice_minimum_php_version() {
+		$message = sprintf(
+			/* translators: 1: Plugin name 2: PHP 3: Required PHP version */
+			__( '"%1$s" requires "%2$s" version %3$s or greater.', 'mosaic-contents-for-elementor' ),
+			'<strong>' . __( 'Mosaic Contents for Elementor', 'mosaic-contents-for-elementor' ) . '</strong>',
+			'<strong>' . __( 'PHP', 'mosaic-contents-for-elementor' ) . '</strong>',
+			self::PHP_MINIMUM_VERSION
+		);
+
+		printf( '<div class="notice notice-warning is-dismissible"><p>%1$s</p></div>', wp_kses_post( $message ) );
+	}
+
+	/**
+	 * Display an admin notice when the installed Elementor version is too low.
+	 *
+	 * @return void
+	 */
+	public function admin_notice_minimum_elementor_version() {
+		$message = sprintf(
+			/* translators: 1: Plugin name 2: Elementor 3: Required Elementor version */
+			__( '"%1$s" requires "%2$s" version %3$s or greater.', 'mosaic-contents-for-elementor' ),
+			'<strong>' . __( 'Mosaic Contents for Elementor', 'mosaic-contents-for-elementor' ) . '</strong>',
+			'<strong>' . __( 'Elementor', 'mosaic-contents-for-elementor' ) . '</strong>',
+			self::ELEMENTOR_MINIMUM_VERSION
+		);
+
+		printf( '<div class="notice notice-warning is-dismissible"><p>%1$s</p></div>', wp_kses_post( $message ) );
+	}
 }
 
+// Boot the plugin.
 MosaicContentsElementor::get_instance();

@@ -757,19 +757,3 @@ msgstr ""
 #: src/shared/components/FeaturedImage.jsx:47
 msgid "Featured image"
 msgstr ""
-
-#: src/shared/components/RatingStars.jsx:14
-msgid " review"
-msgstr ""
-
-#: src/shared/components/RatingStars.jsx:15
-msgid " reviews"
-msgstr ""
-
-#: src/shared/components/RatingStars.jsx:17
-msgid "with average product rating:"
-msgstr ""
-
-#: src/shared/components/RatingStars.jsx:19
-msgid "No reviews yet."
-msgstr ""

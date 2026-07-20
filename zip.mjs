@@ -25,6 +25,8 @@ const EXCLUDE = [
 	'node_modules/**',
 	'scripts',
 	'scripts/**',
+	'vendor',
+	'vendor/**',
 	'src',
 	'src/**',
 	'phpcs.xml.dist',

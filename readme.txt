@@ -1,5 +1,5 @@
 === Mosaic Contents for Elementor ===
-Contributors: micemade
+Contributors: Anydog
 Tags: elementor, posts, custom post types, content grid, free-form layout
 Requires at least: 6.0
 Tested up to: 7.0

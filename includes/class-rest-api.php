@@ -72,17 +72,7 @@ class RestAPI {
 	 * @return void
 	 */
 	public function register_routes(): void {
-		// Products endpoint.
-		register_rest_route(
-			self::NAMESPACE,
-			'/products',
-			array(
-				'methods'             => 'GET',
-				'callback'            => array( $this, 'get_products' ),
-				'permission_callback' => array( $this, 'check_permission' ),
-				'args'                => $this->get_collection_params(),
-			)
-		);
+
 		// Post types endpoint.
 		register_rest_route(
 			self::NAMESPACE,
@@ -100,10 +90,7 @@ class RestAPI {
 			array(
 				'methods'             => 'GET',
 				'callback'            => array( $this, 'get_post_meta_values' ),
-				// Public: these values are rendered to visitors on the frontend.
-				// The callback only ever returns non-protected keys on published
-				// posts, and `mc4e_allowed_post_meta_keys` can narrow that further.
-				'permission_callback' => '__return_true',
+				'permission_callback' => array( $this, 'check_permission' ),
 				'args'                => array(
 					'post_ids'  => array(
 						'description'       => __( 'Comma-separated post IDs.', 'mosaic-contents-for-elementor' ),
@@ -274,56 +261,6 @@ class RestAPI {
 		return true;
 	}
 
-	/**
-	 * Get products for selection.
-	 *
-	 * Returns lightweight product data: value (id), label (title), and mediaId (featured image).
-	 * Format matches react-select option format for direct consumption.
-	 *
-	 * @param WP_REST_Request $request Full details about the request.
-	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error on failure.
-	 */
-	public function get_products( WP_REST_Request $request ) {
-		$search   = $request->get_param( 'search' );
-		$per_page = $request->get_param( 'per_page' ) ?? self::DEFAULT_PER_PAGE;
-
-		// Check if WooCommerce is active.
-		if ( ! function_exists( 'wc_get_products' ) ) {
-			return new WP_Error(
-				'woocommerce_not_active',
-				__( 'WooCommerce is not active.', 'mosaic-contents-for-elementor' ),
-				array( 'status' => 400 )
-			);
-		}
-
-		$args = array(
-			'limit'   => $per_page,
-			'status'  => 'publish',
-			'orderby' => 'date',
-			'order'   => 'DESC',
-			'return'  => 'ids',
-		);
-
-		// Add search parameter if provided.
-		if ( ! empty( $search ) ) {
-			$args['s'] = $search;
-		}
-
-		$product_ids = wc_get_products( $args );
-
-		$products = array_map(
-			function ( int $id ): array {
-				return array(
-					'value'   => $id,
-					'label'   => get_the_title( $id ),
-					'mediaId' => (int) get_post_thumbnail_id( $id ),
-				);
-			},
-			$product_ids
-		);
-
-		return rest_ensure_response( $products );
-	}
 
 	/**
 	 * Get all public REST-enabled post types.
