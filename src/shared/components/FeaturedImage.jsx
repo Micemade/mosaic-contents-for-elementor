@@ -11,7 +11,7 @@ const placeholderImg = window.MC4E?.placeholderImg || '';
 /**
  * Internal dependencies.
  */
-import { useFeaturedImage } from '../utils/productUtils';
+import { useFeaturedImage } from '../utils/hooks';
 
 const getImageProperties = (images) => {
 

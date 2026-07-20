@@ -11,6 +11,7 @@ import widgetManager from './widget-manager';
 import { getActiveBreakpointNames } from './elementor-utils';
 import { addItemToLayout } from '../shared/utils/addItem';
 import { getComputedLayout } from '../shared/utils/layoutUtils';
+import { getRestRoot } from '../shared/utils/fetchHelpers';
 
 // Style presets for applying batch style changes from the Saved Setups control
 import stylePresets from '../../assets/presets/content-layout/style-presets.json';
@@ -70,15 +71,6 @@ const WIDGET_KEYS = {
 const CHANNEL_EVENT_HANDLERS = {};
 const POST_TYPE_META_CACHE = new Map();
 const TAXONOMY_TERMS_OPTIONS_CACHE = new Map();
-
-const getRestRoot = () => {
-	const localizedRoot = window?.MC4E?.restRoot;
-	const wpApiRoot = window?.wpApiSettings?.root;
-	const fallback = '/wp-json/';
-	const root = localizedRoot || wpApiRoot || fallback;
-
-	return root.endsWith('/') ? root : `${root}/`;
-};
 
 const fetchPostTypeMeta = async (postType) => {
 	if (!postType) {

@@ -32,7 +32,7 @@ import { applyLayoutChange, selectElementorWidget, addGridItem, removeGridItem }
 import { getLayout } from '../../shared/utils/layoutUtils.js';
 import { createCache } from '../../shared/utils/LRUCache.js';
 import { loadCachedData } from '../../shared/utils/dataLoading.js';
-import { getRestNonceHeaders } from '../../shared/utils/fetchHelpers.js';
+import { getRestNonceHeaders, getRestRoot, resolvePostTypeRestBase } from '../../shared/utils/fetchHelpers.js';
 import { useCssVariables, useGridSettings, useElementorDevice } from '../../shared/utils/hooks.js';
 import { getVisibleLayout } from '../../shared/utils/visibleLayout.js';
 
@@ -50,20 +50,6 @@ const Sanitizer = (html) => DOMPurify.sanitize(html, DOMPurifyConfig);
 
 // Cache: LRU in editor, plain object on frontend.
 const postTypesCache = createCache();
-const postTypeRouteCache = new Map([
-	['post', 'posts'],
-	['page', 'pages'],
-	['attachment', 'media'],
-]);
-
-function getRestRoot() {
-	const localizedRoot = window?.MC4E?.restRoot;
-	const wpApiRoot = window?.wpApiSettings?.root;
-	const fallback = '/wp-json/';
-
-	const root = localizedRoot || wpApiRoot || fallback;
-	return root.endsWith('/') ? root : `${root}/`;
-}
 
 /**
  * Format a post's ISO date (wp/v2 `date`/`modified`) for display.
@@ -88,34 +74,6 @@ function formatPostDate(iso, format = 'long') {
 	} catch {
 		return String(iso).slice(0, 10);
 	}
-}
-
-async function resolvePostTypeRestBase(postType) {
-	if (!postType) {
-		return 'posts';
-	}
-
-	if (postTypeRouteCache.has(postType)) {
-		return postTypeRouteCache.get(postType);
-	}
-
-	try {
-		const response = await fetch(`${getRestRoot()}mc4e/v1/post-types`);
-		if (response.ok) {
-			const postTypes = await response.json();
-			if (Array.isArray(postTypes)) {
-				postTypes.forEach((typeObj) => {
-					if (typeObj?.name && typeObj?.rest_base) {
-						postTypeRouteCache.set(typeObj.name, typeObj.rest_base);
-					}
-				});
-			}
-		}
-	} catch (error) {
-		console.warn('Failed to resolve post type REST base; falling back to post type slug.', error);
-	}
-
-	return postTypeRouteCache.get(postType) || postType;
 }
 
 /**
