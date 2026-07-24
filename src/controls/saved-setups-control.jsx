@@ -138,7 +138,7 @@ function showToast(message, type = 'success') {
 			// Elementor toasts don't have 'type' but we can use different buttons/durations
 		});
 	} else {
-		console.log(`[MC4E Setup ${type}]:`, message);
+		console.log(`[Mosaic Contents for Elementor: Setup ${type}]:`, message);
 	}
 }
 
@@ -514,7 +514,7 @@ function initSavedSetupsControl() {
 
 	const BaseDataControl = elementor.modules.controls.BaseData;
 	if (!BaseDataControl) {
-		console.error('MC4E: BaseData control not found');
+		console.error('Mosaic Contents for Elementor: BaseData control not found');
 		return;
 	}
 

@@ -1,13 +1,13 @@
 /**
  * Get the WordPress REST API root URL, guaranteed to end with a slash.
  *
- * Prefers the plugin-localized root (window.MC4E.restRoot), then wp-api's
+ * Prefers the plugin-localized root (window.MICEMADE_MC4E.restRoot), then wp-api's
  * wpApiSettings.root, then a sensible default.
  *
  * @return {string} REST root URL ending with a slash.
  */
 export const getRestRoot = () => {
-	const localizedRoot = window?.MC4E?.restRoot;
+	const localizedRoot = window?.MICEMADE_MC4E?.restRoot;
 	const wpApiRoot = window?.wpApiSettings?.root;
 	const root = localizedRoot || wpApiRoot || '/wp-json/';
 
@@ -65,7 +65,7 @@ export const resolvePostTypeRestBase = async (postType) => {
  * @return {string}
  */
 export const getRestNonce = () =>
-	window.MC4E?.restNonce || window.parent?.MC4E?.restNonce || '';
+	window.MICEMADE_MC4E?.restNonce || window.parent?.MICEMADE_MC4E?.restNonce || '';
 
 /**
  * Build REST nonce headers object.

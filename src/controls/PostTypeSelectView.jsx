@@ -118,7 +118,7 @@ const PostTypeSelectView = ({ initialValue, onChange }) => {
 					}
 				}
 			} catch (error) {
-				console.error('MC4E: Failed to fetch initial content items:', error);
+				console.error('Mosaic Contents for Elementor: Failed to fetch initial content items:', error);
 				setDefaultOptions([]);
 			} finally {
 				setIsLoading(false);
@@ -164,7 +164,7 @@ const PostTypeSelectView = ({ initialValue, onChange }) => {
 						});
 						resolve(response);
 					} catch (error) {
-						console.error('MC4E: Post type search failed:', error);
+						console.error('Mosaic Contents for Elementor: Post type search failed:', error);
 						resolve([]);
 					}
 				}, DEBOUNCE_DELAY);

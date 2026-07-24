@@ -1,12 +1,12 @@
 /**
  * Focal Point Control Styles
- * 
+ *
  * Styles for the Elementor editor focal point control.
  */
 
 // Control container
 .elementor-control-type-mc4e_focal_point {
-	
+
 	.elementor-control-input-wrapper {
 		width: 100%;
 	}
@@ -64,56 +64,57 @@
 		object-fit: cover;
 		pointer-events: none;
 	}
-}
 
-// Marker animation
-.mc4e-focal-point-marker {
-	position: absolute;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 20px;
-	height: 20px;
-	transform: translate(-50%, -50%);
-	background-color: var(--e-a-bg-secondary, #515962);
-	border-radius: 50%;
-	box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-	pointer-events: none;
-	transition: transform 0.2s ease, box-shadow 0.2s ease;
-
-	&:hover {
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-	}
-
-	.mc4e-focal-point-center-dot {
+	// Marker animation
+	.mc4e-focal-point-marker {
 		position: absolute;
-		width: 6px;
-		height: 6px;
-		background-color: #fff;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 20px;
+		height: 20px;
+		transform: translate(-50%, -50%);
+		background-color: var(--e-a-bg-secondary, #515962);
 		border-radius: 50%;
+		box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+		pointer-events: none;
+		transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+		&:hover {
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+		}
+
+		.mc4e-focal-point-center-dot {
+			position: absolute;
+			width: 6px;
+			height: 6px;
+			background-color: #fff;
+			border-radius: 50%;
+		}
+	}
+
+	// Grid styling
+	.mc4e-focal-point-grid {
+		opacity: 0.8;
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		pointer-events: none;
+	}
+
+	// Labels
+	.mc4e-focal-point-labels {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		pointer-events: none;
+		font-size: 9px;
+		color: var(--e-a-color-txt-muted, rgba(0,0,0,0.4));
+		font-weight: 500;
 	}
 }
 
-// Grid styling
-.mc4e-focal-point-grid {
-	opacity: 0.8;
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	pointer-events: none;
-}
-
-// Labels
-.mc4e-focal-point-labels {
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	pointer-events: none;
-	font-size: 9px;
-	color: var(--e-a-color-txt-muted, rgba(0,0,0,0.4));
-	font-weight: 500;
-}

@@ -6,7 +6,7 @@ import { memo } from '@wordpress/element';
 import PropTypes from 'prop-types';
 
 // Get placeholder image URL from localized script data
-const placeholderImg = window.MC4E?.placeholderImg || '';
+const placeholderImg = window.MICEMADE_MC4E?.placeholderImg || '';
 
 /**
  * Internal dependencies.

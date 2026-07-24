@@ -54,7 +54,7 @@ const MetaKeySelectView = ({ initialValue, postType, onChange }) => {
 				}
 			} catch (error) {
 				if (!cancelled) {
-					console.error('MC4E: Failed to load meta keys:', error);
+					console.error('Mosaic Contents for Elementor: Failed to load meta keys:', error);
 					setDefaultOptions([]);
 				}
 			} finally {

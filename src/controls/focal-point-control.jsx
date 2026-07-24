@@ -1,6 +1,6 @@
 /**
  * Focal Point Control Entry Point
- * 
+ *
  * This file is the entry point for the Elementor editor focal point control.
  * It initializes the React-based focal point picker in the Elementor editor panel.
  */
@@ -31,9 +31,9 @@ function initFocalPointControl() {
 
 	// Extend Elementor's BaseData control to create our focal point control
 	const BaseDataControl = elementor.modules.controls.BaseData;
-	
+
 	if (!BaseDataControl) {
-		console.error('MC4E: BaseData control not found');
+		console.error('Mosaic Contents for Elementor: BaseData control not found');
 		return;
 	}
 
@@ -50,7 +50,7 @@ function initFocalPointControl() {
 		 */
 		initializeFocalPoint() {
 			const container = this.$el.find('.mc4e-focal-point-container');
-			
+
 			if (!container.length) {
 				return;
 			}
@@ -102,9 +102,9 @@ function initFocalPointControl() {
 		 */
 		applySavedValue() {
 			BaseDataControl.prototype.applySavedValue.apply(this, arguments);
-			
+
 			const value = this.getControlValue();
-			
+
 			if (value && this.focalPointView) {
 				this.focalPointView.updatePosition(value.x || 50, value.y || 50);
 			}

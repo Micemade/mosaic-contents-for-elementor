@@ -35,7 +35,7 @@ function initPosttypeSelectControl() {
 	const BaseDataControl = elementor.modules.controls.BaseData;
 
 	if (!BaseDataControl) {
-		console.error('MC4E: BaseData control not found');
+		console.error('Mosaic Contents for Elementor: BaseData control not found');
 		return;
 	}
 

@@ -46,7 +46,7 @@
 			<property name="prefixes" type="array">
 				<element value="Micemade\MosaicContentsElementor"/>
 				<element value="mc4e"/>
-				<element value="MC4E"/>
+				<element value="MICEMADE_MC4E"/>
 			</property>
 		</properties>
 	</rule>

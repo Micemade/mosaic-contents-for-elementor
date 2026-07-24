@@ -25,20 +25,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-if ( ! defined( 'MC4E_VERSION' ) ) {
-	define( 'MC4E_VERSION', '0.1.0' );
+if ( ! defined( 'MICEMADE_MC4E_VERSION' ) ) {
+	define( 'MICEMADE_MC4E_VERSION', '0.1.0' );
 }
 
-if ( ! defined( 'MC4E_PLUGIN_FILE' ) ) {
-	define( 'MC4E_PLUGIN_FILE', __FILE__ );
+if ( ! defined( 'MICEMADE_MC4E_PLUGIN_FILE' ) ) {
+	define( 'MICEMADE_MC4E_PLUGIN_FILE', __FILE__ );
 }
 
-if ( ! defined( 'MC4E_PLUGIN_DIR' ) ) {
-	define( 'MC4E_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+if ( ! defined( 'MICEMADE_MC4E_PLUGIN_DIR' ) ) {
+	define( 'MICEMADE_MC4E_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 }
 
-if ( ! defined( 'MC4E_PLUGIN_URL' ) ) {
-	define( 'MC4E_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+if ( ! defined( 'MICEMADE_MC4E_PLUGIN_URL' ) ) {
+	define( 'MICEMADE_MC4E_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 }
 
 /**
@@ -194,7 +194,7 @@ final class MosaicContentsElementor {
 		// Dummy handle (no $src) used only to carry inline styles below;
 		// the version has no cache-busting effect without a file, but is
 		// passed explicitly per WordPress enqueue standards.
-		wp_register_style( 'mc4e-editor-panel', false, array(), MC4E_VERSION );
+		wp_register_style( 'mc4e-editor-panel', false, array(), MICEMADE_MC4E_VERSION );
 		wp_enqueue_style( 'mc4e-editor-panel' );
 		wp_add_inline_style(
 			'mc4e-editor-panel',
@@ -351,8 +351,8 @@ final class MosaicContentsElementor {
 			'storeApiNonce'  => wp_create_nonce( 'wc_store_api' ),
 		);
 
-		wp_localize_script( 'mc4e-frontend-js', 'MC4E', $localize_data );
-		wp_localize_script( 'mc4e-editor-js', 'MC4E', $localize_data );
+		wp_localize_script( 'mc4e-frontend-js', 'MICEMADE_MC4E', $localize_data );
+		wp_localize_script( 'mc4e-editor-js', 'MICEMADE_MC4E', $localize_data );
 	}
 
 	/**

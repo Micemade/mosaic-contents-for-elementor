@@ -223,7 +223,7 @@ trait WidgetHelpers {
 			return self::$style_preset_options_cache[ $widget_name ];
 		}
 
-		$image_base_url = plugins_url( 'assets/admin/images/style-presets/', defined( 'MC4E_PLUGIN_FILE' ) ? MC4E_PLUGIN_FILE : dirname( __DIR__ ) . '/mosaic-contents-for-elementor.php' );
+		$image_base_url = plugins_url( 'assets/admin/images/style-presets/', defined( 'MICEMADE_MC4E_PLUGIN_FILE' ) ? MICEMADE_MC4E_PLUGIN_FILE : dirname( __DIR__ ) . '/mosaic-contents-for-elementor.php' );
 		$options        = array();
 
 		foreach ( $decoded_presets as $preset ) {
@@ -253,7 +253,7 @@ trait WidgetHelpers {
 	 * @return array Associative array of layout_id => label.
 	 */
 	protected function get_layout_options() {
-		$json_path = MC4E_PLUGIN_DIR . 'assets/presets/layouts.json';
+		$json_path = MICEMADE_MC4E_PLUGIN_DIR . 'assets/presets/layouts.json';
 		$layouts   = wp_json_file_decode( $json_path, array( 'associative' => true ) );
 
 		if ( empty( $layouts ) || ! is_array( $layouts ) ) {
