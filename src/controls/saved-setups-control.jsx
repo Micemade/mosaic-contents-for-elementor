@@ -156,6 +156,21 @@ function getWidgetModel() {
 }
 
 /**
+ * Snapshot a setting value.
+ *
+ * Repeater settings are Backbone Collections, and storing the collection itself
+ * would keep the "saved" setup pointing at the live rows — it would follow every
+ * later edit until the page reloads and the setup is re-read from the option.
+ * Serializing here freezes the value at save time.
+ *
+ * @param {*} value Raw value from the settings model.
+ * @returns {*} A plain, detached value.
+ */
+function snapshotValue(value) {
+	return value && typeof value.toJSON === 'function' ? value.toJSON() : value;
+}
+
+/**
  * Read all setup-relevant settings from the Elementor widget model.
  * Returns a flat object of { settingKey: value }.
  * Uses widget-specific key manifests based on the current widget type.
@@ -181,13 +196,13 @@ function captureSettingsFromModel(model) {
 				const fullKey = key + suffix;
 				const value = settingsModel.get(fullKey);
 				if (value !== undefined && value !== null) {
-					captured[fullKey] = value;
+					captured[fullKey] = snapshotValue(value);
 				}
 			});
 		} else {
 			const value = settingsModel.get(key);
 			if (value !== undefined && value !== null) {
-				captured[key] = value;
+				captured[key] = snapshotValue(value);
 			}
 		}
 	});
@@ -201,7 +216,7 @@ function captureSettingsFromModel(model) {
 				const fullKey = key + suffix;
 				const value = settingsModel.get(fullKey);
 				if (value !== undefined && value !== null) {
-					captured[fullKey] = value;
+					captured[fullKey] = snapshotValue(value);
 				}
 			});
 		}
@@ -213,7 +228,7 @@ function captureSettingsFromModel(model) {
 			if (attrKey.startsWith(prefix)) {
 				const value = allAttributes[attrKey];
 				if (value !== undefined && value !== null) {
-					captured[attrKey] = value;
+					captured[attrKey] = snapshotValue(value);
 				}
 			}
 		});

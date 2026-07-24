@@ -317,7 +317,7 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 		(async () => {
 			try {
 				const url =
-					`${getRestRoot()}mc4e/v1/post-meta` +
+					`${getRestRoot()}micemade_mc4e/v1/post-meta` +
 					`?post_ids=${encodeURIComponent(ids.join(','))}` +
 					`&meta_keys=${encodeURIComponent(selectedMetaKeys.join(','))}`;
 				const response = await fetch(url, { headers: getRestNonceHeaders() });

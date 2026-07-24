@@ -9,21 +9,22 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-07T14:12:10+00:00\n"
+"POT-Creation-Date: 2026-07-24T15:23:18+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: mosaic-contents-for-elementor\n"
 
 #. Plugin Name of the plugin
 #: mosaic-contents-for-elementor.php
-#: mosaic-contents-for-elementor.php:318
+#: mosaic-contents-for-elementor.php:411
+#: mosaic-contents-for-elementor.php:427
+#: mosaic-contents-for-elementor.php:444
 msgid "Mosaic Contents for Elementor"
 msgstr ""
 
 #. Plugin URI of the plugin
-#. Author URI of the plugin
 #: mosaic-contents-for-elementor.php
-msgid "https://github.com/Micemade/mosaic-contents-for-elementor"
+msgid "https://wordpress.org/plugins/mosaic-contents-for-elementor/"
 msgstr ""
 
 #. Description of the plugin
@@ -36,40 +37,37 @@ msgstr ""
 msgid "Micemade"
 msgstr ""
 
-#: includes/class-rest-api.php:92
-msgid "Comma-separated post IDs."
+#. Author URI of the plugin
+#: mosaic-contents-for-elementor.php
+msgid "https://micemade.com"
 msgstr ""
 
-#: includes/class-rest-api.php:98
-msgid "Comma-separated meta keys."
-msgstr ""
-
-#: includes/class-rest-api.php:116
+#: includes/class-rest-api.php:97
 msgid "Taxonomy slug."
 msgstr ""
 
-#: includes/class-rest-api.php:142
-msgid "Too many requests. Please try again later."
+#: includes/class-rest-api.php:118
+msgid "Comma-separated post IDs."
 msgstr ""
 
-#: includes/class-rest-api.php:186
-msgid "Search term to filter results."
+#: includes/class-rest-api.php:124
+msgid "Comma-separated meta keys."
 msgstr ""
 
-#: includes/class-rest-api.php:193
-msgid "Maximum number of items to return."
+#: includes/class-rest-api.php:145
+msgid "Post type slug."
 msgstr ""
 
-#: includes/class-rest-api.php:219
+#: includes/class-rest-api.php:151
+msgid "Optional search term to filter meta keys."
+msgstr ""
+
+#: includes/class-rest-api.php:189
 msgid "Search term must be at least 2 characters."
 msgstr ""
 
-#: includes/class-rest-api.php:227
+#: includes/class-rest-api.php:197
 msgid "Search term must not exceed 100 characters."
-msgstr ""
-
-#: includes/class-rest-api.php:252
-msgid "WooCommerce is not active."
 msgstr ""
 
 #. translators: %s: breakpoint name (Desktop, Tablet, Mobile)
@@ -98,380 +96,473 @@ msgstr ""
 msgid "Automatic"
 msgstr ""
 
-#: mosaic-contents-for-elementor.php:217
+#: mosaic-contents-for-elementor.php:296
 msgid "Mosaic Contents"
 msgstr ""
 
 #. translators: 1: Plugin name 2: Elementor
-#: mosaic-contents-for-elementor.php:317
+#: mosaic-contents-for-elementor.php:410
 #, php-format
 msgid "\"%1$s\" requires \"%2$s\" to be installed and activated."
 msgstr ""
 
-#: mosaic-contents-for-elementor.php:319
+#: mosaic-contents-for-elementor.php:412
+#: mosaic-contents-for-elementor.php:445
 msgid "Elementor"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:49
+#. translators: 1: Plugin name 2: PHP 3: Required PHP version
+#. translators: 1: Plugin name 2: Elementor 3: Required Elementor version
+#: mosaic-contents-for-elementor.php:426
+#: mosaic-contents-for-elementor.php:443
+#, php-format
+msgid "\"%1$s\" requires \"%2$s\" version %3$s or greater."
+msgstr ""
+
+#: mosaic-contents-for-elementor.php:428
+msgid "PHP"
+msgstr ""
+
+#: widgets/content-layout/content-layout.php:37
 msgid "Content Layout"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:183
+#: widgets/content-layout/content-layout.php:196
 msgid "Query Settings"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:191
+#: widgets/content-layout/content-layout.php:204
 msgid "Post Type"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:201
+#: widgets/content-layout/content-layout.php:214
 msgid "Taxonomy"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:211
-#: widgets/content-layout/content-layout.php:532
+#: widgets/content-layout/content-layout.php:224
+#: widgets/content-layout/content-layout.php:441
+#: widgets/content-layout/content-layout.php:639
 msgid "Terms"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:223
+#: widgets/content-layout/content-layout.php:236
 msgid "Order By"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:227
+#: widgets/content-layout/content-layout.php:240
+#: widgets/content-layout/content-layout.php:403
 msgid "Date"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:228
-#: widgets/content-layout/content-layout.php:536
+#: widgets/content-layout/content-layout.php:241
+#: widgets/content-layout/content-layout.php:643
 msgid "Title"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:229
+#: widgets/content-layout/content-layout.php:242
 msgid "Modified"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:230
+#: widgets/content-layout/content-layout.php:243
 msgid "Menu Order"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:231
+#: widgets/content-layout/content-layout.php:244
 msgid "Random"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:239
+#: widgets/content-layout/content-layout.php:252
 msgid "Order"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:243
+#: widgets/content-layout/content-layout.php:256
 msgid "Descending"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:244
+#: widgets/content-layout/content-layout.php:257
 msgid "Ascending"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:252
+#: widgets/content-layout/content-layout.php:265
 msgid "Sticky Only"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:254
-#: widgets/content-layout/content-layout.php:266
-#: widgets/content-layout/content-layout.php:450
-#: widgets/content-layout/content-layout.php:726
+#: widgets/content-layout/content-layout.php:267
+#: widgets/content-layout/content-layout.php:279
+#: widgets/content-layout/content-layout.php:392
+#: widgets/content-layout/content-layout.php:558
+#: widgets/content-layout/content-layout.php:818
 #: widgets/widgets-layout/widgets-layout.php:144
 msgid "Yes"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:255
-#: widgets/content-layout/content-layout.php:267
-#: widgets/content-layout/content-layout.php:451
-#: widgets/content-layout/content-layout.php:727
+#: widgets/content-layout/content-layout.php:268
+#: widgets/content-layout/content-layout.php:280
+#: widgets/content-layout/content-layout.php:393
+#: widgets/content-layout/content-layout.php:559
+#: widgets/content-layout/content-layout.php:819
 #: widgets/widgets-layout/widgets-layout.php:145
 msgid "No"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:264
+#: widgets/content-layout/content-layout.php:277
 msgid "Enable Pagination"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:278
+#: widgets/content-layout/content-layout.php:291
 msgid "Post Meta Display"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:288
+#: widgets/content-layout/content-layout.php:301
 msgid "Meta Key"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:297
+#: widgets/content-layout/content-layout.php:310
 msgid "Display Label"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:306
+#: widgets/content-layout/content-layout.php:319
 msgid "Prefix"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:314
+#: widgets/content-layout/content-layout.php:327
 msgid "Suffix"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:322
+#: widgets/content-layout/content-layout.php:335
 msgid "Condition"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:326
+#: widgets/content-layout/content-layout.php:339
 msgid "Always"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:327
+#: widgets/content-layout/content-layout.php:340
 msgid "Not Empty"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:328
+#: widgets/content-layout/content-layout.php:341
 msgid "Equals"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:329
+#: widgets/content-layout/content-layout.php:342
 msgid "Not Equals"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:337
+#: widgets/content-layout/content-layout.php:350
 msgid "Condition Value"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:348
+#: widgets/content-layout/content-layout.php:361
 msgid "Meta Fields"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:361
-#: widgets/content-layout/content-layout.php:757
+#: widgets/content-layout/content-layout.php:372
+msgid "Author"
+msgstr ""
+
+#: widgets/content-layout/content-layout.php:381
+msgid "Author Prefix"
+msgstr ""
+
+#: widgets/content-layout/content-layout.php:383
+msgid "By "
+msgstr ""
+
+#: widgets/content-layout/content-layout.php:390
+msgid "Link to Author Archive"
+msgstr ""
+
+#: widgets/content-layout/content-layout.php:412
+msgid "Date to Show"
+msgstr ""
+
+#: widgets/content-layout/content-layout.php:416
+msgid "Published"
+msgstr ""
+
+#: widgets/content-layout/content-layout.php:417
+msgid "Last Modified"
+msgstr ""
+
+#: widgets/content-layout/content-layout.php:425
+msgid "Date Format"
+msgstr ""
+
+#: widgets/content-layout/content-layout.php:429
+msgid "Long (e.g. January 1, 2026)"
+msgstr ""
+
+#: widgets/content-layout/content-layout.php:430
+msgid "Medium (e.g. Jan 1, 2026)"
+msgstr ""
+
+#: widgets/content-layout/content-layout.php:431
+msgid "Short (e.g. 01/01/2026)"
+msgstr ""
+
+#: widgets/content-layout/content-layout.php:432
+msgid "Numeric (e.g. 2026-01-01)"
+msgstr ""
+
+#: widgets/content-layout/content-layout.php:450
+msgid "Show Terms From"
+msgstr ""
+
+#: widgets/content-layout/content-layout.php:456
+msgid "All taxonomies"
+msgstr ""
+
+#: widgets/content-layout/content-layout.php:459
+msgid "Which taxonomy to pull the displayed terms from."
+msgstr ""
+
+#: widgets/content-layout/content-layout.php:469
+#: widgets/content-layout/content-layout.php:899
 #: widgets/widgets-layout/widgets-layout.php:56
 msgid "Layout"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:369
+#: widgets/content-layout/content-layout.php:477
 #: widgets/widgets-layout/widgets-layout.php:64
 msgid "Predefined Layouts"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:373
+#: widgets/content-layout/content-layout.php:481
 msgid "Choose a predefined layout for the items grid. Layouts 1-9 display 3 items, Layouts 10-14 display 4 items."
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:380
+#: widgets/content-layout/content-layout.php:488
 #: widgets/widgets-layout/widgets-layout.php:75
 msgid "Custom Layout"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:383
+#: widgets/content-layout/content-layout.php:491
 msgid "Stores custom layout data when you drag/resize items in the editor."
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:390
+#: widgets/content-layout/content-layout.php:498
 #: widgets/widgets-layout/widgets-layout.php:84
 msgid "Reset to Predefined Layout"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:392
+#: widgets/content-layout/content-layout.php:500
 #: widgets/widgets-layout/widgets-layout.php:86
 msgid "Reset Layout"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:393
+#: widgets/content-layout/content-layout.php:501
 #: widgets/widgets-layout/widgets-layout.php:87
 msgid "Clear layout modifications and restore the selected predefined layout."
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:401
-#: widgets/content-layout/content-layout.php:403
+#: widgets/content-layout/content-layout.php:509
+#: widgets/content-layout/content-layout.php:511
 #: widgets/widgets-layout/widgets-layout.php:95
 #: widgets/widgets-layout/widgets-layout.php:97
 msgid "Add Item"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:404
+#: widgets/content-layout/content-layout.php:512
 msgid "Add a new item to the layout."
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:412
+#: widgets/content-layout/content-layout.php:520
 #: widgets/widgets-layout/widgets-layout.php:106
 msgid "Grid Gap"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:430
+#: widgets/content-layout/content-layout.php:538
 #: widgets/widgets-layout/widgets-layout.php:124
 msgid "Grid Row Height"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:448
+#: widgets/content-layout/content-layout.php:556
 #: widgets/widgets-layout/widgets-layout.php:142
 msgid "Allow Overlap"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:454
+#: widgets/content-layout/content-layout.php:562
 msgid "Allow grid items to overlap each other."
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:461
+#: widgets/content-layout/content-layout.php:569
 #: widgets/widgets-layout/widgets-layout.php:154
 msgid "Compaction Type"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:465
+#: widgets/content-layout/content-layout.php:573
 #: widgets/widgets-layout/widgets-layout.php:158
 msgid "Vertical"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:466
+#: widgets/content-layout/content-layout.php:574
 #: widgets/widgets-layout/widgets-layout.php:159
 msgid "Horizontal"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:467
-#: widgets/content-layout/content-layout.php:495
-#: widgets/content-layout/content-layout.php:927
+#: widgets/content-layout/content-layout.php:575
+#: widgets/content-layout/content-layout.php:602
+#: widgets/content-layout/content-layout.php:1072
 #: widgets/widgets-layout/widgets-layout.php:160
 #: widgets/widgets-layout/widgets-layout.php:186
 msgid "None"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:469
+#: widgets/content-layout/content-layout.php:577
 msgid "How items compact when moved. \"None\" keeps items in place."
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:483
+#: widgets/content-layout/content-layout.php:590
 #: widgets/widgets-layout/widgets-layout.php:174
 msgid "Helpers"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:484
+#: widgets/content-layout/content-layout.php:591
 msgid "Visual aid - a grid visualization for placing and resizing items."
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:491
+#: widgets/content-layout/content-layout.php:598
 #: widgets/widgets-layout/widgets-layout.php:182
 msgid "Grid Visualization"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:496
+#: widgets/content-layout/content-layout.php:603
 #: widgets/widgets-layout/widgets-layout.php:187
 msgid "Front"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:497
+#: widgets/content-layout/content-layout.php:604
 #: widgets/widgets-layout/widgets-layout.php:188
 msgid "Behind"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:499
+#: widgets/content-layout/content-layout.php:606
 msgid "Visual aid for underlying grid structure."
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:509
+#: widgets/content-layout/content-layout.php:616
 msgid "Saved Setups"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:517
+#: widgets/content-layout/content-layout.php:624
 msgid "Layout & Style Setups"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:518
+#: widgets/content-layout/content-layout.php:625
 msgid "Save, load, or delete layout and style configurations."
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:529
+#: widgets/content-layout/content-layout.php:636
 msgid "Element Order & Visibility"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:540
+#: widgets/content-layout/content-layout.php:647
 msgid "Excerpt"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:544
+#: widgets/content-layout/content-layout.php:651
 msgid "Featured Image"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:548
+#: widgets/content-layout/content-layout.php:655
 msgid "Read More"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:552
+#: widgets/content-layout/content-layout.php:659
+msgid "Post Author"
+msgstr ""
+
+#: widgets/content-layout/content-layout.php:663
+msgid "Post Date"
+msgstr ""
+
+#: widgets/content-layout/content-layout.php:667
 msgid "Post Meta"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:562
+#: widgets/content-layout/content-layout.php:677
 msgid "Item Card Style"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:570
+#: widgets/content-layout/content-layout.php:685
 msgid "Style Preset"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:576
+#: widgets/content-layout/content-layout.php:691
 msgid "Pick a preset to instantly apply a complete style pack."
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:617
+#: widgets/content-layout/content-layout.php:709
 msgid "Text"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:624
+#: widgets/content-layout/content-layout.php:716
 msgid "Title size"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:649
+#: widgets/content-layout/content-layout.php:741
 msgid "Excerpt size"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:674
+#: widgets/content-layout/content-layout.php:766
 msgid "Read more text size"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:699
-msgid "Taxonomy text size"
+#: widgets/content-layout/content-layout.php:791
+msgid "Terms text size"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:724
+#: widgets/content-layout/content-layout.php:816
 msgid "Truncate excerpt"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:737
+#: widgets/content-layout/content-layout.php:829
 msgid "Truncate lines"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:763
+#: widgets/content-layout/content-layout.php:846
+msgid "Date size"
+msgstr ""
+
+#: widgets/content-layout/content-layout.php:871
+msgid "Author text size"
+msgstr ""
+
+#: widgets/content-layout/content-layout.php:905
 msgid "Item Card Layout"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:767
+#: widgets/content-layout/content-layout.php:909
 msgid "Image background"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:768
+#: widgets/content-layout/content-layout.php:910
 msgid "Image left"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:769
+#: widgets/content-layout/content-layout.php:911
 msgid "Image right"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:770
+#: widgets/content-layout/content-layout.php:912
 msgid "Image top"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:771
+#: widgets/content-layout/content-layout.php:913
 msgid "Image bottom"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:783
+#: widgets/content-layout/content-layout.php:926
 msgid "Align"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:787
+#: widgets/content-layout/content-layout.php:930
 msgid "Left"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:791
-#: widgets/content-layout/content-layout.php:819
+#: widgets/content-layout/content-layout.php:934
+#: widgets/content-layout/content-layout.php:962
 #: widgets/widgets-layout/widgets-layout.php:342
 #: widgets/widgets-layout/widgets-layout.php:371
 #: widgets/widgets-layout/widgets-layout.php:492
@@ -479,99 +570,99 @@ msgstr ""
 msgid "Center"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:795
+#: widgets/content-layout/content-layout.php:938
 msgid "Right"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:811
+#: widgets/content-layout/content-layout.php:954
 msgid "Vertical align"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:815
+#: widgets/content-layout/content-layout.php:958
 msgid "Top"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:823
+#: widgets/content-layout/content-layout.php:966
 msgid "Bottom"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:841
+#: widgets/content-layout/content-layout.php:985
 msgid "Elements gap"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:862
+#: widgets/content-layout/content-layout.php:1007
 #: widgets/widgets-layout/widgets-layout.php:269
 #: widgets/widgets-layout/widgets-layout.php:463
 msgid "Padding"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:877
+#: widgets/content-layout/content-layout.php:1022
 msgid "Image"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:884
+#: widgets/content-layout/content-layout.php:1029
 msgid "Image size"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:910
+#: widgets/content-layout/content-layout.php:1055
 msgid "Image resolution"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:920
+#: widgets/content-layout/content-layout.php:1065
 msgid "Image fit"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:924
+#: widgets/content-layout/content-layout.php:1069
 msgid "Cover"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:925
+#: widgets/content-layout/content-layout.php:1070
 msgid "Contain"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:926
+#: widgets/content-layout/content-layout.php:1071
 msgid "Fill"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:928
+#: widgets/content-layout/content-layout.php:1073
 msgid "Scale Down"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:936
+#: widgets/content-layout/content-layout.php:1081
 msgid "Image position"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:937
+#: widgets/content-layout/content-layout.php:1082
 msgid "Drag the focal point to position the image within the item card."
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:952
+#: widgets/content-layout/content-layout.php:1097
 msgid "Colors"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:959
+#: widgets/content-layout/content-layout.php:1104
 msgid "Text color"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:971
+#: widgets/content-layout/content-layout.php:1116
 msgid "Links color"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:983
+#: widgets/content-layout/content-layout.php:1128
 #: widgets/widgets-layout/widgets-layout.php:248
 #: widgets/widgets-layout/widgets-layout.php:420
 msgid "Background"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:998
+#: widgets/content-layout/content-layout.php:1141
 msgid "Borders"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:1005
+#: widgets/content-layout/content-layout.php:1148
 msgid "items border"
 msgstr ""
 
-#: widgets/content-layout/content-layout.php:1014
+#: widgets/content-layout/content-layout.php:1157
 #: widgets/widgets-layout/widgets-layout.php:311
 #: widgets/widgets-layout/widgets-layout.php:542
 msgid "Border Radius"
@@ -666,6 +757,22 @@ msgstr ""
 msgid "Cell Style (all cells)"
 msgstr ""
 
+#: src/controls/MetaKeySelectView.jsx:156
+msgid "Select a post type first"
+msgstr ""
+
+#: src/controls/MetaKeySelectView.jsx:158
+msgid "No meta keys found"
+msgstr ""
+
+#: src/controls/MetaKeySelectView.jsx:169
+msgid "Loading…"
+msgstr ""
+
+#: src/controls/MetaKeySelectView.jsx:176
+msgid "Select or search a meta key…"
+msgstr ""
+
 #: src/controls/PostTypeSelectView.jsx:199
 msgid "Type to search…"
 msgstr ""
@@ -682,78 +789,78 @@ msgstr ""
 msgid "Select or type to search…"
 msgstr ""
 
-#: src/controls/saved-setups-control.jsx:286
+#: src/controls/saved-setups-control.jsx:301
 msgid "Failed to load setups."
 msgstr ""
 
-#: src/controls/saved-setups-control.jsx:311
+#: src/controls/saved-setups-control.jsx:326
 msgid "Failed to save."
 msgstr ""
 
-#: src/controls/saved-setups-control.jsx:344
+#: src/controls/saved-setups-control.jsx:359
 msgid "No widget model found."
 msgstr ""
 
-#: src/controls/saved-setups-control.jsx:359
+#: src/controls/saved-setups-control.jsx:374
 msgid "Setup"
 msgstr ""
 
-#: src/controls/saved-setups-control.jsx:359
+#: src/controls/saved-setups-control.jsx:374
 msgid "already exists. Overwrite?"
 msgstr ""
 
-#: src/controls/saved-setups-control.jsx:377
+#: src/controls/saved-setups-control.jsx:392
 msgid "Setup updated!"
 msgstr ""
 
-#: src/controls/saved-setups-control.jsx:378
+#: src/controls/saved-setups-control.jsx:393
 msgid "Setup saved!"
 msgstr ""
 
-#: src/controls/saved-setups-control.jsx:404
+#: src/controls/saved-setups-control.jsx:419
 msgid "Loaded:"
 msgstr ""
 
-#: src/controls/saved-setups-control.jsx:420
+#: src/controls/saved-setups-control.jsx:435
 msgid "Delete setup"
 msgstr ""
 
-#: src/controls/saved-setups-control.jsx:431
+#: src/controls/saved-setups-control.jsx:446
 msgid "Setup deleted."
 msgstr ""
 
-#: src/controls/saved-setups-control.jsx:437
+#: src/controls/saved-setups-control.jsx:452
 msgid "Loading setups…"
 msgstr ""
 
-#: src/controls/saved-setups-control.jsx:454
+#: src/controls/saved-setups-control.jsx:469
 msgid "— Select a setup —"
 msgstr ""
 
-#: src/controls/saved-setups-control.jsx:455
+#: src/controls/saved-setups-control.jsx:470
 msgid "— No saved setups —"
 msgstr ""
 
-#: src/controls/saved-setups-control.jsx:468
+#: src/controls/saved-setups-control.jsx:483
 msgid "Delete selected setup"
 msgstr ""
 
-#: src/controls/saved-setups-control.jsx:482
+#: src/controls/saved-setups-control.jsx:497
 msgid "Setup name…"
 msgstr ""
 
-#: src/controls/saved-setups-control.jsx:495
+#: src/controls/saved-setups-control.jsx:510
 msgid "Saving…"
 msgstr ""
 
-#: src/controls/saved-setups-control.jsx:496
+#: src/controls/saved-setups-control.jsx:511
 msgid "Save"
 msgstr ""
 
-#: src/shared/components/FeaturedImage.jsx:39
+#: src/shared/components/FeaturedImage.jsx:37
 msgid "Content item has no featured image"
 msgstr ""
 
-#: src/shared/components/FeaturedImage.jsx:47
+#: src/shared/components/FeaturedImage.jsx:45
 msgid "Featured image"
 msgstr ""

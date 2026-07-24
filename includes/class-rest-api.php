@@ -34,7 +34,7 @@ class RestAPI {
 	 *
 	 * @var string
 	 */
-	private const NAMESPACE = 'mc4e/v1';
+	private const NAMESPACE = 'micemade_mc4e/v1';
 
 	/**
 	 * Default number of items to return.
@@ -84,13 +84,35 @@ class RestAPI {
 			)
 		);
 
+		// Taxonomy terms endpoint.
+		register_rest_route(
+			self::NAMESPACE,
+			'/taxonomy-terms',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( $this, 'get_taxonomy_terms' ),
+				'permission_callback' => '__return_true', // Public endpoint for taxonomy terms
+				'args'                => array(
+					'taxonomy' => array(
+						'description'       => __( 'Taxonomy slug.', 'mosaic-contents-for-elementor' ),
+						'type'              => 'string',
+						'required'          => true,
+						'sanitize_callback' => 'sanitize_key',
+					),
+				),
+			)
+		);
+
+		// Post meta values endpoint.
 		register_rest_route(
 			self::NAMESPACE,
 			'/post-meta',
 			array(
 				'methods'             => 'GET',
 				'callback'            => array( $this, 'get_post_meta_values' ),
-				'permission_callback' => array( $this, 'check_permission' ),
+				'permission_callback' => function () {
+					return current_user_can( 'edit_posts' );
+				},
 				'args'                => array(
 					'post_ids'  => array(
 						'description'       => __( 'Comma-separated post IDs.', 'mosaic-contents-for-elementor' ),
@@ -115,7 +137,9 @@ class RestAPI {
 			array(
 				'methods'             => 'GET',
 				'callback'            => array( $this, 'get_post_meta_keys' ),
-				'permission_callback' => array( $this, 'check_permission' ),
+				'permission_callback' => function () {
+					return current_user_can( 'edit_posts' );
+				},
 				'args'                => array(
 					'post_type' => array(
 						'description'       => __( 'Post type slug.', 'mosaic-contents-for-elementor' ),
@@ -132,101 +156,18 @@ class RestAPI {
 				),
 			)
 		);
-
-		register_rest_route(
-			self::NAMESPACE,
-			'/taxonomy-terms',
-			array(
-				'methods'             => 'GET',
-				'callback'            => array( $this, 'get_taxonomy_terms' ),
-				'permission_callback' => '__return_true', // Public endpoint for taxonomy terms
-				'args'                => array(
-					'taxonomy' => array(
-						'description'       => __( 'Taxonomy slug.', 'mosaic-contents-for-elementor' ),
-						'type'              => 'string',
-						'required'          => true,
-						'sanitize_callback' => 'sanitize_key',
-					),
-				),
-			)
-		);
 	}
 
 	/**
 	 * Check if the current user has permission to access the endpoint.
 	 *
-	 * Validates user capability and rate limits.
+	 * These endpoints only expose editor-facing metadata, so the same capability
+	 * that lets a user edit content in the first place is the right gate.
 	 *
-	 * @return bool|WP_Error True if user can access, false or WP_Error otherwise.
+	 * @return bool True if the user can access the endpoint.
 	 */
-	public function check_permission() {
-		if ( ! current_user_can( 'edit_posts' ) ) {
-			return false;
-		}
-
-		// SECURITY: Rate limiting - max 100 requests per minute per user
-		if ( ! $this->check_rate_limit() ) {
-			return new WP_Error(
-				'rest_rate_limit',
-				__( 'Too many requests. Please try again later.', 'mosaic-contents-for-elementor' ),
-				array( 'status' => 429 )
-			);
-		}
-
-		return true;
-	}
-
-	/**
-	 * Check rate limit for current user.
-	 *
-	 * Uses WordPress transients for rate limiting (fallback to in-memory if unavailable).
-	 *
-	 * @return bool True if within rate limit, false if exceeded.
-	 */
-	private function check_rate_limit(): bool {
-		$user_id = get_current_user_id();
-
-		if ( ! $user_id ) {
-			return false;
-		}
-
-		$cache_key     = 'mc4e_api_rate_' . $user_id;
-		$limit_per_min = 100;
-		$request_count = (int) get_transient( $cache_key );
-
-		if ( $request_count >= $limit_per_min ) {
-			return false;
-		}
-
-		// Increment and set expiry to 1 minute
-		set_transient( $cache_key, $request_count + 1, MINUTE_IN_SECONDS );
-
-		return true;
-	}
-
-	/**
-	 * Get collection parameters for endpoints.
-	 *
-	 * @return array Array of parameter definitions.
-	 */
-	private function get_collection_params(): array {
-		return array(
-			'search'   => array(
-				'description'       => __( 'Search term to filter results.', 'mosaic-contents-for-elementor' ),
-				'type'              => 'string',
-				'required'          => false,
-				'sanitize_callback' => 'sanitize_text_field',
-				'validate_callback' => array( $this, 'validate_search_param' ),
-			),
-			'per_page' => array(
-				'description'       => __( 'Maximum number of items to return.', 'mosaic-contents-for-elementor' ),
-				'type'              => 'integer',
-				'default'           => self::DEFAULT_PER_PAGE,
-				'minimum'           => 1,
-				'maximum'           => 100,
-				'sanitize_callback' => 'absint',
-			),
-		);
+	public function check_permission(): bool {
+		return current_user_can( 'edit_posts' );
 	}
 
 	/**

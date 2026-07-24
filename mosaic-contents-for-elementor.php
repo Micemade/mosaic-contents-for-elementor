@@ -187,21 +187,19 @@ final class MosaicContentsElementor {
 	 */
 	public function enqueue_editor_scripts() {
 		// Enqueue React and ReactDOM for editor
-		wp_enqueue_script( 'react' );
-		wp_enqueue_script( 'react-dom' );
+		$this->maybe_enqueue_react();
 
 		// Panel-only styles (parent window, not the preview iframe).
 		// Dummy handle (no $src) used only to carry inline styles below;
 		// the version has no cache-busting effect without a file, but is
 		// passed explicitly per WordPress enqueue standards.
-		wp_register_style( 'mc4e-editor-panel', false, array(), MICEMADE_MC4E_VERSION );
-		wp_enqueue_style( 'mc4e-editor-panel' );
+		wp_register_style( 'micemade_mc4e-editor-panel', false, array(), MICEMADE_MC4E_VERSION );
+		wp_enqueue_style( 'micemade_mc4e-editor-panel' );
 		wp_add_inline_style(
-			'mc4e-editor-panel',
+			'micemade_mc4e-editor-panel',
 			'.elementor-control-mc4e_post_meta .elementor-repeater-row-tool.elementor-repeater-tool-duplicate{display:none!important}'
 		);
 
-		// The control script is enqueued by the control's enqueue() method
 	}
 
 	/**
@@ -214,13 +212,12 @@ final class MosaicContentsElementor {
 	 */
 	public function enqueue_preview_scripts() {
 		// Enqueue WordPress's React and ReactDOM
-		wp_enqueue_script( 'react' );
-		wp_enqueue_script( 'react-dom' );
+		$this->maybe_enqueue_react();
 		wp_enqueue_media();
 
 		// Editor script (full functionality)
 		wp_enqueue_script(
-			'mc4e-editor-js',
+			'micemade_mc4e-editor-js',
 			plugin_dir_url( __FILE__ ) . 'assets/admin/js/main-editor.js',
 			array( 'jquery', 'elementor-frontend', 'react', 'react-dom' ),
 			'1.0.0',
@@ -228,13 +225,27 @@ final class MosaicContentsElementor {
 		);
 
 		wp_enqueue_style(
-			'mc4e-editor-css',
+			'micemade_mc4e-editor-css',
 			plugin_dir_url( __FILE__ ) . 'assets/admin/css/main-editor.css',
 			array(),
 			'1.0.0'
 		);
 
 		$this->enqueue_rest_config();
+	}
+
+	/**
+	 * Check if React and ReactDOM are enqueued, and enqueue them if not.
+	 *
+	 * @return void
+	 */
+	private function maybe_enqueue_react() {
+		if ( ! wp_script_is( 'react', 'enqueued' ) ) {
+			wp_enqueue_script( 'react' );
+		}
+		if ( ! wp_script_is( 'react-dom', 'enqueued' ) ) {
+			wp_enqueue_script( 'react-dom' );
+		}
 	}
 
 	/**
@@ -280,7 +291,7 @@ final class MosaicContentsElementor {
 	public function create_new_category( $elements_manager ) {
 
 		$elements_manager->add_category(
-			'mosaic-contents',
+			'micemade-mosaic-contents-for-elementor',
 			array(
 				'title' => __( 'Mosaic Contents', 'mosaic-contents-for-elementor' ),
 				'icon'  => 'fa fa-plug',
@@ -314,12 +325,11 @@ final class MosaicContentsElementor {
 		}
 
 		// Enqueue WordPress's React and ReactDOM
-		wp_enqueue_script( 'react' );
-		wp_enqueue_script( 'react-dom' );
+		$this->maybe_enqueue_react();
 
 		// Frontend-only script (lightweight, no editor features)
 		wp_enqueue_script(
-			'mc4e-frontend-js',
+			'micemade_mc4e-frontend-js',
 			plugin_dir_url( __FILE__ ) . 'assets/js/main-frontend.js',
 			array( 'jquery', 'elementor-frontend', 'react', 'react-dom' ),
 			'1.0.0',
@@ -327,7 +337,7 @@ final class MosaicContentsElementor {
 		);
 
 		wp_enqueue_style(
-			'mc4e-css',
+			'micemade_mc4e-css',
 			plugin_dir_url( __FILE__ ) . 'assets/css/main-frontend.css',
 			array(),
 			'1.0.0'
@@ -351,8 +361,8 @@ final class MosaicContentsElementor {
 			'storeApiNonce'  => wp_create_nonce( 'wc_store_api' ),
 		);
 
-		wp_localize_script( 'mc4e-frontend-js', 'MICEMADE_MC4E', $localize_data );
-		wp_localize_script( 'mc4e-editor-js', 'MICEMADE_MC4E', $localize_data );
+		wp_localize_script( 'micemade_mc4e-frontend-js', 'MICEMADE_MC4E', $localize_data );
+		wp_localize_script( 'micemade_mc4e-editor-js', 'MICEMADE_MC4E', $localize_data );
 	}
 
 	/**

@@ -5,7 +5,6 @@ namespace Micemade\MosaicContentsElementor\Widgets;
 use Elementor\Widget_Base;
 use Elementor\Controls_Manager;
 use Elementor\Group_Control_Background;
-use Elementor\Group_Control_Typography;
 use Elementor\Group_Control_Border;
 use Elementor\Group_Control_Box_Shadow;
 use Elementor\Repeater;
@@ -21,13 +20,6 @@ use Micemade\MosaicContentsElementor\RestAPI;
 class ContentLayout extends Widget_Base {
 
 	use WidgetHelpers;
-
-	/**
-	 * Cached post type metadata from RestAPI::get_post_types().
-	 *
-	 * @var array[]|null
-	 */
-	private $post_types_data_cache = null;
 
 	public function get_style_depends() {
 		return array( 'custom-widget-css' );
@@ -50,33 +42,58 @@ class ContentLayout extends Widget_Base {
 	}
 
 	public function get_categories() {
-		return array( 'mosaic-contents' );
+		return array( 'micemade-mosaic-contents-for-elementor' );
 	}
 
-
-
 	/**
-	 * Get REST post type metadata from the plugin REST API class.
+	 * Get all public REST-enabled post types.
 	 *
-	 * @return array[]
+	 * @return array[] Array of post type metadata, each with keys: name, label, rest_base, taxonomies, taxonomy_labels, taxonomy_rest_bases.
 	 */
-	private function get_post_types_data() {
-		if ( is_array( $this->post_types_data_cache ) ) {
-			return $this->post_types_data_cache;
+	public function get_post_types_data(): array {
+		$post_types = get_post_types(
+			array(
+				'public'             => true,
+				'publicly_queryable' => true,
+				'show_in_rest'       => true,
+			),
+			'objects'
+		);
+
+		$data = array();
+
+		foreach ( $post_types as $post_type ) {
+			// Filter out unwanted post types
+			if ( in_array( $post_type->name, array( 'e-floating-buttons', 'elementor_library' ), true ) ) {
+				continue;
+			}
+
+			$post_type_taxonomies = get_object_taxonomies( $post_type->name, 'objects' );
+			$taxonomies           = array();
+			$taxonomy_labels      = array();
+			$taxonomy_rest_bases  = array();
+
+			foreach ( $post_type_taxonomies as $taxonomy ) {
+				if ( empty( $taxonomy->public ) || empty( $taxonomy->show_in_rest ) ) {
+					continue;
+				}
+
+				$taxonomies[]                           = $taxonomy->name;
+				$taxonomy_labels[ $taxonomy->name ]     = $taxonomy->label;
+				$taxonomy_rest_bases[ $taxonomy->name ] = ! empty( $taxonomy->rest_base ) ? $taxonomy->rest_base : $taxonomy->name;
+			}
+
+			$data[] = array(
+				'name'                => $post_type->name,
+				'label'               => $post_type->label,
+				'rest_base'           => ! empty( $post_type->rest_base ) ? $post_type->rest_base : $post_type->name,
+				'taxonomies'          => array_values( $taxonomies ),
+				'taxonomy_labels'     => $taxonomy_labels,
+				'taxonomy_rest_bases' => $taxonomy_rest_bases,
+			);
 		}
 
-		$api      = new RestAPI();
-		$response = $api->get_post_types();
-
-		if ( ! is_object( $response ) || ! method_exists( $response, 'get_data' ) ) {
-			$this->post_types_data_cache = array();
-			return $this->post_types_data_cache;
-		}
-
-		$data                        = $response->get_data();
-		$this->post_types_data_cache = is_array( $data ) ? $data : array();
-
-		return $this->post_types_data_cache;
+		return $data;
 	}
 
 	/**
@@ -224,7 +241,7 @@ class ContentLayout extends Widget_Base {
 					'title'      => __( 'Title', 'mosaic-contents-for-elementor' ),
 					'modified'   => __( 'Modified', 'mosaic-contents-for-elementor' ),
 					'menu_order' => __( 'Menu Order', 'mosaic-contents-for-elementor' ),
-					'rand'       => __( 'Random', 'mosaic-contents-for-elementor' ),
+					'random'       => __( 'Random', 'mosaic-contents-for-elementor' ),
 				),
 			)
 		);
@@ -1105,7 +1122,7 @@ class ContentLayout extends Widget_Base {
 			)
 		);
 		$this->add_group_control(
-			\Elementor\Group_Control_Background::get_type(),
+			Group_Control_Background::get_type(),
 			array(
 				'name'     => 'mc4e_background_color',
 				'label'    => esc_html__( 'Background', 'mosaic-contents-for-elementor' ),

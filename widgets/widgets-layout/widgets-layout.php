@@ -39,7 +39,7 @@ class WidgetsLayout extends Widget_Base {
 	}
 
 	public function get_categories() {
-		return array( 'mosaic-contents' );
+		return array( 'micemade-mosaic-contents-for-elementor' );
 	}
 
 	/**

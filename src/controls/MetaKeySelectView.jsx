@@ -15,8 +15,51 @@ import AsyncSelect from 'react-select/async';
 const apiFetch = wp.apiFetch;
 const { __ } = wp.i18n;
 
-const META_KEYS_ENDPOINT = '/mc4e/v1/post-meta-keys';
+const META_KEYS_ENDPOINT = '/micemade_mc4e/v1/post-meta-keys';
 const DEBOUNCE_DELAY = 300;
+
+// How long a fetched key list is reused, matching the server-side cache TTL.
+const KEYS_CACHE_TTL = 5 * 60 * 1000;
+
+/**
+ * Shared per-post-type request cache.
+ *
+ * Every repeater row mounts its own control, so without this a Post Meta
+ * Display list of N rows fires N identical requests each time the post type
+ * changes. Entries hold the promise itself, so rows that mount together share
+ * one in-flight request rather than racing.
+ *
+ * @type {Map<string, {promise: Promise<Array>, timestamp: number}>}
+ */
+const metaKeysCache = new Map();
+
+/**
+ * Load the meta keys for a post type, reusing an in-flight or recent request.
+ *
+ * @param {string} postType Post type slug.
+ * @returns {Promise<Array>} Resolves to an array of { value, label } options.
+ */
+const loadMetaKeys = (postType) => {
+	const cached = metaKeysCache.get(postType);
+
+	if (cached && Date.now() - cached.timestamp < KEYS_CACHE_TTL) {
+		return cached.promise;
+	}
+
+	const promise = apiFetch({
+		path: `${META_KEYS_ENDPOINT}?post_type=${encodeURIComponent(postType)}`,
+	})
+		.then((response) => (Array.isArray(response) ? response : []))
+		.catch((error) => {
+			// Never cache a failure — the next mount should retry.
+			metaKeysCache.delete(postType);
+			throw error;
+		});
+
+	metaKeysCache.set(postType, { promise, timestamp: Date.now() });
+
+	return promise;
+};
 
 /**
  * MetaKeySelectView component.
@@ -46,11 +89,9 @@ const MetaKeySelectView = ({ initialValue, postType, onChange }) => {
 			}
 			try {
 				setIsLoading(true);
-				const response = await apiFetch({
-					path: `${META_KEYS_ENDPOINT}?post_type=${encodeURIComponent(postType)}`,
-				});
+				const options = await loadMetaKeys(postType);
 				if (!cancelled) {
-					setDefaultOptions(Array.isArray(response) ? response : []);
+					setDefaultOptions(options);
 				}
 			} catch (error) {
 				if (!cancelled) {

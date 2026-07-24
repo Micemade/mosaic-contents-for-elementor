@@ -82,7 +82,7 @@ const fetchPostTypeMeta = async (postType) => {
 	}
 
 	try {
-		const response = await fetch(`${getRestRoot()}mc4e/v1/post-types`);
+		const response = await fetch(`${getRestRoot()}micemade_mc4e/v1/post-types`);
 		if (!response.ok) {
 			return null;
 		}
@@ -183,7 +183,7 @@ const fetchTaxonomyTermsOptions = async (taxonomy) => {
 	}
 
 	try {
-		const url = `${getRestRoot()}mc4e/v1/taxonomy-terms?taxonomy=${encodeURIComponent(taxonomy)}`;
+		const url = `${getRestRoot()}micemade_mc4e/v1/taxonomy-terms?taxonomy=${encodeURIComponent(taxonomy)}`;
 		const response = await fetch(url);
 		if (!response.ok) {
 			return {};
@@ -366,6 +366,102 @@ const patchRepeaterCollection = (collection, widgetId, scheduleRepeaterUpdate) =
 	// Also listen for `change` events bubbled from item models
 	// (e.g. visibility switcher toggles).
 	collection.on('change', scheduleRepeaterUpdate);
+};
+
+/**
+ * Row attributes that identify a repeater row rather than describe it.
+ * These are never copied from a saved setup: `_id` belongs to the live row,
+ * and `element_label` is the identity we match on.
+ */
+const REPEATER_IDENTITY_KEYS = ['_id', 'element_label'];
+
+/**
+ * Apply a saved setup's repeater rows to a live repeater collection.
+ *
+ * A repeater setting is a Backbone Collection, and Elementor keeps a parallel
+ * array of row *containers* (`container.repeaters[name].children`) that its row
+ * views address **by index** (see the editor's `childViewOptions`). Assigning a
+ * plain array over the setting — which is what a blanket `settingsModel.set()`
+ * does with JSON-decoded setup data — swaps the collection out without emitting
+ * any add/remove/reset event, so those containers are never rebuilt. The panel
+ * then renders the new rows against the old containers and a switcher toggles
+ * whichever element used to occupy that position.
+ *
+ * So rows are updated in place instead: values are matched to existing rows by
+ * `element_label`, and order is restored with Elementor's own repeater command,
+ * which keeps collection and containers in step.
+ *
+ * @param {Object} model    Elementor widget model.
+ * @param {string} widgetId Widget ID, used to resolve the container.
+ * @param {string} key      Repeater setting key.
+ * @param {Array}  rows     Saved rows from the setup.
+ * @return {boolean} True when the rows were applied in place.
+ */
+const applyRepeaterSetting = (model, widgetId, key, rows) => {
+	const $e = window.$e || window.parent?.$e;
+	const elementorRef = typeof elementor !== 'undefined' ? elementor : window.parent?.elementor;
+	const container = elementorRef?.getContainer?.(widgetId);
+
+	// Read through the container when there is one, so the rows updated below
+	// and the rows the move command reorders are the same collection.
+	const settingsModel = container?.settings || model.get('settings');
+	const collection = settingsModel?.get(key);
+
+	// Only in-place updates are safe; anything else must fall through to the
+	// caller rather than clobber the collection.
+	if (!Array.isArray(rows) || !collection || typeof collection.each !== 'function') {
+		return false;
+	}
+
+	const findRowIndex = (label) =>
+		collection.models.findIndex((rowModel) => rowModel.get('element_label') === label);
+
+	// 1. Copy each saved row's values onto the row with the same label, so a
+	//    visibility switcher can never land on a different element.
+	rows.forEach((row) => {
+		if (!row || typeof row !== 'object') {
+			return;
+		}
+
+		const index = findRowIndex(row.element_label);
+		if (index === -1) {
+			// A setup saved before this element existed (or after it was
+			// renamed) — nothing to apply it to.
+			return;
+		}
+
+		const values = Object.fromEntries(
+			Object.entries(row).filter(([attr]) => !REPEATER_IDENTITY_KEYS.includes(attr))
+		);
+
+		collection.models[index].set(values);
+	});
+
+	// 2. Restore the saved order. Elementor's move command reorders the
+	//    collection and the container children together; reordering the
+	//    collection alone would leave the two mismatched again.
+	if ($e && container?.repeaters?.[key]) {
+		rows.forEach((row, targetIndex) => {
+			const sourceIndex = findRowIndex(row?.element_label);
+
+			if (sourceIndex === -1 || sourceIndex === targetIndex) {
+				return;
+			}
+
+			try {
+				$e.run('document/repeater/move', {
+					container,
+					name: key,
+					sourceIndex,
+					targetIndex,
+				});
+			} catch (error) {
+				console.warn('Failed to reorder repeater row; leaving current order.', error);
+			}
+		});
+	}
+
+	return true;
 };
 
 const patchRepeaterCollections = (settingsModel, repeaterKeys, widgetId, scheduleRepeaterUpdate) => {
@@ -578,7 +674,7 @@ export const registerEditorHooks = () => {
 						const seq = taxonomySyncSeq;
 						await syncTaxonomyOptionsForPostType(model, nextPostType || 'post', false);
 						if (seq !== taxonomySyncSeq) {
-							
+
 						}
 					};
 
@@ -590,7 +686,7 @@ export const registerEditorHooks = () => {
 						void (async () => {
 							await syncTaxonomyOptionsForPostType(model, nextPostType || 'post', true);
 							if (seq !== taxonomySyncSeq) {
-								
+
 							}
 						})();
 					});
@@ -675,15 +771,31 @@ export const registerEditorHooks = () => {
 
 					isApplyingSetupBatch = true;
 					try {
-						// 3. Batch-set ALL settings atomically.
-						settingsModel.set(setupSettings);
+						// 3. Repeater settings must never go through set(): a raw
+						//    array replaces the Backbone Collection and desyncs
+						//    Elementor's row containers (see applyRepeaterSetting).
+						//    Apply those in place and keep them out of the batch.
+						const batchSettings = { ...setupSettings };
+
+						(wKeys.repeaterKeys || []).forEach((repeaterKey) => {
+							if (!(repeaterKey in batchSettings)) {
+								return;
+							}
+
+							if (applyRepeaterSetting(model, widgetId, repeaterKey, batchSettings[repeaterKey])) {
+								delete batchSettings[repeaterKey];
+							}
+						});
+
+						// 3a. Batch-set the remaining settings atomically.
+						settingsModel.set(batchSettings);
 
 						// 3b. Keep Elementor panel controls in sync when the panel
 						// and preview use different Backbone model instances.
 						// Use setSetting() so Elementor updates control UIs, not just
 						// the raw Backbone attributes.
 						if (source === 'stylePreset' && panelModel && panelModel.id === widgetId && typeof panelModel.setSetting === 'function') {
-							Object.entries(setupSettings).forEach(([key, value]) => {
+							Object.entries(batchSettings).forEach(([key, value]) => {
 								panelModel.setSetting(key, value);
 							});
 						}

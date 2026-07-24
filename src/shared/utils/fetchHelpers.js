@@ -15,7 +15,7 @@ export const getRestRoot = () => {
 };
 
 // WP core post types whose REST base differs from the slug. Extended at
-// runtime from the /mc4e/v1/post-types endpoint (see resolvePostTypeRestBase).
+// runtime from the /micemade_mc4e/v1/post-types endpoint (see resolvePostTypeRestBase).
 const postTypeRestBaseCache = new Map([
 	['post', 'posts'],
 	['page', 'pages'],
@@ -26,7 +26,7 @@ const postTypeRestBaseCache = new Map([
  * Resolve a post type's REST base (e.g. "post" -> "posts").
  *
  * Results are cached process-wide; unknown types are looked up once via the
- * plugin's /mc4e/v1/post-types endpoint. Falls back to the post type slug.
+ * plugin's /micemade_mc4e/v1/post-types endpoint. Falls back to the post type slug.
  *
  * @param {string} postType
  * @return {Promise<string>} The post type's REST base, or the slug as fallback.
@@ -41,7 +41,7 @@ export const resolvePostTypeRestBase = async (postType) => {
 	}
 
 	try {
-		const response = await fetch(`${getRestRoot()}mc4e/v1/post-types`);
+		const response = await fetch(`${getRestRoot()}micemade_mc4e/v1/post-types`);
 		if (response.ok) {
 			const postTypes = await response.json();
 			if (Array.isArray(postTypes)) {

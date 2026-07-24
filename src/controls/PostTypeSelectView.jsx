@@ -22,7 +22,7 @@ const { __ } = wp.i18n;
  *
  * @type {string}
  */
-const POST_TYPES_ENDPOINT = '/mc4e/v1/post-types';
+const POST_TYPES_ENDPOINT = '/micemade_mc4e/v1/post-types';
 
 /**
  * Default number of post types to load initially.
