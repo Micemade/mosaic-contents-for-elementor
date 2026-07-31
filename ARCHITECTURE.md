@@ -18,7 +18,7 @@ The build produces **two entry bundles** plus **three custom control bundles**:
   Widgets Layout live-element machinery, for the Elementor editor preview.
 - **Focal Point Control** (`focal-point-control.jsx`) — image focal-point picker for the panel.
 - **Saved Setups Control** (`saved-setups-control.jsx`) — save/load/delete layout+style setups.
-- **Post Type Select Control** (`PostTypeSelectControl.jsx`) — searchable post-type/query select.
+- **Meta Key Select Control** (`MetaKeySelectControl.jsx`) — searchable post-meta key select for the panel.
 
 ## Dual-Bundle Strategy
 
@@ -293,9 +293,6 @@ src/
     ├── focal-point-control.jsx      # Focal point picker React component
     ├── FocalPointControlView.jsx    # Elementor BaseData view extension
     ├── focal-point-control.scss
-    ├── PostTypeSelectControl.jsx    # Post-type/query select React component
-    ├── PostTypeSelectView.jsx       # Elementor BaseData view extension
-    ├── PostTypeSelectControl.scss
     ├── saved-setups-control.jsx     # Saved setups React component + control view
     └── saved-setups-control.scss
 
@@ -310,7 +307,6 @@ widgets/                              # PHP widget classes + settings JSON (all 
 controls/                             # PHP custom control classes
 ├── focal-point.php                   # Focal_Point
 ├── saved-setups.php                  # Saved_Setups
-├── posttype-select.php               # Posttype_Select
 └── element-sorting.php               # Element_Sorting
 
 includes/                             # PHP helpers (WidgetHelpers trait, REST endpoints, …)
@@ -459,7 +455,6 @@ Custom controls follow a PHP + React pattern: a PHP class provides the Elementor
 | Control | PHP Class | Type Slug | Purpose |
 |---------|-----------|-----------|----------|
 | Focal Point | `Focal_Point` | `mc4e_focal_point` | Image focal-point picker |
-| Post Type Select | `Posttype_Select` | `mc4e_posttype_select` | Post-type/query selector with search |
 | Element Sorting | `Element_Sorting` | `mc4e_sorter_label` | Drag-to-reorder element visibility list |
 | Saved Setups | `Saved_Setups` | `mc4e_saved_setups` | Save/load/delete layout+style presets |
 
@@ -503,9 +498,6 @@ The control defines which settings to capture/restore:
 public function init_controls( $controls_manager ) {
     require_once __DIR__ . '/controls/focal-point.php';
     $controls_manager->register( new Focal_Point() );
-
-    require_once __DIR__ . '/controls/posttype-select.php';
-    $controls_manager->register( new Posttype_Select() );
 
     require_once __DIR__ . '/controls/element-sorting.php';
     $controls_manager->register( new Element_Sorting() );
@@ -680,7 +672,6 @@ The project uses Vite with a custom multi-entry configuration that builds five s
 | `src/main-editor.jsx` | `BUILD_ENTRY=main-editor` | `assets/admin/` | Editor preview |
 | `src/controls/focal-point-control.jsx` | `BUILD_ENTRY=focal-point-control` | `assets/admin/` | Focal point control |
 | `src/controls/saved-setups-control.jsx` | `BUILD_ENTRY=saved-setups-control` | `assets/admin/` | Saved setups control |
-| `src/controls/PostTypeSelectControl.jsx` | `BUILD_ENTRY=PostTypeSelectControl` | `assets/admin/` | Product select control |
 
 ### Build Commands
 
@@ -696,7 +687,6 @@ npm run watch              # Watch frontend bundle only (recommended)
 npm run watch:editor       # Watch editor bundle only
 npm run watch:control      # Watch focal point control only
 npm run watch:setups       # Watch saved setups control only
-npm run watch:posttype-select # Watch product select control only
 npm run watch:all          # Watch all bundles (resource intensive)
 ```
 
@@ -737,12 +727,10 @@ assets/
     ├── js/
     │   ├── main-editor.js           # ~175KB (gzipped ~52KB)
     │   ├── focal-point-control.js   # ~5KB
-    │   ├── PostTypeSelectControl.js
     │   └── saved-setups-control.js  # ~7KB
     └── css/
         ├── main-editor.css
         ├── focal-point-control.css
-        ├── PostTypeSelectControl.css
         └── saved-setups-control.css
 ```
 
@@ -789,9 +777,6 @@ assets/
    
    # Terminal 3: Watch control
    npm run watch:control
-
-    # Terminal 4: Watch product select control
-    npm run watch:posttype-select
    ```
 
 ### File Watching

@@ -69,7 +69,6 @@ widgets/                         # PHP widget classes + settings JSON (all use W
 
 controls/                        # PHP custom control classes
 ├── focal-point.php
-├── posttype-select.php
 ├── element-sorting.php
 └── saved-setups.php
 
@@ -133,7 +132,6 @@ Detects widgets added by drag & drop into the editor canvas and auto-initializes
 assets/js/main-frontend.js          # ~172 KB  (frontend display only)
 assets/admin/js/main-editor.js      # ~175 KB  (full editor)
 assets/admin/js/focal-point-control.js
-assets/admin/js/PostTypeSelectControl.js
 assets/admin/js/saved-setups-control.js
 ```
 

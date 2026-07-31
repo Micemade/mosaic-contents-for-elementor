@@ -504,7 +504,6 @@ PHP Files (Root Level)                  │
 │                                       │
 ├─ controls/ ◄──────────────────────────┤ PHP Controls
 │  ├─ focal-point.php                   │
-│  ├─ posttype-select.php               │
 │  ├─ element-sorting.php               │
 │  └─ saved-setups.php                  │
 │                                       │

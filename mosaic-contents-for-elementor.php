@@ -167,10 +167,6 @@ final class MosaicContentsElementor {
 		require_once __DIR__ . '/controls/saved-setups.php';
 		$controls_manager->register( new \Micemade\MosaicContentsElementor\Controls\Saved_Setups() );
 
-		// Require and register the post type select control.
-		require_once __DIR__ . '/controls/posttype-select.php';
-		$controls_manager->register( new \Micemade\MosaicContentsElementor\Controls\Posttype_Select() );
-
 		// Require and register the meta key select control.
 		require_once __DIR__ . '/controls/meta-key-select.php';
 		$controls_manager->register( new \Micemade\MosaicContentsElementor\Controls\Meta_Key_Select() );

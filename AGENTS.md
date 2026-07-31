@@ -30,7 +30,6 @@ mosaic-contents-for-elementor/
 ├── controls/                           # Custom Elementor control PHP classes
 │   ├── focal-point.php                 # Focal_Point
 │   ├── saved-setups.php                # Saved_Setups
-│   ├── posttype-select.php             # Posttype_Select
 │   └── element-sorting.php             # Element_Sorting
 ├── includes/                           # PHP helpers (WidgetHelpers trait, REST endpoints, etc.)
 ├── src/                                # React / JS source (built by Vite)
@@ -59,7 +58,7 @@ Both register under the **`mosaic-contents`** category (title "Mosaic Contents")
 ## Build Entries (Vite)
 
 `npm run build` runs one Vite build per `BUILD_ENTRY`:
-`main-frontend`, `main-editor`, `focal-point-control`, `saved-setups-control`, `PostTypeSelectControl`.
+`main-frontend`, `main-editor`, `focal-point-control`, `saved-setups-control`, `MetaKeySelectControl`.
 Outputs land in `assets/js` (frontend), `assets/admin/js` (editor), and per-control files.
 
 ## Adding a New Widget
@@ -138,7 +137,6 @@ elementor.channels.editor.trigger('mosaic:addItem');     // add a grid cell
 |-------------------|------------------------------|-----|
 | `focal-point.php` | `focal-point-control.jsx` / `FocalPointControlView.jsx` | Image focal-point picker |
 | `saved-setups.php` | `saved-setups-control.jsx` | Save/load/delete layout+style setups |
-| `posttype-select.php` | `PostTypeSelectControl.jsx` / `PostTypeSelectView.jsx` | Searchable post-type/query select |
 | `element-sorting.php` | (rendered by the widget) | Element order & visibility repeater |
 
 ## Code Standards

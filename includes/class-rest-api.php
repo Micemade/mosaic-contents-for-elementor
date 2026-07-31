@@ -13,7 +13,6 @@ namespace Micemade\MosaicContentsElementor;
 
 use WP_REST_Request;
 use WP_REST_Response;
-use WP_Error;
 use WP_Post;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -179,39 +178,6 @@ class RestAPI {
 			)
 		);
 	}
-
-	/**
-	 * Validate search parameter for length and format.
-	 *
-	 * @param string $value The search parameter value.
-	 * @return true|WP_Error True if valid, WP_Error otherwise.
-	 */
-	public function validate_search_param( $value ) {
-		if ( empty( $value ) ) {
-			return true; // Empty is valid (optional parameter)
-		}
-
-		$length = strlen( $value );
-
-		if ( $length < 2 ) {
-			return new WP_Error(
-				'invalid_search_length',
-				__( 'Search term must be at least 2 characters.', 'mosaic-contents-for-elementor' ),
-				array( 'status' => 400 )
-			);
-		}
-
-		if ( $length > 100 ) {
-			return new WP_Error(
-				'search_too_long',
-				__( 'Search term must not exceed 100 characters.', 'mosaic-contents-for-elementor' ),
-				array( 'status' => 400 )
-			);
-		}
-
-		return true;
-	}
-
 
 	/**
 	 * Get all public REST-enabled post types.

@@ -9,16 +9,16 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-30T16:45:55+00:00\n"
+"POT-Creation-Date: 2026-07-31T10:37:03+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: mosaic-contents-for-elementor\n"
 
 #. Plugin Name of the plugin
 #: mosaic-contents-for-elementor.php
-#: mosaic-contents-for-elementor.php:411
-#: mosaic-contents-for-elementor.php:427
-#: mosaic-contents-for-elementor.php:444
+#: mosaic-contents-for-elementor.php:407
+#: mosaic-contents-for-elementor.php:423
+#: mosaic-contents-for-elementor.php:440
 msgid "Mosaic Contents for Elementor"
 msgstr ""
 
@@ -42,32 +42,24 @@ msgstr ""
 msgid "https://micemade.com"
 msgstr ""
 
-#: includes/class-rest-api.php:108
+#: includes/class-rest-api.php:107
 msgid "Taxonomy slug."
 msgstr ""
 
-#: includes/class-rest-api.php:132
+#: includes/class-rest-api.php:131
 msgid "Comma-separated post IDs."
 msgstr ""
 
-#: includes/class-rest-api.php:138
+#: includes/class-rest-api.php:137
 msgid "Comma-separated meta keys."
 msgstr ""
 
-#: includes/class-rest-api.php:167
+#: includes/class-rest-api.php:166
 msgid "Post type slug."
 msgstr ""
 
-#: includes/class-rest-api.php:173
+#: includes/class-rest-api.php:172
 msgid "Optional search term to filter meta keys."
-msgstr ""
-
-#: includes/class-rest-api.php:199
-msgid "Search term must be at least 2 characters."
-msgstr ""
-
-#: includes/class-rest-api.php:207
-msgid "Search term must not exceed 100 characters."
 msgstr ""
 
 #. translators: %s: breakpoint name (Desktop, Tablet, Mobile)
@@ -96,30 +88,30 @@ msgstr ""
 msgid "Automatic"
 msgstr ""
 
-#: mosaic-contents-for-elementor.php:296
+#: mosaic-contents-for-elementor.php:292
 msgid "Mosaic Contents"
 msgstr ""
 
 #. translators: 1: Plugin name 2: Elementor
-#: mosaic-contents-for-elementor.php:410
+#: mosaic-contents-for-elementor.php:406
 #, php-format
 msgid "\"%1$s\" requires \"%2$s\" to be installed and activated."
 msgstr ""
 
-#: mosaic-contents-for-elementor.php:412
-#: mosaic-contents-for-elementor.php:445
+#: mosaic-contents-for-elementor.php:408
+#: mosaic-contents-for-elementor.php:441
 msgid "Elementor"
 msgstr ""
 
 #. translators: 1: Plugin name 2: PHP 3: Required PHP version
 #. translators: 1: Plugin name 2: Elementor 3: Required Elementor version
-#: mosaic-contents-for-elementor.php:426
-#: mosaic-contents-for-elementor.php:443
+#: mosaic-contents-for-elementor.php:422
+#: mosaic-contents-for-elementor.php:439
 #, php-format
 msgid "\"%1$s\" requires \"%2$s\" version %3$s or greater."
 msgstr ""
 
-#: mosaic-contents-for-elementor.php:428
+#: mosaic-contents-for-elementor.php:424
 msgid "PHP"
 msgstr ""
 
@@ -778,22 +770,6 @@ msgstr ""
 
 #: src/controls/MetaKeySelectView.jsx:176
 msgid "Select or search a meta key…"
-msgstr ""
-
-#: src/controls/PostTypeSelectView.jsx:199
-msgid "Type to search…"
-msgstr ""
-
-#: src/controls/PostTypeSelectView.jsx:201
-msgid "No post types found"
-msgstr ""
-
-#: src/controls/PostTypeSelectView.jsx:210
-msgid "Searching…"
-msgstr ""
-
-#: src/controls/PostTypeSelectView.jsx:244
-msgid "Select or type to search…"
 msgstr ""
 
 #: src/controls/saved-setups-control.jsx:301

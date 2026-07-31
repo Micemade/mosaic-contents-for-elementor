@@ -22,7 +22,6 @@ npm run watch           # Watch frontend bundle (recommended)
 npm run watch:editor    # Watch editor bundle
 npm run watch:control   # Watch focal-point-control
 npm run watch:setups    # Watch saved-setups-control
-npm run watch:posttype-select # Watch PostTypeSelectControl
 npm run watch:all       # Watch all 5 bundles (resource intensive)
 ```
 
@@ -442,11 +441,8 @@ src/
 ├── controls/
 │   ├── focal-point-control.jsx
 │   ├── FocalPointControlView.jsx
-│   ├── PostTypeSelectControl.jsx
-│   ├── PostTypeSelectView.jsx
 │   ├── saved-setups-control.jsx
 │   ├── focal-point-control.scss
-│   ├── PostTypeSelectControl.scss
 │   └── saved-setups-control.scss
 ├── core/
 │   ├── editor-hooks.js           # Full editor
@@ -502,7 +498,6 @@ widgets/                          # PHP widget classes
 controls/                         # PHP custom controls
 ├── element-sorting.php
 ├── focal-point.php
-├── posttype-select.php
 └── saved-setups.php
 
 includes/
