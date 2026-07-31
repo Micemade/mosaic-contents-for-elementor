@@ -221,12 +221,13 @@ class ContentLayout extends Widget_Base {
 		$this->add_control(
 			'mc4e_terms',
 			array(
-				'label'       => __( 'Terms', 'mosaic-contents-for-elementor' ),
+				'label'       => __( 'Terms filter', 'mosaic-contents-for-elementor' ),
 				'type'        => Controls_Manager::SELECT2,
 				'default'     => array(),
 				'options'     => $this->get_terms_options( $default_taxonomy ),
 				'multiple'    => true,
 				'label_block' => true,
+				'description' => __( 'Show entries only from selected terms.', 'mosaic-contents-for-elementor' ),
 			)
 		);
 
@@ -268,6 +269,9 @@ class ContentLayout extends Widget_Base {
 				'label_off'    => __( 'No', 'mosaic-contents-for-elementor' ),
 				'return_value' => 'yes',
 				'default'      => '',
+				'condition'    => array(
+					'mc4e_post_type' => 'post',
+				),
 			)
 		);
 

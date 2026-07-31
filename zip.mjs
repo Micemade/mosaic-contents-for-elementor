@@ -33,6 +33,7 @@ const EXCLUDE = [
 	'.eslintrc.json',
 	'eslint.config.js',
 	'.gitignore',
+	'.pressshipignore',
 	'.prettierignore',
 	'.prettierrc',
 	'vite.config.js',

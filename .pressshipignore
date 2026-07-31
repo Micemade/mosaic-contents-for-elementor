@@ -1,0 +1,56 @@
+# Files excluded from the WordPress.org distribution package.
+#
+# Keep in mind that assets/ IS runtime code for this plugin (the built React
+# bundles are enqueued from there), so it must stay in the package. Only the
+# sourcemaps are stripped.
+
+# Dependencies and build sources
+node_modules/
+vendor/
+src/
+
+# Dev tooling and config
+.github/
+.vscode/
+.claude/
+.cline/
+.continue/
+.editorconfig
+.prettierrc
+.prettierignore
+.gitignore
+.gitattributes
+.DS_Store
+eslint.config.js
+vite.config.js
+phpcs.xml.dist
+composer.json
+composer.lock
+package.json
+package-lock.json
+zip.mjs
+scripts/
+
+# WordPress.org banners, icons and screenshots live in the SVN assets/
+# directory, not inside the plugin zip.
+.wordpress-org/
+
+# Internal documentation and marketing copy
+AGENTS.md
+ARCHITECTURE.md
+CENTRALIZED_SETTINGS.md
+IMPLEMENTATION_SUMMARY.md
+QUICK_REFERENCE.md
+VISUAL_ARCHITECTURE.md
+docs/
+marketing/
+
+# Sourcemaps: ~3.2 MB of debug data with no runtime purpose
+*.map
+
+# Stale artifacts: no control or widget references these any more. Only the
+# content-layout and widgets-layout widgets are registered.
+assets/admin/js/product-select-control.js
+assets/admin/css/product-select-control.css
+assets/presets/categories-layout/
+assets/presets/single-product-layouts.json

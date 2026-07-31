@@ -14,6 +14,7 @@ namespace Micemade\MosaicContentsElementor;
 use WP_REST_Request;
 use WP_REST_Response;
 use WP_Error;
+use WP_Post;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -37,13 +38,6 @@ class RestAPI {
 	private const NAMESPACE = 'micemade_mc4e/v1';
 
 	/**
-	 * Default number of items to return.
-	 *
-	 * @var int
-	 */
-	private const DEFAULT_PER_PAGE = 50;
-
-	/**
 	 * Object cache group for this plugin's REST lookups.
 	 *
 	 * @var string
@@ -56,6 +50,23 @@ class RestAPI {
 	 * @var int
 	 */
 	private const CACHE_TTL = 5 * MINUTE_IN_SECONDS;
+
+	/**
+	 * Maximum posts a single /post-meta request may ask about.
+	 *
+	 * Comfortably above any realistic grid page size, low enough that the public
+	 * endpoint cannot be used to dump meta for the whole site in one call.
+	 *
+	 * @var int
+	 */
+	private const MAX_META_POSTS = 100;
+
+	/**
+	 * Maximum meta keys a single /post-meta request may ask for.
+	 *
+	 * @var int
+	 */
+	private const MAX_META_KEYS = 20;
 
 	/**
 	 * Initialize the REST API routes.
@@ -104,15 +115,18 @@ class RestAPI {
 		);
 
 		// Post meta values endpoint.
+		//
+		// Public by design: the widget renders these values on published pages, so
+		// visitors must be able to read them. Authorization happens per post inside
+		// the callback (see get_post_meta_values()), which only ever returns
+		// non-protected meta from posts the caller can already read.
 		register_rest_route(
 			self::NAMESPACE,
 			'/post-meta',
 			array(
 				'methods'             => 'GET',
 				'callback'            => array( $this, 'get_post_meta_values' ),
-				'permission_callback' => function () {
-					return current_user_can( 'edit_posts' );
-				},
+				'permission_callback' => '__return_true',
 				'args'                => array(
 					'post_ids'  => array(
 						'description'       => __( 'Comma-separated post IDs.', 'mosaic-contents-for-elementor' ),
@@ -137,8 +151,16 @@ class RestAPI {
 			array(
 				'methods'             => 'GET',
 				'callback'            => array( $this, 'get_post_meta_keys' ),
-				'permission_callback' => function () {
-					return current_user_can( 'edit_posts' );
+				'permission_callback' => function ( WP_REST_Request $request ) {
+					$post_type = get_post_type_object( (string) $request->get_param( 'post_type' ) );
+
+					// Only public, REST-enabled types are selectable in the editor.
+					if ( ! $post_type || empty( $post_type->show_in_rest ) || ! is_post_type_viewable( $post_type ) ) {
+						return false;
+					}
+
+					// Capability of the requested type, not a blanket `edit_posts`.
+					return current_user_can( $post_type->cap->edit_posts );
 				},
 				'args'                => array(
 					'post_type' => array(
@@ -156,18 +178,6 @@ class RestAPI {
 				),
 			)
 		);
-	}
-
-	/**
-	 * Check if the current user has permission to access the endpoint.
-	 *
-	 * These endpoints only expose editor-facing metadata, so the same capability
-	 * that lets a user edit content in the first place is the right gate.
-	 *
-	 * @return bool True if the user can access the endpoint.
-	 */
-	public function check_permission(): bool {
-		return current_user_can( 'edit_posts' );
 	}
 
 	/**
@@ -297,7 +307,8 @@ class RestAPI {
 	 *
 	 * SECURITY: Only non-protected meta keys (no leading "_" / internal keys) are
 	 * returned; the result can be narrowed/extended via the `mc4e_post_meta_keys`
-	 * filter. Requires `edit_posts` (see check_permission()).
+	 * filter. Requires the edit capability of the requested post type, which must
+	 * itself be public and REST-enabled (enforced in the permission callback).
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 * @return WP_REST_Response Array of { value, label } options.
@@ -389,17 +400,51 @@ class RestAPI {
 	}
 
 	/**
+	 * Whether a post's meta may be disclosed to the current caller.
+	 *
+	 * Mirrors WP_REST_Posts_Controller::check_read_permission(): a published post
+	 * of a publicly viewable type is readable by anyone, and anything else needs
+	 * `read_post`. The two must be an OR — for published posts `read_post` maps to
+	 * the `read` capability, which logged-out visitors never hold, so requiring it
+	 * would hide meta from exactly the visitors the widget renders for.
+	 * Password-protected posts stay hidden unless the caller can edit them.
+	 *
+	 * @param WP_Post $post Post object.
+	 * @return bool True when the post's meta may be returned.
+	 */
+	private function is_post_meta_readable( WP_Post $post ): bool {
+		if ( ! is_post_type_viewable( get_post_type_object( $post->post_type ) ) ) {
+			return false;
+		}
+
+		if ( 'publish' !== $post->post_status && ! current_user_can( 'read_post', $post->ID ) ) {
+			return false;
+		}
+
+		if ( '' !== $post->post_password && ! current_user_can( 'edit_post', $post->ID ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
 	 * Get selected post meta values for a set of posts.
 	 *
-	 * SECURITY: Only non-protected meta keys are returned (guarded by `edit_posts`
-	 * + rate limiting); the set can be further restricted/extended with the
-	 * `mc4e_allowed_post_meta_keys` filter.
+	 * SECURITY: This endpoint is public because the widget renders the values on
+	 * published pages. Every post is authorized individually by
+	 * is_post_meta_readable(), so drafts, private and password-protected posts
+	 * never leak to visitors who may not read them. Only non-protected meta keys
+	 * are returned, and the set can be further restricted/extended with the
+	 * `mc4e_allowed_post_meta_keys` filter. Request size is capped so the endpoint
+	 * cannot be used for bulk extraction.
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 * @return WP_REST_Response
 	 */
 	public function get_post_meta_values( WP_REST_Request $request ): WP_REST_Response {
 		$post_ids = array_filter( array_map( 'absint', explode( ',', (string) $request->get_param( 'post_ids' ) ) ) );
+		$post_ids = array_slice( array_unique( $post_ids ), 0, self::MAX_META_POSTS );
 		// Case-preserving sanitize (meta keys can contain uppercase).
 		$meta_keys = array_filter(
 			array_map(
@@ -432,6 +477,8 @@ class RestAPI {
 			$meta_keys = array_intersect( $meta_keys, $allowed_meta_keys );
 		}
 
+		$meta_keys = array_slice( array_unique( $meta_keys ), 0, self::MAX_META_KEYS );
+
 		if ( empty( $meta_keys ) ) {
 			return rest_ensure_response( array() );
 		}
@@ -441,7 +488,9 @@ class RestAPI {
 		foreach ( $post_ids as $post_id ) {
 			$payload[ $post_id ] = array();
 
-			if ( 'publish' !== get_post_status( $post_id ) ) {
+			$post = get_post( $post_id );
+
+			if ( ! $post instanceof WP_Post || ! $this->is_post_meta_readable( $post ) ) {
 				continue;
 			}
 

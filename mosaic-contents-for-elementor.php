@@ -10,7 +10,7 @@
  * Requires PHP:      8.0
  * License: GPLv2 or later
  * License URL: http://www.gnu.org/licenses/gpl-2.0.txt
- * text-domain: mosaic-contents-for-elementor
+ * Text Domain: mosaic-contents-for-elementor
  * Requires Plugins: elementor
  * Elementor tested up to: 4.1.4
  * Elementor Pro tested up to: 4.2.0

@@ -22,6 +22,56 @@ const postTypeRestBaseCache = new Map([
 	['attachment', 'media'],
 ]);
 
+// WP core taxonomies whose REST base differs from the slug. Extended at runtime
+// from the same endpoint (see resolveTaxonomyRestBase).
+const taxonomyRestBaseCache = new Map([
+	['category', 'categories'],
+	['post_tag', 'tags'],
+]);
+
+let postTypesRequest = null;
+
+/**
+ * Fetch the post type metadata once and fill both REST base caches.
+ *
+ * Concurrent callers share a single in-flight request.
+ *
+ * @return {Promise<void>} Resolves once both caches have been populated.
+ */
+const primeRestBaseCaches = () => {
+	if (!postTypesRequest) {
+		postTypesRequest = fetch(`${getRestRoot()}micemade_mc4e/v1/post-types`)
+			.then((response) => (response.ok ? response.json() : null))
+			.then((postTypes) => {
+				if (!Array.isArray(postTypes)) {
+					return;
+				}
+
+				postTypes.forEach((typeObj) => {
+					if (typeObj?.name && typeObj?.rest_base) {
+						postTypeRestBaseCache.set(typeObj.name, typeObj.rest_base);
+					}
+
+					const taxonomyRestBases = typeObj?.taxonomy_rest_bases;
+					if (taxonomyRestBases && typeof taxonomyRestBases === 'object') {
+						Object.entries(taxonomyRestBases).forEach(([taxonomy, restBase]) => {
+							if (taxonomy && restBase) {
+								taxonomyRestBaseCache.set(taxonomy, restBase);
+							}
+						});
+					}
+				});
+			})
+			.catch((error) => {
+				console.warn('Failed to resolve REST bases; falling back to slugs.', error);
+				// Allow a later call to retry.
+				postTypesRequest = null;
+			});
+	}
+
+	return postTypesRequest;
+};
+
 /**
  * Resolve a post type's REST base (e.g. "post" -> "posts").
  *
@@ -40,23 +90,34 @@ export const resolvePostTypeRestBase = async (postType) => {
 		return postTypeRestBaseCache.get(postType);
 	}
 
-	try {
-		const response = await fetch(`${getRestRoot()}micemade_mc4e/v1/post-types`);
-		if (response.ok) {
-			const postTypes = await response.json();
-			if (Array.isArray(postTypes)) {
-				postTypes.forEach((typeObj) => {
-					if (typeObj?.name && typeObj?.rest_base) {
-						postTypeRestBaseCache.set(typeObj.name, typeObj.rest_base);
-					}
-				});
-			}
-		}
-	} catch (error) {
-		console.warn('Failed to resolve post type REST base; falling back to post type slug.', error);
-	}
+	await primeRestBaseCaches();
 
 	return postTypeRestBaseCache.get(postType) || postType;
+};
+
+/**
+ * Resolve a taxonomy's REST base (e.g. "category" -> "categories").
+ *
+ * The wp/v2 posts controller registers its taxonomy filter query args under the
+ * taxonomy REST base, not the slug, so filtering by "category" or "post_tag" is
+ * silently ignored. Custom taxonomies usually share slug and REST base, which is
+ * why they appear to work without this mapping.
+ *
+ * @param {string} taxonomy
+ * @return {Promise<string>} The taxonomy's REST base, or the slug as fallback.
+ */
+export const resolveTaxonomyRestBase = async (taxonomy) => {
+	if (!taxonomy) {
+		return '';
+	}
+
+	if (taxonomyRestBaseCache.has(taxonomy)) {
+		return taxonomyRestBaseCache.get(taxonomy);
+	}
+
+	await primeRestBaseCaches();
+
+	return taxonomyRestBaseCache.get(taxonomy) || taxonomy;
 };
 
 /**

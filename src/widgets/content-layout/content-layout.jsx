@@ -32,7 +32,7 @@ import { applyLayoutChange, selectElementorWidget, addGridItem, removeGridItem }
 import { getLayout } from '../../shared/utils/layoutUtils.js';
 import { createCache } from '../../shared/utils/LRUCache.js';
 import { loadCachedData } from '../../shared/utils/dataLoading.js';
-import { getRestNonceHeaders, getRestRoot, resolvePostTypeRestBase } from '../../shared/utils/fetchHelpers.js';
+import { getRestRoot, resolvePostTypeRestBase, resolveTaxonomyRestBase } from '../../shared/utils/fetchHelpers.js';
 import { useCssVariables, useGridSettings, useElementorDevice } from '../../shared/utils/hooks.js';
 import { getVisibleLayout } from '../../shared/utils/visibleLayout.js';
 
@@ -113,7 +113,10 @@ async function fetchPosts(querySettings, signal) {
 			.filter(Boolean);
 
 		if (termIds.length) {
-			params.append(mc4e_taxonomy, termIds.join(','));
+			// wp/v2 registers taxonomy filters under the taxonomy REST base
+			// ("categories", "tags"), not the slug.
+			const taxonomyRestBase = await resolveTaxonomyRestBase(mc4e_taxonomy);
+			params.append(taxonomyRestBase, termIds.join(','));
 		}
 	}
 
@@ -320,7 +323,11 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 					`${getRestRoot()}micemade_mc4e/v1/post-meta` +
 					`?post_ids=${encodeURIComponent(ids.join(','))}` +
 					`&meta_keys=${encodeURIComponent(selectedMetaKeys.join(','))}`;
-				const response = await fetch(url, { headers: getRestNonceHeaders() });
+					// No nonce header: /post-meta is public, and core rejects a
+					// request outright when it carries an *invalid* nonce. Under
+					// full-page caching visitors are served a stale one, which
+					// would 403 before the endpoint's own checks ever run.
+					const response = await fetch(url);
 				const data = response.ok ? await response.json() : {};
 				if (!cancelled) setMetaValues(data && typeof data === 'object' ? data : {});
 			} catch {
