@@ -23,10 +23,6 @@
 		"type": "boolean",
 		"default": false
 	},
-	"mc4e_post_meta": {
-		"type": "array",
-		"default": []
-	},
 	"mc4e_author_prefix": {
 		"type": "string",
 		"default": "By "
@@ -118,8 +114,7 @@
 			{ "element_label": "Excerpt", "visible_desktop": "yes", "visible_tablet": "yes", "visible_mobile": "yes" },
 			{ "element_label": "Featured Image", "visible_desktop": "yes", "visible_tablet": "yes", "visible_mobile": "yes" },
 			{ "element_label": "Read More", "visible_desktop": "yes", "visible_tablet": "yes", "visible_mobile": "yes" },
-			{ "element_label": "Terms", "visible_desktop": "yes", "visible_tablet": "yes", "visible_mobile": "yes" },
-			{ "element_label": "Post Meta", "visible_desktop": "yes", "visible_tablet": "yes", "visible_mobile": "yes" }
+			{ "element_label": "Terms", "visible_desktop": "yes", "visible_tablet": "yes", "visible_mobile": "yes" }
 		]
 	}
 }

@@ -27,7 +27,7 @@ Mosaic Contents for Elementor (MC4E) adds two Elementor widgets under the **Mosa
 
 = Content Layout widget =
 
-Query settings for post type, taxonomy and terms, order, sticky posts, pagination, and custom post-meta fields. Style options include card text, layout, image display and focal point, colors, borders, and reusable style presets, plus element order and visibility controls.
+Query settings for post type, taxonomy and terms, order, sticky posts, and pagination. Style options include card text, layout, image display and focal point, colors, borders, and reusable style presets, plus element order and visibility controls.
 
 = Widgets Layout widget =
 

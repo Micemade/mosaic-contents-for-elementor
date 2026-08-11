@@ -7,7 +7,6 @@ use Elementor\Controls_Manager;
 use Elementor\Group_Control_Background;
 use Elementor\Group_Control_Border;
 use Elementor\Group_Control_Box_Shadow;
-use Elementor\Repeater;
 use Micemade\MosaicContentsElementor\WidgetHelpers;
 use Micemade\MosaicContentsElementor\RestAPI;
 
@@ -294,78 +293,6 @@ class ContentLayout extends Widget_Base {
 			array(
 				'label' => __( 'Post Meta Display', 'mosaic-contents-for-elementor' ),
 				'tab'   => Controls_Manager::TAB_CONTENT,
-			)
-		);
-
-		$meta_repeater = new Repeater();
-
-		$meta_repeater->add_control(
-			'meta_key',
-			array(
-				'label'       => __( 'Meta Key', 'mosaic-contents-for-elementor' ),
-				'type'        => 'mc4e_meta_key_select',
-				'label_block' => true,
-			)
-		);
-
-		$meta_repeater->add_control(
-			'meta_label',
-			array(
-				'label'       => __( 'Display Label', 'mosaic-contents-for-elementor' ),
-				'type'        => Controls_Manager::TEXT,
-				'label_block' => true,
-			)
-		);
-
-		$meta_repeater->add_control(
-			'meta_prefix',
-			array(
-				'label' => __( 'Prefix', 'mosaic-contents-for-elementor' ),
-				'type'  => Controls_Manager::TEXT,
-			)
-		);
-
-		$meta_repeater->add_control(
-			'meta_suffix',
-			array(
-				'label' => __( 'Suffix', 'mosaic-contents-for-elementor' ),
-				'type'  => Controls_Manager::TEXT,
-			)
-		);
-
-		$meta_repeater->add_control(
-			'meta_condition',
-			array(
-				'label'   => __( 'Condition', 'mosaic-contents-for-elementor' ),
-				'type'    => Controls_Manager::SELECT,
-				'default' => 'always',
-				'options' => array(
-					'always'     => __( 'Always', 'mosaic-contents-for-elementor' ),
-					'not_empty'  => __( 'Not Empty', 'mosaic-contents-for-elementor' ),
-					'equals'     => __( 'Equals', 'mosaic-contents-for-elementor' ),
-					'not_equals' => __( 'Not Equals', 'mosaic-contents-for-elementor' ),
-				),
-			)
-		);
-
-		$meta_repeater->add_control(
-			'meta_condition_value',
-			array(
-				'label'     => __( 'Condition Value', 'mosaic-contents-for-elementor' ),
-				'type'      => Controls_Manager::TEXT,
-				'condition' => array(
-					'meta_condition' => array( 'equals', 'not_equals' ),
-				),
-			)
-		);
-
-		$this->add_control(
-			'mc4e_post_meta',
-			array(
-				'label'       => __( 'Meta Fields', 'mosaic-contents-for-elementor' ),
-				'type'        => Controls_Manager::REPEATER,
-				'fields'      => $meta_repeater->get_controls(),
-				'title_field' => '{{{ meta_key }}}',
 			)
 		);
 
@@ -665,10 +592,6 @@ class ContentLayout extends Widget_Base {
 				),
 				$this->default_elements_visibility(
 					__( 'Post Date', 'mosaic-contents-for-elementor' ),
-					array( true, true, true, true, true )
-				),
-				$this->default_elements_visibility(
-					__( 'Post Meta', 'mosaic-contents-for-elementor' ),
 					array( true, true, true, true, true )
 				),
 			)

@@ -167,10 +167,6 @@ final class MosaicContentsElementor {
 		require_once __DIR__ . '/controls/saved-setups.php';
 		$controls_manager->register( new \Micemade\MosaicContentsElementor\Controls\Saved_Setups() );
 
-		// Require and register the meta key select control.
-		require_once __DIR__ . '/controls/meta-key-select.php';
-		$controls_manager->register( new \Micemade\MosaicContentsElementor\Controls\Meta_Key_Select() );
-
 		// Require and register the element sorting control.
 		require_once __DIR__ . '/controls/element-sorting.php';
 		$controls_manager->register( new \Micemade\MosaicContentsElementor\Controls\Element_Sorting() );
@@ -184,18 +180,6 @@ final class MosaicContentsElementor {
 	public function enqueue_editor_scripts() {
 		// Enqueue React and ReactDOM for editor
 		$this->maybe_enqueue_react();
-
-		// Panel-only styles (parent window, not the preview iframe).
-		// Dummy handle (no $src) used only to carry inline styles below;
-		// the version has no cache-busting effect without a file, but is
-		// passed explicitly per WordPress enqueue standards.
-		wp_register_style( 'micemade_mc4e-editor-panel', false, array(), MICEMADE_MC4E_VERSION );
-		wp_enqueue_style( 'micemade_mc4e-editor-panel' );
-		wp_add_inline_style(
-			'micemade_mc4e-editor-panel',
-			'.elementor-control-mc4e_post_meta .elementor-repeater-row-tool.elementor-repeater-tool-duplicate{display:none!important}'
-		);
-
 	}
 
 	/**

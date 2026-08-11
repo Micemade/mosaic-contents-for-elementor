@@ -58,7 +58,7 @@ Both register under the **`mosaic-contents`** category (title "Mosaic Contents")
 ## Build Entries (Vite)
 
 `npm run build` runs one Vite build per `BUILD_ENTRY`:
-`main-frontend`, `main-editor`, `focal-point-control`, `saved-setups-control`, `MetaKeySelectControl`.
+`main-frontend`, `main-editor`, `focal-point-control`, `saved-setups-control`.
 Outputs land in `assets/js` (frontend), `assets/admin/js` (editor), and per-control files.
 
 ## Adding a New Widget

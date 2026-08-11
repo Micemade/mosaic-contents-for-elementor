@@ -148,7 +148,6 @@ async function fetchPosts(querySettings, signal) {
 			name: Sanitizer(item?.title?.rendered || ''),
 			shortDescription: Sanitizer(item?.excerpt?.rendered || ''),
 			permalink: item?.link || '#',
-			meta: item?.meta || {},
 			terms,
 			author: authorObj
 				? { name: authorObj?.name || '', link: authorObj?.link || '' }
@@ -221,8 +220,6 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 	const [error, setError] = useState(null);
 	const [currentPage, setCurrentPage] = useState(1);
 	const [paginationMeta, setPaginationMeta] = useState({ total: 0, totalPages: 1 });
-	// Per-post values for the selected Post Meta Display keys ({ [postId]: { key: value } }).
-	const [metaValues, setMetaValues] = useState({});
 
 	// Debounced page change to prevent rapid API calls
 	const debouncedSetCurrentPage = useCallback((page) => {
@@ -254,7 +251,7 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 	const selectedTerms = widgetData?.mc4e_terms || [];
 	const selectedPostType = widgetData?.mc4e_post_type || 'post';
 	const customButtonClassName = widgetData?.mc4e_custom_button_class || '';
-	// Post Meta Display: author / date / terms-taxonomy options.
+	// Author / date / terms-taxonomy display options.
 	const authorPrefix = widgetData?.mc4e_author_prefix ?? 'By ';
 	const authorLink = widgetData?.mc4e_author_link || false;
 	const dateType = widgetData?.mc4e_date_type || 'published';
@@ -273,7 +270,6 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 			{ element_label: 'Read More', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
 			{ element_label: 'Post Author', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
 			{ element_label: 'Post Date', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
-			{ element_label: 'Post Meta', visible_desktop: 'yes', visible_tablet: 'yes', visible_mobile: 'yes' },
 		]),
 		[widgetData?.mc4e_element_ordering]
 	);
@@ -298,45 +294,6 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 			.join(' '),
 		[featuredImage]
 	);
-
-	// Distinct meta keys chosen in the Post Meta Display repeater.
-	const selectedMetaKeys = useMemo(() => {
-		const defs = widgetData?.mc4e_post_meta || [];
-		return [...new Set(defs.map((d) => d?.meta_key).filter(Boolean))];
-	}, [widgetData?.mc4e_post_meta]);
-
-	// Fetch each post's value for the selected meta keys. These arbitrary custom
-	// fields aren't in the wp/v2 `meta` object, so we pull them from the plugin's
-	// /post-meta endpoint and merge them into item rendering via `metaValues`.
-	const itemIdsKey = useMemo(() => items.map((it) => it.id).join(','), [items]);
-	useEffect(() => {
-		const ids = itemIdsKey ? itemIdsKey.split(',').filter(Boolean) : [];
-		if (!selectedMetaKeys.length || !ids.length) {
-			setMetaValues({});
-			return undefined;
-		}
-
-		let cancelled = false;
-		(async () => {
-			try {
-				const url =
-					`${getRestRoot()}micemade_mc4e/v1/post-meta` +
-					`?post_ids=${encodeURIComponent(ids.join(','))}` +
-					`&meta_keys=${encodeURIComponent(selectedMetaKeys.join(','))}`;
-					// No nonce header: /post-meta is public, and core rejects a
-					// request outright when it carries an *invalid* nonce. Under
-					// full-page caching visitors are served a stale one, which
-					// would 403 before the endpoint's own checks ever run.
-					const response = await fetch(url);
-				const data = response.ok ? await response.json() : {};
-				if (!cancelled) setMetaValues(data && typeof data === 'object' ? data : {});
-			} catch {
-				if (!cancelled) setMetaValues({});
-			}
-		})();
-
-		return () => { cancelled = true; };
-	}, [itemIdsKey, selectedMetaKeys]);
 
 	// Grid settings from Elementor controls
 	const gridSettings = useGridSettings(widgetData, 'mc4e_items_margin', 'mc4e_row_height');
@@ -725,44 +682,6 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 																])}
 															</div>
 														) : null;
-													}
-													case 'post_meta': {
-														// Prefer the wp/v2 `meta` value; fall back to the value
-														// fetched via /post-meta for arbitrary custom fields.
-														const resolveMeta = (key) =>
-															`${matchedPost?.meta?.[key] ?? metaValues?.[matchedPost?.id]?.[key] ?? ''}`;
-
-														const rows = (widgetData?.mc4e_post_meta || []).filter((metaDef) => {
-															const key = metaDef?.meta_key;
-															if (!key) return false;
-															const value = resolveMeta(key);
-															const condition = metaDef?.meta_condition || 'always';
-															const expected = `${metaDef?.meta_condition_value ?? ''}`;
-
-															if (condition === 'not_empty') return value.trim() !== '';
-															if (condition === 'equals') return value === expected;
-															if (condition === 'not_equals') return value !== expected;
-															return true;
-														});
-
-														if (!rows.length) return null;
-
-														return (
-															<div key={el.key} className={`post-meta${elClasses}`}>
-																{rows.map((metaDef) => {
-																	const key = metaDef.meta_key;
-																	const value = resolveMeta(key);
-																	const label = metaDef?.meta_label || key;
-
-																	return (
-																		<div key={key} className="post-meta-row">
-																			<span className="post-meta-label">{label}:</span>{' '}
-																			<span className="post-meta-value">{metaDef?.meta_prefix || ''}{value}{metaDef?.meta_suffix || ''}</span>
-																		</div>
-																	);
-																})}
-															</div>
-														);
 													}
 													default:
 														return null;

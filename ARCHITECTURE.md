@@ -18,7 +18,6 @@ The build produces **two entry bundles** plus **three custom control bundles**:
   Widgets Layout live-element machinery, for the Elementor editor preview.
 - **Focal Point Control** (`focal-point-control.jsx`) — image focal-point picker for the panel.
 - **Saved Setups Control** (`saved-setups-control.jsx`) — save/load/delete layout+style setups.
-- **Meta Key Select Control** (`MetaKeySelectControl.jsx`) — searchable post-meta key select for the panel.
 
 ## Dual-Bundle Strategy
 
