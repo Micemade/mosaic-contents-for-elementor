@@ -10,8 +10,13 @@ import globals from 'globals';
 
 export default [
 	// Never lint dependencies, build output or generated assets.
+	// `vendor/` matters as much as `node_modules/`: Composer installs PHPCS,
+	// whose test suite ships deliberately-invalid .js fixtures that otherwise
+	// produce thousands of errors and bury real ones.
+	// `.kilo/` holds agent tooling plus a git worktree containing a full second
+	// checkout of this repo, which would otherwise be linted as duplicates.
 	{
-		ignores: ['node_modules/', 'assets/', 'build/', '**/*.min.js'],
+		ignores: ['node_modules/', 'vendor/', 'assets/', 'build/', '.kilo/', '**/*.min.js'],
 	},
 
 	// Official WordPress standard (already flat-config arrays).
@@ -26,6 +31,10 @@ export default [
 				elementorFrontend: 'readonly',
 				jQuery: 'readonly',
 				wp: 'readonly',
+				// Build-time constant injected by vite.config.js `define`.
+				// True in the editor entries, false in main-frontend, which lets
+				// Rollup fold away editor-only branches in the frontend bundle.
+				__MC4E_EDITOR__: 'readonly',
 			},
 		},
 		settings: {
@@ -51,11 +60,15 @@ export default [
 		},
 	},
 
-	// Node context for build/config scripts.
+	// Node context for build/config scripts. These are CLI tools whose entire
+	// output is stdout, so `no-console` does not apply to them.
 	{
-		files: ['*.config.js', '*.config.mjs', '*.mjs', 'vite.config.js', 'zip.mjs'],
+		files: ['*.config.js', '*.config.mjs', '*.mjs', 'vite.config.js', 'zip.mjs', 'scripts/**/*.mjs'],
 		languageOptions: {
 			globals: { ...globals.node },
+		},
+		rules: {
+			'no-console': 'off',
 		},
 	},
 ];

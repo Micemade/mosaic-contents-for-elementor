@@ -29,7 +29,7 @@ import { decode } from '../../shared/utils/generalUtils.js';
 import { parseElementOrdering } from '../../shared/utils/elementOrdering.js';
 import { getBreakpointTextAlignVars } from '../../shared/utils/alignmentUtils.js';
 import { applyLayoutChange, selectElementorWidget, addGridItem, removeGridItem } from '../../shared/utils/layoutEditing.js';
-import { getLayout } from '../../shared/utils/layoutUtils.js';
+import { resolveLayoutData } from '../../shared/utils/layoutUtils.js';
 import { createCache } from '../../shared/utils/LRUCache.js';
 import { loadCachedData } from '../../shared/utils/dataLoading.js';
 import { getRestRoot, resolvePostTypeRestBase, resolveTaxonomyRestBase } from '../../shared/utils/fetchHelpers.js';
@@ -39,7 +39,17 @@ import { getVisibleLayout } from '../../shared/utils/visibleLayout.js';
 import './content-layout.scss';
 
 // Sanitize HTML content.
-// Configure DOMPurify with strict whitelist for safe HTML
+//
+// DELIBERATE: this costs ~23 KB of the frontend bundle and was reviewed as a
+// removal candidate. It stays as defence-in-depth. WordPress escapes
+// `title.rendered` and `excerpt.rendered` itself, but both pass through
+// filters (`the_title`, `the_excerpt`, `get_the_excerpt`) that any theme or
+// plugin on the site can hook, so what wp/v2 returns is not guaranteed to be
+// what core produced. The values land in `dangerouslySetInnerHTML`, which
+// makes this the last line of defence rather than a redundant one.
+//
+// Do not drop this without also removing the dangerouslySetInnerHTML usages
+// below. Configure DOMPurify with a strict whitelist for safe HTML.
 const DOMPurifyConfig = {
 	ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'br', 'p', 'a'],
 	ALLOWED_ATTR: ['href', 'target', 'rel'],
@@ -209,7 +219,11 @@ function prepareItemData(items, layoutItems) {
 const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display' }) => {
 
 	// Determine if we're in edit mode (from prop, not runtime detection)
-	const isEditMode = mode === 'edit';
+	// `__MC4E_EDITOR__` is a build-time constant (false in the frontend bundle),
+	// so every `isEditMode &&` guard below folds away at build time and the
+	// editor-only component tree it gates — ItemControls, ZIndexControls,
+	// GridHelper — never reaches a published page.
+	const isEditMode = __MC4E_EDITOR__ && mode === 'edit';
 
 	const abortControllerRef = useRef(null);
 	const debounceTimeoutRef = useRef(null);
@@ -301,21 +315,13 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 	const deviceType = useElementorDevice();
 
 	// ── Layout data ──────────────────────────────────────────────────
-	// Get layout from predefined layouts (layout is source of truth for grid structure)
-	// If custom_layout exists, parse and use it; otherwise use predefined layout
-	const layoutData = useMemo(() => {
-		if (customLayoutData) {
-			try {
-				const parsed = JSON.parse(customLayoutData);
-				return parsed;
-			} catch (error) {
-				console.error('Failed to parse custom layout:', error);
-				return getLayout(layoutId);
-			}
-		}
-
-		return getLayout(layoutId);
-	}, [layoutId, customLayoutData]);
+	// Layout is the source of truth for grid structure. On the frontend PHP has
+	// already resolved it into mc4e_resolved_layout; in the editor it is derived
+	// from the custom layout or the selected preset. See resolveLayoutData().
+	const layoutData = useMemo(
+		() => resolveLayoutData(widgetData),
+		[widgetData?.mc4e_resolved_layout, layoutId, customLayoutData]
+	);
 
 	const layoutItemCount = Math.max(1, layoutData?.mobile?.length || 0);
 
@@ -435,8 +441,17 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 		};
 	}, [querySettings]);
 
+	// Layout mutation handlers. All four exist only to write back to the Elementor
+	// model, so they are unreachable on a published page. Guarding the bodies with
+	// __MC4E_EDITOR__ lets Rollup drop layoutEditing.js (and its addItem.js /
+	// elementor-utils.js dependencies) from the frontend bundle entirely.
+	// Enforced by scripts/check-bundles.mjs.
+
 	// Handle layout changes in editor (drag/resize)
 	const handleLayoutChange = (newLayouts) => {
+		if (!__MC4E_EDITOR__) {
+			return;
+		}
 		applyLayoutChange({
 			widgetType: 'content-layout',
 			widgetId,
@@ -448,11 +463,17 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 	};
 
 	const selectWidget = () => {
+		if (!__MC4E_EDITOR__) {
+			return;
+		}
 		selectElementorWidget({ isEditMode, widgetId, widgetClass: 'content-layout' });
 	};
 
 	// Handle adding a new grid item (editor only)
 	const handleAddItem = () => {
+		if (!__MC4E_EDITOR__) {
+			return;
+		}
 		addGridItem({
 			isEditMode,
 			widgetType: 'content-layout',
@@ -470,6 +491,9 @@ const ContentLayoutWidget = ({ widgetData = {}, widgetId = null, mode = 'display
 
 	// Handle removing a grid item (editor only)
 	const handleRemoveItem = (itemId) => {
+		if (!__MC4E_EDITOR__) {
+			return;
+		}
 		removeGridItem({
 			isEditMode,
 			widgetType: 'content-layout',

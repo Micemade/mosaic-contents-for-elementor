@@ -47,8 +47,22 @@ const entries = {
 
 const currentEntry = entries[entry];
 
+// Entries that run inside the Elementor editor. Code guarded by
+// `if (__MC4E_EDITOR__)` is folded away by Rollup in the frontend build, which
+// is how editor-only modules (layout mutation, the preset catalog) are kept out
+// of assets/js/main-frontend.js. Verified by scripts/check-bundles.mjs.
+//
+// Code splitting cannot do this job here: output.format is 'iife', and Rollup
+// rejects code-splitting builds in IIFE format, so dynamic import() produces no
+// separate chunk. Dead-code elimination at build time is the substitute.
+const EDITOR_ENTRIES = ['main-editor', 'focal-point-control', 'saved-setups-control'];
+const isEditorEntry = EDITOR_ENTRIES.includes(entry);
+
 export default defineConfig({
 	...baseConfig,
+	define: {
+		__MC4E_EDITOR__: JSON.stringify(isEditorEntry),
+	},
 	build: {
 		watch: isWatch ? {
 			include: ['src/**/*.{js,ts,jsx,tsx,scss}'],

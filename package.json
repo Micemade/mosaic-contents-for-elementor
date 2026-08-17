@@ -17,7 +17,8 @@
     "update-pot": "wp i18n make-pot . languages/mosaic-contents-for-elementor.pot --domain=mosaic-contents-for-elementor --package-name=\"Mosaic Contents for Elementor\" --exclude=node_modules,assets,docs,marketing,scripts,vendor",
     "preview": "vite preview",
     "format": "prettier --write .",
-    "zip": "npm run build:prod && node zip.mjs"
+    "check:bundles": "node scripts/check-bundles.mjs",
+    "zip": "npm run build:prod && npm run check:bundles && node zip.mjs"
   },
   "dependencies": {
     "@lemoncode/react-image-focal-point": "^1.0.0",

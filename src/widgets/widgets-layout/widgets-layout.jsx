@@ -41,7 +41,7 @@ import GridHelper from '../../shared/components/GridHelper.jsx';
 
 import { applyLayoutChange, addGridItem, removeGridItem, selectElementorWidget } from '../../shared/utils/layoutEditing.js';
 import { addItemToLayout } from '../../shared/utils/addItem.js';
-import { getLayout } from '../../shared/utils/layoutUtils.js';
+import { resolveLayoutData } from '../../shared/utils/layoutUtils.js';
 import { useGridSettings, useElementorDevice } from '../../shared/utils/hooks.js';
 
 import './widgets-layout.scss';
@@ -239,7 +239,9 @@ const Cell = memo(({
 // ─── main component ───────────────────────────────────────────────────────────
 
 const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) => {
-	const isEditMode = mode === 'edit';
+	// Build-time constant; see the equivalent note in content-layout.jsx. Folding
+	// this to `false` in the frontend build drops the editor-only component tree.
+	const isEditMode = __MC4E_EDITOR__ && mode === 'edit';
 
 	// Grid settings
 	const gridSettings = useGridSettings(widgetData, 'mc4e_items_margin', 'mc4e_row_height');
@@ -250,16 +252,12 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 	const layoutId        = widgetData?.mc4e_layout || 'default';
 	const customLayoutData = widgetData?.mc4e_custom_layout || '';
 
-	const layoutData = useMemo(() => {
-		if (customLayoutData) {
-			try {
-				return JSON.parse(customLayoutData);
-			} catch {
-				return getLayout(layoutId);
-			}
-		}
-		return getLayout(layoutId);
-	}, [layoutId, customLayoutData]);
+	// On the frontend PHP has already resolved this into mc4e_resolved_layout;
+	// in the editor it is derived from the custom layout or the selected preset.
+	const layoutData = useMemo(
+		() => resolveLayoutData(widgetData),
+		[widgetData?.mc4e_resolved_layout, layoutId, customLayoutData]
+	);
 
 	// Widget items (cell assignment + order; the widgets themselves are real
 	// Elementor elements living in their cell's container).
@@ -450,6 +448,11 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 
 	// ── persistence ──────────────────────────────────────────────────────────
 	const updateWidgetItemsSetting = useCallback((items) => {
+		// Editor-only: writes back to the Elementor model. See the __MC4E_EDITOR__
+		// note on isEditMode above.
+		if (!__MC4E_EDITOR__) {
+			return;
+		}
 		const newJson = JSON.stringify(items);
 		const { el, $e } = getEditor();
 		const container = el?.getContainer?.(widgetId);
@@ -1182,12 +1185,22 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 
 	// Select this widget in the Elementor editor (called by GridLayout on drag start)
 	const selectWidget = () => {
+		if (!__MC4E_EDITOR__) {
+			return;
+		}
 		selectElementorWidget({ isEditMode, widgetId, widgetClass: 'widgets-layout' });
 	};
 
 	// ── grid layout handlers (same pattern as content-layout) ────────────────
+	//
+	// These only write back to the Elementor model, so they are unreachable on a
+	// published page. The __MC4E_EDITOR__ guards let Rollup drop layoutEditing.js
+	// from the frontend bundle. Enforced by scripts/check-bundles.mjs.
 
 	const handleLayoutChange = (newLayouts) => {
+		if (!__MC4E_EDITOR__) {
+			return;
+		}
 		applyLayoutChange({
 			widgetType: 'widgets-layout',
 			widgetId,
@@ -1199,6 +1212,9 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 	};
 
 	const handleAddItem = () => {
+		if (!__MC4E_EDITOR__) {
+			return;
+		}
 		addGridItem({
 			isEditMode,
 			widgetType: 'widgets-layout',
@@ -1215,6 +1231,9 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 	};
 
 	const handleRemoveItem = (itemId) => {
+		if (!__MC4E_EDITOR__) {
+			return;
+		}
 		// Delete any real widgets hosted in this cell first.
 		const { el, $e } = getEditor();
 		const cellWidgets = widgetItemsMap.get(itemId) || [];
@@ -1243,8 +1262,11 @@ const WidgetsLayout = ({ widgetData = {}, widgetId = null, mode = 'display' }) =
 
 	// ── repeater buttons → cell operations ─────────────────────────────────────
 
-	/** Persist the custom layout JSON (history-aware when possible). */
+	/** Persist the custom layout JSON (history-aware when possible). Editor-only. */
 	const persistCustomLayout = (json) => {
+		if (!__MC4E_EDITOR__) {
+			return;
+		}
 		const { el, $e } = getEditor();
 		const container = el?.getContainer?.(widgetId);
 		if ($e && container) {

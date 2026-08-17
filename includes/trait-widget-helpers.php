@@ -36,6 +36,13 @@ trait WidgetHelpers {
 	private static $style_preset_options_cache = array();
 
 	/**
+	 * Cached layout preset catalog, decoded once per request.
+	 *
+	 * @var array|null
+	 */
+	private static $layout_presets_cache = null;
+
+	/**
 	 * Get range configuration for slider controls.
 	 *
 	 * @return array
@@ -318,7 +325,125 @@ trait WidgetHelpers {
 			}
 		}
 
+		// Resolve the grid layout server-side so the frontend bundle does not have
+		// to inline the whole preset catalog (assets/presets/layouts.json, ~47 KB)
+		// just to pick one entry out of it. The editor still resolves client-side:
+		// content_template() is an Underscore template that re-resolves on every
+		// preset change, which PHP cannot do.
+		$result['mc4e_resolved_layout'] = self::resolve_layout(
+			isset( $result['mc4e_custom_layout'] ) ? $result['mc4e_custom_layout'] : '',
+			isset( $result['mc4e_layout'] ) ? $result['mc4e_layout'] : 'default'
+		);
+
 		return $result;
+	}
+
+	/**
+	 * Load and decode the layout preset catalog.
+	 *
+	 * @return array List of preset definitions, or an empty array when unreadable.
+	 */
+	private static function get_layout_presets() {
+		if ( null !== self::$layout_presets_cache ) {
+			return self::$layout_presets_cache;
+		}
+
+		self::$layout_presets_cache = array();
+
+		$path = MICEMADE_MC4E_PLUGIN_DIR . 'assets/presets/layouts.json';
+		if ( ! is_readable( $path ) ) {
+			return self::$layout_presets_cache;
+		}
+
+		// Local plugin asset, not remote content: file_get_contents is correct here.
+		$raw = file_get_contents( $path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		if ( false === $raw ) {
+			return self::$layout_presets_cache;
+		}
+
+		$decoded = json_decode( $raw, true );
+		if ( is_array( $decoded ) ) {
+			self::$layout_presets_cache = $decoded;
+		}
+
+		return self::$layout_presets_cache;
+	}
+
+	/**
+	 * Resolve the layout actually in use for this widget instance.
+	 *
+	 * PHP counterpart of getComputedLayout() in src/shared/utils/layoutUtils.js.
+	 * A saved custom layout (from dragging/resizing in the editor) wins; otherwise
+	 * the selected preset is looked up and normalised.
+	 *
+	 * @param string $custom_layout Serialized custom layout JSON, if any.
+	 * @param string $layout_id     Selected preset id (e.g. 'layout-5').
+	 * @return array Layout with `desktop`, `tablet`, `mobile` and `zindex` keys.
+	 */
+	private static function resolve_layout( $custom_layout, $layout_id ) {
+		$empty = array(
+			'desktop' => array(),
+			'tablet'  => array(),
+			'mobile'  => array(),
+			'zindex'  => (object) array(),
+		);
+
+		if ( ! empty( $custom_layout ) && is_string( $custom_layout ) ) {
+			$decoded = json_decode( $custom_layout, true );
+			if ( is_array( $decoded ) ) {
+				// Custom layouts are already stored in the lowercase breakpoint
+				// shape the React components expect.
+				return $decoded;
+			}
+		}
+
+		$presets = self::get_layout_presets();
+		if ( empty( $presets ) ) {
+			return $empty;
+		}
+
+		$preset = null;
+		foreach ( $presets as $candidate ) {
+			if ( isset( $candidate['id'] ) && $candidate['id'] === $layout_id ) {
+				$preset = $candidate;
+				break;
+			}
+		}
+
+		// Fallback mirrors getLayout(): unknown ids fall back to the 3-item default.
+		if ( null === $preset ) {
+			foreach ( $presets as $candidate ) {
+				if ( isset( $candidate['id'] ) && 'default' === $candidate['id'] ) {
+					$preset = $candidate;
+					break;
+				}
+			}
+		}
+
+		if ( null === $preset || empty( $preset['value'] ) ) {
+			return $empty;
+		}
+
+		$parsed = json_decode( $preset['value'], true );
+		if ( ! is_array( $parsed ) ) {
+			return $empty;
+		}
+
+		$zindex = array();
+		if ( ! empty( $preset['zindex'] ) ) {
+			$decoded_zindex = json_decode( $preset['zindex'], true );
+			if ( is_array( $decoded_zindex ) ) {
+				$zindex = $decoded_zindex;
+			}
+		}
+
+		// Presets store PascalCase breakpoint keys; the React components use lowercase.
+		return array(
+			'desktop' => isset( $parsed['Desktop'] ) ? $parsed['Desktop'] : array(),
+			'tablet'  => isset( $parsed['Tablet'] ) ? $parsed['Tablet'] : array(),
+			'mobile'  => isset( $parsed['Mobile'] ) ? $parsed['Mobile'] : array(),
+			'zindex'  => empty( $zindex ) ? (object) array() : $zindex,
+		);
 	}
 
 	/**

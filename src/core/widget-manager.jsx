@@ -220,7 +220,13 @@ class WidgetManager {
 // Create singleton instance
 const widgetManager = new WidgetManager();
 
-// Expose globally for React components to access
-window.MosaicContentsReact = widgetManager;
+// Expose globally so editor-side code (custom controls, editor hooks, the
+// widgets' layout-mutation handlers) can reach the manager across the preview
+// iframe boundary. Frontend rendering never uses the global — widgets are
+// mounted through the initializer's direct import — so the assignment is gated
+// out of the frontend bundle. scripts/check-bundles.mjs enforces this.
+if (__MC4E_EDITOR__) {
+	window.MosaicContentsReact = widgetManager;
+}
 
 export default widgetManager;
